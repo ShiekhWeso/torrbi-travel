@@ -81,7 +81,7 @@
     "title": "Our Tourist Packages",
     "item": "{name} Package",
     "price": "Price on request",
-    "book": "Book on WhatsApp"
+    "details": "More details"
   },
   "packages": {
     "title": "Our Tourist Packages",

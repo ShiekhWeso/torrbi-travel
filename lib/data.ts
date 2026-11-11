@@ -19,7 +19,7 @@ export type DestinationId = (typeof destinations)[number]['id'];
 // (price is shown as written, e.g. '$850'). Leave null to show "Price on request".
 // NOTE: these three entries are SAMPLES, replace them with your real packages.
 export const packages: {id: string; image: string; days: number | null; price: string | null}[] = [
-  {id: 'bali', image: '/destinations/bali.webp', days: 7, price: null},
-  {id: 'istanbul', image: '/destinations/istanbul.jpg', days: 5, price: null},
-  {id: 'phuket', image: '/destinations/phuket.webp', days: 6, price: null}
+  {id: 'bali', image: '/destinations/bali.webp', days: 7, price: '$850'},
+  {id: 'istanbul', image: '/destinations/istanbul.jpg', days: 5, price: '$720'},
+  {id: 'phuket', image: '/destinations/phuket.webp', days: 6, price: '$790'}
 ];
