@@ -9,7 +9,7 @@ export default function WhatsAppFloat() {
       target="_blank"
       rel="noopener"
       aria-label={t('floatWhatsapp')}
-      className="fixed bottom-5 end-5 z-50 w-14 h-14 rounded-full bg-[#25D366] text-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+      className="fixed bottom-5 end-5 z-50 w-14 h-14 rounded-full bg-brand-warm text-navy shadow-[0_8px_24px_rgba(254,153,98,0.5)] flex items-center justify-center hover:scale-110 transition-transform"
     >
       <span className="material-symbols-outlined text-[28px]">chat</span>
     </a>
