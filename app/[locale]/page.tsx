@@ -2,6 +2,7 @@ import {setRequestLocale} from 'next-intl/server';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Destinations from '@/components/Destinations';
+import Packages from '@/components/Packages';
 import ValueProps from '@/components/ValueProps';
 import PlanWithUs from '@/components/PlanWithUs';
 import Footer from '@/components/Footer';
@@ -16,6 +17,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
       <Header />
       <main className="flex-1">
         <Hero />
+        <Packages />
         <Destinations />
         <ValueProps />
         <PlanWithUs />

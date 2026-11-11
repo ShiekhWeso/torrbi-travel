@@ -6,6 +6,7 @@ export default function Footer() {
   const n = useTranslations('nav');
   const links = [
     {href: '#top', k: 'home'},
+    {href: '#packages', k: 'packages'},
     {href: '#destinations', k: 'destinations'},
     {href: '#why', k: 'why'},
     {href: '#contact', k: 'contact'}

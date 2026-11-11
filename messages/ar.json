@@ -6,6 +6,7 @@
   "nav": {
     "home": "الرئيسية",
     "destinations": "الوجهات",
+    "packages": "الباكدجات",
     "why": "لماذا TORRBI",
     "contact": "اتصل بنا"
   },
@@ -72,6 +73,31 @@
         "country": "القوقاز"
       }
     }
+  },
+  "packages": {
+    "title": "الباكدجات السياحية",
+    "from": "تبدأ من",
+    "perPerson": "/ للشخص",
+    "onRequest": "السعر عند الطلب",
+    "days": "{days, plural, one {يوم واحد} two {يومان} few {# أيام} other {# يوم}}",
+    "book": "احجز عبر واتساب",
+    "items": {
+      "bali": {
+        "title": "باكدج بالي"
+      },
+      "istanbul": {
+        "title": "باكدج إسطنبول"
+      },
+      "phuket": {
+        "title": "باكدج بوكيت"
+      }
+    }
+  },
+  "packageCards": {
+    "title": "برامجنا السياحية",
+    "item": "برنامج {name}",
+    "price": "السعر عند الطلب",
+    "book": "احجز عبر واتساب"
   },
   "values": {
     "v1": {

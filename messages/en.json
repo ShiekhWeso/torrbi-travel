@@ -6,6 +6,7 @@
   "nav": {
     "home": "Home",
     "destinations": "Destinations",
+    "packages": "Packages",
     "why": "Why TORRBI",
     "contact": "Contact"
   },
@@ -70,6 +71,37 @@
       "georgia": {
         "name": "Georgia",
         "country": "Caucasus"
+      }
+    }
+  },
+  "packageCards": {
+    "title": "Our Tourist Packages",
+    "item": "{name} Package",
+    "price": "Price on request",
+    "book": "Book on WhatsApp"
+  },
+  "packages": {
+    "title": "Our Tourist Packages",
+    "from": "From",
+    "perPerson": "/ person",
+    "onRequest": "Price on request",
+    "days": "{days, plural, one {# day} other {# days}}",
+    "book": "Book on WhatsApp",
+    "items": {
+      "bali": {
+        "title": "Bali Package",
+        "stops": ["Ubud", "Nusa Penida", "Seminyak"],
+        "includes": ["Hotel", "Airport transfer", "Guided tours"]
+      },
+      "istanbul": {
+        "title": "Istanbul Package",
+        "stops": ["Sultanahmet", "Bosphorus", "Cappadocia"],
+        "includes": ["Hotel", "Airport transfer", "Guided tours"]
+      },
+      "phuket": {
+        "title": "Phuket Package",
+        "stops": ["Sultanahmet", "Bosphorus", "Cappadocia"],
+        "includes": ["Phi Phi", "Patong", "Old Town"]
       }
     }
   },

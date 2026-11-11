@@ -8,6 +8,7 @@ import {waLink} from '@/lib/whatsapp';
 
 const items = [
   {id: 'top', key: 'home'},
+  {id: 'packages', key: 'packages'},
   {id: 'destinations', key: 'destinations'},
   {id: 'why', key: 'why'},
   {id: 'contact', key: 'contact'}

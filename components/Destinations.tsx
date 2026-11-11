@@ -8,7 +8,7 @@ export default function Destinations() {
   const w = useTranslations('wa');
 
   return (
-    <section id="destinations" className="w-full bg-snow py-16 lg:py-24">
+    <section id="destinations" className="w-full bg-brand-mist py-16 lg:py-24">
       <div className="max-w-[1440px] mx-auto px-4 lg:px-12">
         <h2 className="font-display font-bold text-3xl lg:text-4xl text-navy text-center mb-12">{t('title')}</h2>
 
@@ -21,7 +21,7 @@ export default function Destinations() {
                 href={waLink(w('book', {name}))}
                 target="_blank"
                 rel="noopener"
-                className="group flex flex-col items-center text-center rounded-3xl bg-mist p-5 lg:p-8 transition-all hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,24,89,0.12)]"
+                className="group flex flex-col items-center text-center rounded-3xl bg-snow p-5 lg:p-8 transition-all hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,24,89,0.12)]"
               >
                 <Image
                   src={d.image}
