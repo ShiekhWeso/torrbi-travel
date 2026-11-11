@@ -22,8 +22,10 @@ export default function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [cur, setCur] = useState('top');
+  const active = pathname === '/' ? cur : '';
 
   useEffect(() => {
+    if (pathname !== '/') return;
     const onScroll = () => {
       let c = 'top';
       items.forEach(({id}) => {
@@ -35,7 +37,7 @@ export default function Header() {
     onScroll();
     window.addEventListener('scroll', onScroll, {passive: true});
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [pathname]);
 
   const other = locale === 'ar' ? 'en' : 'ar';
 
@@ -43,22 +45,22 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-snow/90 backdrop-blur-xl shadow-[0_4px_24px_rgba(15,24,89,0.06)]">
       <div className="h-20 max-w-[1440px] mx-auto px-4 lg:px-12 flex items-center justify-between gap-6">
         <div className="flex items-center gap-8">
-          <a href="#top" className="flex items-center gap-3">
+          <Link href="#top" className="flex items-center gap-3">
             <Image src="/logo.webp" alt="" width={44} height={44} priority className="rounded-full" />
             <span className="font-display font-bold text-xl text-navy tracking-wide">TORRBI TRAVEL</span>
-          </a>
+          </Link>
           <nav className="hidden lg:flex items-center gap-1">
             {items.map(({id, key}) => (
-              <a
+              <Link
                 key={id}
-                href={`#${id}`}
-                aria-current={cur === id ? 'page' : undefined}
+                href={{pathname: '/', hash: id}}
+                aria-current={active === id ? 'page' : undefined}
                 className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
-                  cur === id ? 'bg-navy text-snow shadow-sm' : 'text-navy/70 hover:text-navy hover:bg-mist'
+                  active === id ? 'bg-navy text-snow shadow-sm' : 'text-navy/70 hover:text-navy hover:bg-mist'
                 }`}
               >
                 {t(key)}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
@@ -96,9 +98,9 @@ export default function Header() {
       {open && (
         <nav className="lg:hidden flex flex-col border-t border-navy/10 bg-snow px-4 py-3">
           {items.map(({id, key}) => (
-            <a key={id} href={`#${id}`} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-navy">
+            <Link key={id} href={`/#${id}`} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-navy">
               {t(key)}
-            </a>
+            </Link>
           ))}
           <Link href={pathname} locale={other} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-sky">
             {locale === 'ar' ? 'English' : 'العربية'}

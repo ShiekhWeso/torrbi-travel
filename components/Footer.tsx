@@ -3,14 +3,6 @@ import {useTranslations} from 'next-intl';
 
 export default function Footer() {
   const t = useTranslations('footer');
-  const n = useTranslations('nav');
-  const links = [
-    {href: '#top', k: 'home'},
-    {href: '#packages', k: 'packages'},
-    {href: '#destinations', k: 'destinations'},
-    {href: '#why', k: 'why'},
-    {href: '#contact', k: 'contact'}
-  ] as const;
 
   return (
     <footer className="w-full bg-mist text-navy/70">
@@ -23,16 +15,6 @@ export default function Footer() {
             </div>
             <p className="text-sm">{t('about')}</p>
           </div>
-
-          <ul className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold">
-            {links.map((l) => (
-              <li key={l.k}>
-                <a className="hover:text-sky transition-colors" href={l.href}>
-                  {n(l.k)}
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <p className="pt-6 border-t border-navy/10 text-sm">{t('rights')}</p>

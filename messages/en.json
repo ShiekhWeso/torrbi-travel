@@ -108,6 +108,31 @@
       }
     }
   },
+  "packageDetail": { 
+    "topRated": "Top rated",
+    "reviews": "reviews",
+    "freeCancel": "Free cancellation",
+    "freeCancelText": "Cancel up to 24 hours in advance for a full refund",
+    "payLater": "Reserve now & pay later",
+    "payLaterText": "Keep your plans flexible. Book your spot and pay nothing today",
+    "duration": "Duration",
+    "guide": "Live tour guide",
+    "guideText": "Arabic, English",
+    "pickup": "Pickup included",
+    "pickupText": "Airport and hotel transfers",
+    "adult": "Adult",
+    "langArabic": "Arabic",
+    "langEnglish": "English",
+    "check": "Check availability",
+    "loved": "What travelers loved",
+    "verified": "Verified booking",
+    "itinerary": "Itinerary",
+    "pickupPoint": "Pickup",
+    "pickupPointText": "Hotel or airport pickup",
+    "stopText": "Guided visit, free time and photo stops",
+    "returnPoint": "Return",
+    "returnPointText": "Drop-off at your hotel"
+  },
   "values": {
     "v1": {
       "title": "Secure Online Payment",
