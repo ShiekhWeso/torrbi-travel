@@ -18,7 +18,7 @@
   "wa": {
     "book": "Hello TORRBI TRAVEL, I would like to book a trip to: {name}",
     "plan": "Hello TORRBI TRAVEL, I would like help planning a trip.",
-    "search": "Hello TORRBI TRAVEL, I am looking for a trip. Destination: {dest}. Date: {date}. {pax}."
+    "search": "Hello TORRBI TRAVEL, I am looking for {type}. Destination: {dest}. Date: {date}. Duration: {duration}. {pax}."
   },
   "hero": {
     "title1": "Discover Your Next",
@@ -30,7 +30,10 @@
     "travelers": "Travelers",
     "travelersCount": "{count, plural, one {# Traveler} other {# Travelers}}",
     "search": "Search Packages",
-    "trending": "Popular:"
+    "trending": "Popular:",
+    "duration": "Duration",
+    "types": { "packages": "Packages", "flights": "Flights", "activities": "Activities" },
+    "durations": { "any": "Any duration", "short": "3–5 days", "medium": "6–8 days", "long": "9+ days" }
   },
   "destinations": {
     "title": "Popular Destinations",

@@ -18,7 +18,7 @@
   "wa": {
     "book": "مرحباً TORRBI TRAVEL، أرغب في حجز رحلة إلى: {name}",
     "plan": "مرحباً TORRBI TRAVEL، أحتاج مساعدة في تخطيط رحلتي.",
-    "search": "مرحباً TORRBI TRAVEL، أبحث عن رحلة. الوجهة: {dest}. التاريخ: {date}. {pax}."
+    "search": "مرحباً TORRBI TRAVEL، أبحث عن: {type}. الوجهة: {dest}. التاريخ: {date}. المدة: {duration}. {pax}."
   },
   "hero": {
     "title1": "اكتشف رحلتك القادمة",
@@ -30,7 +30,10 @@
     "travelers": "المسافرون",
     "travelersCount": "{count, plural, one {مسافر واحد} two {مسافران} few {# مسافرين} other {# مسافر}}",
     "search": "ابحث عن البرامج",
-    "trending": "الأكثر طلباً:"
+    "trending": "الأكثر طلباً:",
+    "duration": "المدة",
+    "types": { "packages": "باقات", "flights": "تذاكر طيران", "activities": "أنشطة" },
+    "durations": { "any": "أي مدة", "short": "3–5 أيام", "medium": "6–8 أيام", "long": "9+ أيام" }
   },
   "destinations": {
     "title": "أبرز الوجهات",
