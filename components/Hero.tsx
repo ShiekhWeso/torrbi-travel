@@ -48,7 +48,7 @@ export default function Hero() {
       </div>
 
       <h1 className="sr-only">{t('title1')} {t('title2')}</h1>
-      <div aria-hidden className="relative w-full overflow-hidden mb-6" dir="ltr">
+      <div aria-hidden className="relative w-full overflow-hidden pt-2 pb-10 mb-2" dir="ltr">
         <div className="hero-marquee flex w-max whitespace-nowrap">
           {[0, 1, 2, 3].map((i) => (
             <span key={i} className="font-display font-bold text-5xl lg:text-7xl leading-[1.4] text-navy pe-16">
@@ -135,18 +135,16 @@ export default function Hero() {
               </div>
             </label>
 
-            <div className="relative min-h-14 lg:w-16">
-              <button
-                type="submit"
-                aria-label={t('search')}
-                className="group absolute inset-y-0 end-0 z-10 flex w-full items-center justify-center overflow-hidden rounded-xl bg-brand-warm font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-all duration-300 lg:w-16 lg:hover:w-60"
-              >
-                <span className="material-symbols-outlined text-[22px]">search</span>
-                <span className="ms-2 whitespace-nowrap lg:ms-0 lg:max-w-0 lg:opacity-0 lg:transition-all lg:duration-300 lg:group-hover:ms-2 lg:group-hover:max-w-[160px] lg:group-hover:opacity-100">
-                  {t('search')}
-                </span>
-              </button>
-            </div>
+            <button
+              type="submit"
+              aria-label={t('search')}
+              className="group flex min-h-14 items-center justify-center overflow-hidden rounded-xl bg-brand-warm font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-all duration-300 lg:w-16 lg:hover:w-56"
+            >
+              <span className="material-symbols-outlined text-[22px]">search</span>
+              <span className="ms-2 whitespace-nowrap lg:ms-0 lg:max-w-0 lg:opacity-0 lg:transition-all lg:duration-300 lg:group-hover:ms-2 lg:group-hover:max-w-[160px] lg:group-hover:opacity-100">
+                {t('search')}
+              </span>
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-4 px-1">
