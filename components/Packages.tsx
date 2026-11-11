@@ -12,7 +12,7 @@ export default function Packages() {
   const p = useTranslations('packages');
   const locale = useLocale();
 
-  const items = packages;
+  const items = packages.slice(0, 3);
 
   return (
     <section id="packages" className="w-full bg-snow py-16 lg:py-24">
@@ -76,6 +76,17 @@ export default function Packages() {
               </article>
             );
           })}
+        </div>
+        <div className="mt-10 text-center">
+          <Link
+            href={`/${locale}/packages`}
+            className="group/all inline-flex items-center gap-4 rounded-full bg-navy py-2 ps-8 pe-2 font-bold text-snow shadow-[0_12px_28px_rgba(15,24,89,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,24,89,0.35)]"
+          >
+            {t('seeMore')}
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-warm text-navy transition-transform duration-300 group-hover/all:rotate-[-45deg] rtl:rotate-180 rtl:group-hover/all:rotate-[225deg]">
+              <span className="material-symbols-outlined text-[22px] leading-none">arrow_forward</span>
+            </span>
+          </Link>
         </div>
       </div>
     </section>

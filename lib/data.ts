@@ -18,8 +18,11 @@ export type DestinationId = (typeof destinations)[number]['id'];
 // days and price are optional: fill them in and they appear on the card
 // (price is shown as written, e.g. '$850'). Leave null to show "Price on request".
 // NOTE: these three entries are SAMPLES, replace them with your real packages.
-export const packages: {id: string; image: string; days: number | null; price: string | null}[] = [
-  {id: 'bali', image: '/destinations/bali.webp', days: 7, price: '$850'},
-  {id: 'istanbul', image: '/destinations/istanbul.jpg', days: 5, price: '$720'},
-  {id: 'phuket', image: '/destinations/phuket.webp', days: 6, price: '$790'}
+export const packages: {id: string; image: string; days: number; price: string; priceNum: number; region: 'asia' | 'turkey' | 'caucasus'}[] = [
+  {id: 'bali', image: '/destinations/bali.webp', days: 7, price: '$850', priceNum: 850, region: 'asia'},
+  {id: 'istanbul', image: '/destinations/istanbul.jpg', days: 5, price: '$720', priceNum: 720, region: 'turkey'},
+  {id: 'phuket', image: '/destinations/phuket.webp', days: 6, price: '$790', priceNum: 790, region: 'asia'},
+  {id: 'penang', image: '/destinations/penang.webp', days: 5, price: '$640', priceNum: 640, region: 'asia'},
+  {id: 'vietnam', image: '/destinations/vietnam.webp', days: 8, price: '$910', priceNum: 910, region: 'asia'},
+  {id: 'georgia', image: '/destinations/georgia.webp', days: 6, price: '$690', priceNum: 690, region: 'caucasus'}
 ];

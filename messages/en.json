@@ -81,7 +81,8 @@
     "title": "Our Tourist Packages",
     "item": "{name} Package",
     "price": "Price on request",
-    "details": "More details"
+    "details": "More details",
+    "seeMore": "See all packages"
   },
   "packages": {
     "title": "Our Tourist Packages",
@@ -105,7 +106,10 @@
         "title": "Phuket Package",
         "stops": ["Sultanahmet", "Bosphorus", "Cappadocia"],
         "includes": ["Phi Phi", "Patong", "Old Town"]
-      }
+      },
+      "penang": { "title": "Penang Package", "stops": ["George Town", "Penang Hill", "Batu Ferringhi"], "includes": ["Hotel", "Airport transfer", "Guided tours"] },
+      "vietnam": { "title": "Vietnam Package", "stops": ["Hanoi", "Ha Long Bay", "Ninh Binh"], "includes": ["Hotel", "Airport transfer", "Guided tours"] },
+      "georgia": { "title": "Georgia Package", "stops": ["Tbilisi", "Kazbegi", "Batumi"], "includes": ["Hotel", "Airport transfer", "Guided tours"] }
     }
   },
   "packageDetail": { 
