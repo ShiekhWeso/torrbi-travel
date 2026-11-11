@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "title": "TORRBI TRAVEL | Tours, Activities & Flights",
+    "description": "TORRBI TRAVEL: tour packages, activities and flights, booked easily online or on WhatsApp."
+  },
+  "nav": {
+    "home": "Home",
+    "destinations": "Destinations",
+    "offers": "Hot Offers",
+    "why": "Why TORRBI",
+    "contact": "Contact"
+  },
+  "header": {
+    "bookWhatsapp": "Book on WhatsApp",
+    "search": "Search",
+    "menu": "Menu",
+    "myBookings": "My bookings",
+    "switchLang": "Switch language"
+  },
+  "wa": {
+    "book": "Hello TORRBI TRAVEL, I would like to book: {name}",
+    "plan": "Hello TORRBI TRAVEL, I would like help planning a trip.",
+    "flight": "Hello TORRBI TRAVEL, I would like to book the flight: {from} to {to}",
+    "search": "Hello TORRBI TRAVEL, I am looking for {type} options. {l1}: {v1}. {l2}: {v2}. Date: {date}. {pax}."
+  },
+  "hero": {
+    "badge1": "Curated Travel Experiences",
+    "badge2": "Winter Escapes 2026",
+    "title1": "Discover Your Next",
+    "title2": "Unforgettable Journey",
+    "subtitle": "Tour packages, activities and flights for every destination, booked simply online or through WhatsApp.",
+    "tabs": {"package": "Packages", "activity": "Activities", "flight": "Flights"},
+    "consult": "Free consultation on WhatsApp",
+    "secure": "Secure Online Payment",
+    "fields": {
+      "package": {"l1": "Destination", "l2": "Departure City", "p1": "Where to?", "p2": "Optional", "go": "Search Packages", "h1": "Country, city or activity", "h2": "Where your trip starts"},
+      "activity": {"l1": "Activity or City", "l2": "Country", "p1": "e.g. Desert safari", "p2": "Optional", "go": "Search Activities", "h1": "Country, city or activity", "h2": "Where you want to go"},
+      "flight": {"l1": "Flying From", "l2": "Flying To", "p1": "City or airport", "p2": "City or airport", "go": "Search Flights", "h1": "Departure city or airport", "h2": "Arrival city or airport"}
+    },
+    "date": "Travel Date",
+    "dateHint": "Choose your date",
+    "travelers": "Travelers",
+    "travelersHint": "Adults and children",
+    "travelersCount": "{count, plural, one {# Traveler} other {# Travelers}}",
+    "trending": "Trending:",
+    "trendingItems": {"maldives": "Maldives", "kyoto": "Kyoto", "dubai": "Dubai"},
+    "stats": {
+      "s1": {"title": "Wide Range of Destinations", "text": "Packages and activities worldwide"},
+      "s2": {"title": "Simple Booking", "text": "Book in minutes online or on WhatsApp"},
+      "s3": {"title": "Trusted Service", "text": "Dedicated support from our team"}
+    }
+  },
+  "destinations": {
+    "kicker": "Places You Can Visit",
+    "title": "Curated Escapes for the Incurable Nomad",
+    "filters": {"all": "All", "europe": "Europe", "asia": "Asia"},
+    "packagesFrom": "Packages from",
+    "startingAt": "Starting at",
+    "perPerson": "/ person",
+    "priceOnRequest": "Price on request",
+    "days": "{days} days",
+    "book": "Book on WhatsApp",
+    "items": {
+      "santorini": {"badge": "Editor’s Choice", "tag": "Sunny Escape", "country": "Greece", "area": "Cyclades Archipelago", "title": "Santorini: Cycladic Wonder", "text": "Perched high above the Caldera, experience iconic whitewashed architecture, bespoke cliff-edge infinity suites, and Mediterranean evening dining."},
+      "maldives": {"badge": "Seasonal Offer", "tag": "Lagoon Seaplane", "country": "Indian Ocean", "area": "", "title": "Maldives: Overwater Escapes & Coral Atolls", "text": "Secluded private islands, crystal lagoons, and seaplane transfers to your resort."},
+      "kyoto": {"badge": "Cultural Journey", "tag": "Autumn Foliage", "country": "Japan", "area": "Kansai", "title": "Kyoto: Zen Temples & Bamboo Sanctuaries", "text": "Unwind within centuries-old teahouses, moss rock gardens, and curated bullet train day trips with guided day trips."},
+      "swiss": {"badge": "Alpine Adventure", "tag": "Peak Season", "country": "Switzerland", "area": "Zurich", "title": "Swiss Alps: Lauterbrunnen & Scenic Railways", "text": "Breathtaking valley waterfalls, high-altitude alpine retreats, and scenic mountain railway journeys."}
+    }
+  },
+  "flights": {
+    "kicker": "Limited-Time Offers",
+    "title": "Hot Flight Deals This Week",
+    "filters": {"all": "All Departures", "na": "From North America", "eu": "From Europe"},
+    "cities": {
+      "nyc": "New York (JFK)", "jtr": "Santorini (JTR)", "lon": "London (LHR)",
+      "mle": "Malé (MLE)", "sfo": "San Francisco (SFO)", "zrh": "Zurich (ZRH)"
+    },
+    "nonstop": "Non-stop • {h}h {m}m",
+    "direct": "Direct",
+    "duration": "{h} hrs {m} mins",
+    "liveFares": "Live fares via API",
+    "notes": {"limited": "Limited availability", "value": "Great value", "transfer": "Free Swiss Rail transfer"},
+    "taxes": "Includes taxes",
+    "taxesSeat": "Includes taxes & seat selection",
+    "request": "Request Booking"
+  },
+  "values": {
+    "v1": {"title": "Secure Online Payment", "text": "Pay safely online. Your booking is confirmed once the provider approves it."},
+    "v2": {"title": "Instant E-Tickets", "text": "Receive your confirmation and tickets by email, and find them anytime in My Bookings."},
+    "v3": {"title": "Arabic & English", "text": "Browse and book in Arabic or English, on mobile or desktop."}
+  },
+  "plan": {
+    "badge": "Plan With Us",
+    "title1": "Your trip,",
+    "title2": "planned for you.",
+    "text": "Tell us where you want to go and our team will build the perfect trip, from flights and hotels to tours and activities.",
+    "whatsapp": "Chat on WhatsApp",
+    "email": "Send us an email",
+    "mapTitle": "Travel Experts",
+    "mapText": "Personal help with packages, flights and activities, every day.",
+    "talk": "Talk to us"
+  },
+  "footer": {
+    "about": "Tour packages, activities and flights for every destination, with easy booking and friendly support.",
+    "trusted": "Trusted Travel Partner",
+    "discover": "Discover",
+    "why": "Why Book With Us",
+    "secureTitle": "Secure Payments",
+    "secureText": "Safe online payment through Stripe.",
+    "supportTitle": "Booking Support",
+    "supportText": "We help with changes, cancellations and refunds.",
+    "offersTitle": "Get Offers First",
+    "offersText": "Subscribe for exclusive deals and new packages.",
+    "emailPlaceholder": "Your email address",
+    "join": "Join",
+    "rights": "© 2026 TORRBI TRAVEL. All rights reserved.",
+    "photos": "Photos: Santorini by Mstyslav Chernov / Wikimedia Commons (CC BY-SA); Maldives via Pexels (CC0).",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "cancellation": "Cancellation & Refund Policy"
+  },
+  "floatWhatsapp": "Chat on WhatsApp"
+}
