@@ -8,6 +8,7 @@ import {packageDetails, reviews} from '@/lib/packageDetails';
 import BookingBox from '@/components/BookingBox';
 import ItineraryPath from '@/components/ItineraryPath';
 import ReviewsModal from '@/components/ReviewsModal';
+import { Suspense } from 'react';
 
 export function generateStaticParams() {
   return ['en', 'ar'].flatMap((locale) => packages.map((p) => ({locale, id: p.id})));
@@ -167,7 +168,9 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                   </div>
                 </section>
             </div>
-            <BookingBox title={p(`items.${id}.title`)} price={pkg.price} />
+            <Suspense fallback={null}>
+              <BookingBox title={p(`items.${id}.title`)} price={pkg.price} />
+            </Suspense>
           </div>
         </div>
       </main>

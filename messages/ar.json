@@ -18,7 +18,7 @@
   "wa": {
     "book": "مرحباً TORRBI TRAVEL، أرغب في حجز رحلة إلى: {name}",
     "plan": "مرحباً TORRBI TRAVEL، أحتاج مساعدة في تخطيط رحلتي.",
-    "search": "مرحباً TORRBI TRAVEL، أبحث عن: {type}. الوجهة: {dest}. التاريخ: {date}. المدة: {duration}. {pax}."
+    "flight": "مرحباً TORRBI TRAVEL، أرغب في حجز تذكرة طيران. من: {from}. إلى: {to}. التاريخ: {date}. {pax}."
   },
   "hero": {
     "title1": "اكتشف رحلتك القادمة",
@@ -33,7 +33,12 @@
     "trending": "الأكثر طلباً:",
     "duration": "المدة",
     "types": { "packages": "باقات", "flights": "تذاكر طيران", "activities": "أنشطة" },
-    "durations": { "any": "أي مدة", "short": "3–5 أيام", "medium": "6–8 أيام", "long": "9+ أيام" }
+    "durations": { "any": "أي مدة", "short": "3–5 أيام", "medium": "6–8 أيام", "long": "9+ أيام" },
+    "from": "من",
+    "fromPlaceholder": "مدينة المغادرة",
+    "to": "إلى",
+    "soon": "قريباً",
+    "searchFlights": "اطلب تذكرة"
   },
   "destinations": {
     "title": "أبرز الوجهات",
@@ -118,7 +123,8 @@
     "sortLow": "السعر: من الأقل للأعلى",
     "sortHigh": "السعر: من الأعلى للأقل",
     "reset": "إعادة تعيين",
-    "empty": "لا توجد باقات مطابقة للفلاتر."
+    "empty": "لا توجد باقات مطابقة للفلاتر.",
+    "askWhatsapp": "ما وجدت ما تبحث عنه؟ اسألنا على واتساب"
   },
   "packages": {
     "title": "الباكدجات السياحية",

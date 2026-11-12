@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {useLocale, useTranslations} from 'next-intl';
 import {packages} from '@/lib/data';
+import { useSearchParams } from 'next/navigation';
+import { waLink } from '@/lib/whatsapp';
 
 const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
 const durations = ['any', 'short', 'medium', 'long'] as const;
@@ -19,13 +21,26 @@ export default function PackagesExplorer() {
   const c = useTranslations('packageCards');
   const p = useTranslations('packages');
   const locale = useLocale();
-  const [q, setQ] = useState('');
+  const dn = useTranslations('destinations');
+  const w = useTranslations('wa');
+  const sp = useSearchParams();
+  const carry = new URLSearchParams();
+  ['date', 'pax'].forEach((k) => {
+    const val = sp.get(k);
+    if (val) carry.set(k, val);
+  });
+  const suffix = carry.toString() ? `?${carry}` : '';
   const [region, setRegion] = useState<(typeof regions)[number]>('all');
-  const [duration, setDuration] = useState<(typeof durations)[number]>('any');
   const [sort, setSort] = useState('default');
+  const [q, setQ] = useState(sp.get('q') ?? '');
+  const initD = sp.get('duration') ?? '';
+  const [duration, setDuration] = useState<(typeof durations)[number]>(
+    (durations as readonly string[]).includes(initD) ? (initD as (typeof durations)[number]) : 'any'
+  );
 
   const list = packages.filter((x) => {
-    const okQ = p(`items.${x.id}.title`).toLowerCase().includes(q.trim().toLowerCase());
+    const hay = `${p(`items.${x.id}.title`)} ${dn(`items.${x.id}.name`)} ${dn(`items.${x.id}.country`)} ${x.id}`.toLowerCase();
+    const okQ = hay.includes(q.trim().toLowerCase());
     const okR = region === 'all' || x.region === region;
     const okD =
       duration === 'any' ||
@@ -82,7 +97,18 @@ export default function PackagesExplorer() {
       </div>
 
       {list.length === 0 ? (
-        <p className="mt-16 text-center text-lg text-navy/60">{t('empty')}</p>
+        <div className="mt-16 text-center">
+          <p className="text-lg text-navy/60">{t('empty')}</p>
+          <a
+            href={waLink(w('plan'))}
+            target="_blank"
+            rel="noopener"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-warm px-6 py-3 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02]"
+          >
+            {t('askWhatsapp')}
+            <span className="material-symbols-outlined text-[20px]">chat</span>
+          </a>
+        </div>
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {list.map((x) => (
@@ -105,7 +131,7 @@ export default function PackagesExplorer() {
               <div className="mt-4 flex items-center justify-between gap-4 border-t border-navy/10 px-1 pt-4">
                 <span className="font-display text-lg text-navy">{p('from')} {x.price}</span>
                 <Link
-                  href={`/${locale}/packages/${x.id}`}
+                  href={`/${locale}/packages/${x.id}${suffix}`}
                   className="group/btn inline-flex items-center gap-2 rounded-full border-2 border-navy px-5 py-2.5 text-sm font-bold text-navy transition-colors duration-300 hover:bg-navy hover:text-snow"
                 >
                   {c('details')}

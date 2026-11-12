@@ -3,13 +3,15 @@
 import {useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {waLink} from '@/lib/whatsapp';
+import {useSearchParams} from 'next/navigation';
 
 export default function BookingBox({title, price}: {title: string; price: string | null}) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const w = useTranslations('wa');
-  const [pax, setPax] = useState(2);
-  const [date, setDate] = useState('');
+  const sp = useSearchParams();
+  const [pax, setPax] = useState(Math.min(6, Math.max(1, Number(sp.get('pax')) || 2)));
+  const [date, setDate] = useState(sp.get('date') ?? '');
   const [lang, setLang] = useState('en');
 
   const book = () => {
