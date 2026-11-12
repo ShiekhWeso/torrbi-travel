@@ -4,8 +4,11 @@ import {db} from '@/lib/db';
 import {packages, packageDays} from '@/lib/db/schema';
 import PackageForm from '@/components/admin/PackageForm';
 import DayForm from '@/components/admin/DayForm';
+import {getLocale} from 'next-intl/server';
+import {tr} from '@/lib/adminT';
 
 export default async function Page({params}: {params: Promise<{id: string}>}) {
+  const t = tr(await getLocale());
   const {id} = await params;
   const pid = Number(id);
   const [p] = await db.select().from(packages).where(eq(packages.id, pid)).limit(1);
@@ -14,11 +17,11 @@ export default async function Page({params}: {params: Promise<{id: string}>}) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-6 font-display text-3xl text-navy">Edit package</h1>
+        <h1 className="mb-6 font-display text-3xl text-navy">{t.editPackage}</h1>
         <PackageForm p={p} />
       </div>
       <div>
-        <h2 className="mb-4 font-display text-2xl text-navy">Itinerary days</h2>
+        <h2 className="mb-4 font-display text-2xl text-navy">{t.itinerary}</h2>
         <div className="space-y-4 rounded-2xl bg-snow p-6">
           {days.map((d) => <DayForm key={d.id} packageId={pid} d={d} />)}
           <DayForm packageId={pid} nextNo={days.length + 1} />

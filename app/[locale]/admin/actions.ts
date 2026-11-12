@@ -7,20 +7,25 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
 import {admins, destinations, offers, packages, packageDays} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
+import {getLocale} from 'next-intl/server';
 
-export async function login(_prev: string | null, formData: FormData) {
+async function go(path: string): Promise<never> {
+  redirect(`/${await getLocale()}${path}`);
+}
+
+export async function login(_prev: string | null | undefined, formData: FormData) {
   const email = String(formData.get('email') ?? '').trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
   const [admin] = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
   const ok = admin ? await bcrypt.compare(password, admin.passwordHash) : false;
   if (!ok) return 'Wrong email or password';
   await createSession(email);
-  redirect('/en/admin');
+  await go('/admin');
 }
 
 export async function logout() {
   await destroySession();
-  redirect('/en/admin/login');
+  await go('/admin/login');
 }
 
 const str = (v: FormDataEntryValue | null) => String(v ?? '').trim();
@@ -30,7 +35,7 @@ const num = (v: FormDataEntryValue | null) => {
 };
 
 export async function saveDestination(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   const id = num(formData.get('id'));
   const f = (k: string) => str(formData.get(k));
   const data = {
@@ -52,18 +57,18 @@ export async function saveDestination(formData: FormData) {
   if (id) await db.update(destinations).set(data).where(eq(destinations.id, id));
   else await db.insert(destinations).values(data);
   revalidatePath('/', 'layout');
-  redirect('/en/admin/destinations');
+  await go('/admin/destinations');
 }
 
 export async function deleteDestination(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   await db.delete(destinations).where(eq(destinations.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
-  redirect('/en/admin/destinations');
+  await go('/admin/destinations');
 }
 
 export async function saveOffer(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   const id = num(formData.get('id'));
   const f = (k: string) => str(formData.get(k));
   const until = f('validUntil');
@@ -81,21 +86,21 @@ export async function saveOffer(formData: FormData) {
   if (id) await db.update(offers).set(data).where(eq(offers.id, id));
   else await db.insert(offers).values(data);
   revalidatePath('/', 'layout');
-  redirect('/en/admin/offers');
+  await go('/admin/offers');
 }
 
 export async function deleteOffer(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   await db.delete(offers).where(eq(offers.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
-  redirect('/en/admin/offers');
+  await go('/admin/offers');
 }
 
 const lines = (v: FormDataEntryValue | null) =>
   str(v).split('\n').map((s) => s.trim()).filter(Boolean);
 
 export async function savePackage(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   const id = num(formData.get('id'));
   const f = (k: string) => str(formData.get(k));
   const l = (k: string) => lines(formData.get(k));
@@ -119,18 +124,18 @@ export async function savePackage(formData: FormData) {
   if (id) await db.update(packages).set(data).where(eq(packages.id, id));
   else [{id: pid}] = await db.insert(packages).values(data).returning({id: packages.id});
   revalidatePath('/', 'layout');
-  redirect(`/en/admin/packages/${pid}`);
+  await go(`/admin/packages/${pid}`);
 }
 
 export async function deletePackage(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   await db.delete(packages).where(eq(packages.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
-  redirect('/en/admin/packages');
+  await go('/admin/packages');
 }
 
 export async function saveDay(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   const id = num(formData.get('id'));
   const packageId = Number(formData.get('packageId'));
   const f = (k: string) => str(formData.get(k));
@@ -146,12 +151,12 @@ export async function saveDay(formData: FormData) {
   if (id) await db.update(packageDays).set(data).where(eq(packageDays.id, id));
   else await db.insert(packageDays).values(data);
   revalidatePath('/', 'layout');
-  redirect(`/en/admin/packages/${packageId}`);
+  await go(`/admin/packages/${packageId}`);
 }
 
 export async function deleteDay(formData: FormData) {
-  if (!(await getSession())) redirect('/en/admin/login');
+  if (!(await getSession())) await go('/admin/login');
   await db.delete(packageDays).where(eq(packageDays.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
-  redirect(`/en/admin/packages/${formData.get('packageId')}`);
+  await go(`/admin/packages/${formData.get('packageId')}`);
 }

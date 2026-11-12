@@ -1,9 +1,12 @@
 import DestinationForm from '@/components/admin/DestinationForm';
+import {getLocale} from 'next-intl/server';
+import {tr} from '@/lib/adminT';
 
-export default function Page() {
+export default async function Page() {
+  const t = tr(await getLocale());
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl text-navy">New destination</h1>
+      <h1 className="mb-6 font-display text-3xl text-navy">{t.newDestination}</h1>
       <DestinationForm />
     </div>
   );

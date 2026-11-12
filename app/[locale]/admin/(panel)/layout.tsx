@@ -1,18 +1,22 @@
 import {redirect} from 'next/navigation';
-import Link from 'next/link';
+import {getLocale} from 'next-intl/server';
+import {Link} from '@/i18n/navigation';
 import {getSession} from '@/lib/auth';
+import {tr} from '@/lib/adminT';
+import LangSwitch from '@/components/admin/LangSwitch';
 import {logout} from '../actions';
 
-const nav = [
-  ['Dashboard', '/en/admin'],
-  ['Packages', '/en/admin/packages'],
-  ['Destinations', '/en/admin/destinations'],
-  ['Offers', '/en/admin/offers']
-] as const;
-
 export default async function PanelLayout({children}: {children: React.ReactNode}) {
+  const locale = await getLocale();
   const session = await getSession();
-  if (!session) redirect('/en/admin/login');
+  if (!session) redirect(`/${locale}/admin/login`);
+  const t = tr(locale);
+  const nav = [
+    [t.dashboard, '/admin'],
+    [t.packages, '/admin/packages'],
+    [t.destinations, '/admin/destinations'],
+    [t.offers, '/admin/offers']
+  ] as const;
 
   return (
     <div className="min-h-screen bg-mist">
@@ -25,10 +29,13 @@ export default async function PanelLayout({children}: {children: React.ReactNode
               </Link>
             ))}
           </nav>
-          <form action={logout} className="flex items-center gap-3 text-sm text-navy/70">
-            {session.email}
-            <button className="rounded-full bg-navy px-4 py-2 font-bold text-snow">Log out</button>
-          </form>
+          <div className="flex items-center gap-3 text-sm text-navy/70">
+            <LangSwitch />
+            <form action={logout} className="flex items-center gap-3">
+              {session.email}
+              <button className="rounded-full bg-navy px-4 py-2 font-bold text-snow">{t.logout}</button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
