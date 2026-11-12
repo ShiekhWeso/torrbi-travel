@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import {packages} from '@/lib/data';
 import {packageDetails, reviews} from '@/lib/packageDetails';
 import BookingBox from '@/components/BookingBox';
+import ItineraryPath from '@/components/ItineraryPath';
 
 export function generateStaticParams() {
   return ['en', 'ar'].flatMap((locale) => packages.map((p) => ({locale, id: p.id})));
@@ -95,19 +96,73 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </div>
 
                 <h2 className="mt-12 font-display text-2xl font-bold text-navy">{t('itinerary')}</h2>
-                <ol className="mt-6 space-y-6 border-s-2 border-brand-warm ps-6">
-                {[
+                <ItineraryPath
+                  steps={[
                     {title: t('pickupPoint'), text: t('pickupPointText')},
                     ...(p.raw(`items.${id}.stops`) as string[]).map((s) => ({title: s, text: t('stopText')})),
                     {title: t('returnPoint'), text: t('returnPointText')}
-                ].map((s, i) => (
-                    <li key={i} className="relative">
-                    <span className="absolute -start-[33px] top-1 h-4 w-4 rounded-full border-2 border-navy bg-snow" />
-                    <h3 className="font-bold text-navy">{s.title}</h3>
-                    <p className="text-sm text-navy/70">{s.text}</p>
-                    </li>
-                ))}
-                </ol>
+                  ]}
+                />
+                <section className="mt-14 space-y-6">
+                  <div className="rounded-3xl bg-mist p-6 lg:p-8">
+                    <h2 className="font-display text-2xl font-bold text-navy">{t('highlights')}</h2>
+                    <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+                      {(t.raw('highlightsList') as string[]).map((h) => (
+                        <li key={h} className="flex gap-3 text-navy/80">
+                          <span className="material-symbols-outlined text-brand-warm">auto_awesome</span>
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="px-1">
+                    <h2 className="font-display text-2xl font-bold text-navy">{t('fullDescription')}</h2>
+                    <p className="mt-3 text-navy/80">{t('descShort')}</p>
+                    <details className="group mt-2">
+                      <summary className="cursor-pointer list-none font-bold text-sky">
+                        <span className="group-open:hidden">{t('seeMore')}</span>
+                        <span className="hidden group-open:inline">{t('seeLess')}</span>
+                      </summary>
+                      <p className="mt-2 text-navy/80">{t('descLong')}</p>
+                    </details>
+                  </div>
+
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="rounded-3xl border border-navy/10 p-6 lg:p-8">
+                      <h2 className="font-display text-2xl font-bold text-navy">{t('includes')}</h2>
+                      <ul className="mt-4 space-y-3">
+                        {(t.raw('includesList') as string[]).map((i) => (
+                          <li key={i} className="flex gap-3 text-navy/80">
+                            <span className="material-symbols-outlined text-[20px] text-[#16a34a]">check_circle</span>
+                            {i}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="rounded-3xl border border-navy/10 p-6 lg:p-8">
+                      <h2 className="font-display text-2xl font-bold text-navy">{t('excludes')}</h2>
+                      <ul className="mt-4 space-y-3">
+                        {(t.raw('excludesList') as string[]).map((i) => (
+                          <li key={i} className="flex gap-3 text-navy/80">
+                            <span className="material-symbols-outlined text-[20px] text-[#ef4444]">cancel</span>
+                            {i}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl bg-navy p-6 text-snow lg:p-8">
+                    <h2 className="font-display text-2xl font-bold">{t('important')}</h2>
+                    <p className="mt-4 text-sm font-bold text-snow/60">{t('bring')}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(t.raw('bringList') as string[]).map((b) => (
+                        <span key={b} className="rounded-full bg-snow/10 px-4 py-2 text-sm">{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                </section>
             </div>
             <BookingBox title={p(`items.${id}.title`)} price={pkg.price} />
           </div>

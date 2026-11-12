@@ -12,9 +12,9 @@ export default function Destinations() {
   const t = useTranslations('destinations');
   const locale = useLocale();
   const list = destinations.slice(0, SHOWN);
-  const [active, setActive] = useState<string>(list[0].id);
-  const cur = destinations.find((x) => x.id === active) ?? list[0];
-  const info = destinationInfo[cur.id];
+  const [active, setActive] = useState<string | null>(null);
+  const cur = destinations.find((x) => x.id === active);
+  const info = cur ? destinationInfo[cur.id] : null;
   const href = (id: string) => `/${locale}/destinations/${id}`;
   const month = (m: number) =>
     new Intl.DateTimeFormat(locale, {month: 'short'}).format(new Date(2026, m - 1, 1));
@@ -24,7 +24,10 @@ export default function Destinations() {
       <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
         <h2 className="mb-10 font-display text-3xl font-bold text-navy lg:mb-14 lg:text-5xl">{t('title')}</h2>
 
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <div
+          className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16"
+          onMouseLeave={() => setActive(null)}
+        >
           <ul className="border-t border-navy/15">
             {list.map((x, i) => (
               <li key={x.id} onMouseEnter={() => setActive(x.id)}>
@@ -53,48 +56,53 @@ export default function Destinations() {
           </ul>
 
           <aside className="hidden lg:block">
-            <div key={cur.id} className="dest-in sticky top-28 rounded-3xl bg-navy p-6 text-snow shadow-[0_24px_56px_rgba(15,24,89,0.3)]">
-              <div className="relative mx-auto aspect-[4/4.4] w-4/5 overflow-hidden rounded-t-full rounded-b-3xl">
-                <Image src={cur.image} alt="" fill sizes="30vw" className="object-cover" />
-              </div>
-              <div className="mt-5 flex items-center justify-between">
-                <h3 className="font-display text-3xl font-bold">{t(`items.${cur.id}.name`)}</h3>
-                <span className="flex items-center gap-1 font-bold">
-                  <span className="material-symbols-outlined text-[20px] text-brand-warm">star</span>
-                  {info.rating}
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-snow/70">{t('tagline', {name: t(`items.${cur.id}.name`)})}</p>
-
-              <div className="mt-5 grid grid-cols-3 gap-3 border-t border-snow/15 pt-5 text-sm">
-                <div>
-                  <p className="text-xs text-snow/50">{t('bestTime')}</p>
-                  <p className="font-bold">{month(info.best[0])} – {month(info.best[1])}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-snow/50">{t('flight')}</p>
-                  <p className="font-bold">{t('hours', {n: info.flight})}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-snow/50">{t('climate')}</p>
-                  <p className="font-bold" dir="ltr">{info.temp}</p>
-                </div>
-              </div>
-
-              <Link
-                href={href(cur.id)}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-warm py-3 font-bold text-navy transition-transform hover:scale-[1.02]"
+            {cur && info && (
+              <div
+                key={cur.id}
+                className="dest-in sticky top-28 rounded-3xl bg-navy p-6 text-snow shadow-[0_24px_56px_rgba(15,24,89,0.3)]"
               >
-                {t('details')}
-                <span className="material-symbols-outlined text-[20px] leading-none rtl:rotate-180">arrow_forward</span>
-              </Link>
-            </div>
+                <div className="relative mx-auto aspect-[4/4.4] w-4/5 overflow-hidden rounded-t-full rounded-b-3xl">
+                  <Image src={cur.image} alt="" fill sizes="30vw" className="object-cover" />
+                </div>
+                <div className="mt-5 flex items-center justify-between">
+                  <h3 className="font-display text-3xl font-bold">{t(`items.${cur.id}.name`)}</h3>
+                  <span className="flex items-center gap-1 font-bold">
+                    <span className="material-symbols-outlined text-[20px] text-brand-warm">star</span>
+                    {info.rating}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-snow/70">{t('tagline', {name: t(`items.${cur.id}.name`)})}</p>
+
+                <div className="mt-5 grid grid-cols-3 gap-3 border-t border-snow/15 pt-5 text-sm">
+                  <div>
+                    <p className="text-xs text-snow/50">{t('bestTime')}</p>
+                    <p className="font-bold">{month(info.best[0])} – {month(info.best[1])}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-snow/50">{t('flight')}</p>
+                    <p className="font-bold">{t('hours', {n: info.flight})}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-snow/50">{t('climate')}</p>
+                    <p className="font-bold" dir="ltr">{info.temp}</p>
+                  </div>
+                </div>
+
+                <Link
+                  href={href(cur.id)}
+                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-warm py-3 font-bold text-navy transition-transform hover:scale-[1.02]"
+                >
+                  {t('details')}
+                  <span className="material-symbols-outlined text-[20px] leading-none rtl:rotate-180">arrow_forward</span>
+                </Link>
+              </div>
+            )}
           </aside>
         </div>
 
         <div className="mt-10 text-center">
           <Link
-            href={`/${locale}/packages`}
+            href={`/${locale}/destinations`}
             className="group/all inline-flex items-center gap-4 rounded-full bg-navy py-2 ps-8 pe-2 font-bold text-snow shadow-[0_12px_28px_rgba(15,24,89,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,24,89,0.35)]"
           >
             {t('seeAll')}

@@ -84,6 +84,27 @@
       }
     }
   },
+  "destinationDetail": {
+    "about": "About {name}",
+    "aboutText": "{name} is one of our most loved destinations. Explore its landmarks, local food and landscapes while our team arranges flights, hotels and tours for you.",
+    "todo": "Things to do",
+    "food": "Local food",
+    "foodText": "Taste the signature dishes and street food of {name}.",
+    "nature": "Nature & beaches",
+    "natureText": "Scenic views and relaxing spots around {name}.",
+    "culture": "Culture & history",
+    "cultureText": "Guided visits to the landmarks that define {name}.",
+    "shopping": "Shopping",
+    "shoppingText": "Markets, malls and souvenirs to take home.",
+    "plan": "Plan your trip to {name}",
+    "planText": "Tell us your dates and we will build the perfect trip.",
+    "chat": "Chat on WhatsApp",
+    "viewPackage": "View the {name} package"
+  },
+  "destinationsPage": {
+    "title": "All Destinations",
+    "subtitle": "Pick a destination to see the best time to go and what to do there."
+  },
   "packagesPage": {
     "title": "All Packages",
     "subtitle": "Browse every trip and filter by region, duration or price.",
@@ -157,7 +178,27 @@
     "pickupPointText": "Hotel or airport pickup",
     "stopText": "Guided visit, free time and photo stops",
     "returnPoint": "Return",
-    "returnPointText": "Drop-off at your hotel"
+    "returnPointText": "Drop-off at your hotel",
+    "highlights": "Highlights",
+    "highlightsList": [
+      "Relax in handpicked hotels in the heart of the destination",
+      "Guided visits to the most famous landmarks",
+      "Free time for shopping and local food",
+      "Comfortable airport and hotel transfers",
+      "Our team supports you on WhatsApp during the trip"
+    ],
+    "fullDescription": "Full description",
+    "descShort": "A well-paced trip that mixes the must-see landmarks with free time to explore at your own speed. Your guide handles the planning so you can simply enjoy.",
+    "descLong": "Each day starts with a relaxed breakfast, followed by guided visits and free time. Hotels, transfers and entrance fees are arranged in advance, and our team is available on WhatsApp before and during your trip for any change you need.",
+    "seeMore": "See more",
+    "seeLess": "See less",
+    "includes": "Included",
+    "includesList": ["Hotel accommodation with breakfast", "Airport and hotel transfers", "Professional guide", "Entrance fees", "Bottled water during tours"],
+    "excludes": "Not included",
+    "excludesList": ["Flights", "Personal expenses and tips", "Travel insurance"],
+    "important": "Important information",
+    "bring": "What to bring",
+    "bringList": ["Comfortable shoes", "Sun hat", "Sunscreen", "Passport and visa documents"]
   },
   "values": {
     "v1": {
