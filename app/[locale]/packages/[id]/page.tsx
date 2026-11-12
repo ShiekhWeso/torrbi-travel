@@ -7,6 +7,7 @@ import {packages} from '@/lib/data';
 import {packageDetails, reviews} from '@/lib/packageDetails';
 import BookingBox from '@/components/BookingBox';
 import ItineraryPath from '@/components/ItineraryPath';
+import ReviewsModal from '@/components/ReviewsModal';
 
 export function generateStaticParams() {
   return ['en', 'ar'].flatMap((locale) => packages.map((p) => ({locale, id: p.id})));
@@ -74,7 +75,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
               </div>
                 <h2 className="mt-12 font-display text-2xl font-bold text-navy">{t('loved')}</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {reviews[locale === 'ar' ? 'ar' : 'en'].map((r) => (
+                {reviews[locale === 'ar' ? 'ar' : 'en'].slice(0, 2).map((r) => (
                     <div key={r.name} className="rounded-2xl border border-navy/10 p-5">
                     <div className="flex text-brand-warm">
                         {[0, 1, 2, 3, 4].map((i) => (
@@ -94,6 +95,8 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                     </div>
                 ))}
                 </div>
+
+                <ReviewsModal reviews={reviews[locale === 'ar' ? 'ar' : 'en']} rating={det.rating} />
 
                 <h2 className="mt-12 font-display text-2xl font-bold text-navy">{t('itinerary')}</h2>
                 <ItineraryPath

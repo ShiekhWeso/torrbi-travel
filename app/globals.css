@@ -58,3 +58,6 @@ section[id] {
 @keyframes dest-in-rtl { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: none; } }
 .dest-in { animation: dest-in 0.45s ease-out both; }
 [dir='rtl'] .dest-in { animation-name: dest-in-rtl; }
+
+@keyframes pop-in { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
+.pop-in { animation: pop-in 0.25s ease-out both; }

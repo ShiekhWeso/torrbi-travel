@@ -43,10 +43,18 @@ export const packageDetails: Record<string, {
 export const reviews = {
   en: [
     {name: 'Keziah', country: 'United Kingdom', date: 'November 10, 2026', text: 'Our guide was kind and informative, and stayed in touch throughout the trip. Great photos too. Would definitely recommend.'},
-    {name: 'Renzo', country: 'Canada', date: 'November 8, 2026', text: 'Amazing guide, made sure we were comfortable from start to finish. Could not recommend this trip enough!'}
+    {name: 'Renzo', country: 'Canada', date: 'November 8, 2026', text: 'Amazing guide, made sure we were comfortable from start to finish. Could not recommend this trip enough!'},
+    {name: 'Sandra', country: 'Lithuania', date: 'November 11, 2026', text: 'Our guide was amazing. He answered all our questions and kept the energy high through the whole trip. Well organized, fun and very beautiful. I recommend 100%.'},
+    {name: 'Nikki', country: 'Netherlands', date: 'November 11, 2026', text: 'Beautiful views and a great pace. The team was understanding and helped us adjust the plan along the way.'},
+    {name: 'Omar', country: 'Egypt', date: 'November 6, 2026', text: 'Smooth booking over WhatsApp, and every detail was ready on arrival. Worth every penny.'},
+    {name: 'Lina', country: 'Jordan', date: 'November 4, 2026', text: 'Perfect for families. The kids loved it and the hotel was clean and central.'}
   ],
   ar: [
     {name: 'خالد', country: 'السعودية', date: '10 نوفمبر 2026', text: 'المرشد كان ودوداً وخبيراً، وبقي على تواصل معنا طوال الرحلة. أنصح بها بشدة.'},
-    {name: 'سارة', country: 'الإمارات', date: '8 نوفمبر 2026', text: 'تنظيم رائع وراحة من البداية للنهاية. تجربة تستحق كل ريال.'}
+    {name: 'سارة', country: 'الإمارات', date: '8 نوفمبر 2026', text: 'تنظيم رائع وراحة من البداية للنهاية. تجربة تستحق كل ريال.'},
+    {name: 'ليلى', country: 'الأردن', date: '11 نوفمبر 2026', text: 'مرشد رائع أجاب عن كل أسئلتنا وحافظ على أجواء ممتعة طوال الرحلة. تنظيم ممتاز وأنصح بها 100%.'},
+    {name: 'عمر', country: 'مصر', date: '6 نوفمبر 2026', text: 'حجز سهل عبر واتساب وكل التفاصيل جاهزة عند الوصول. تستحق كل جنيه.'},
+    {name: 'نورة', country: 'الكويت', date: '5 نوفمبر 2026', text: 'مناظر جميلة وإيقاع مريح. الفريق متفهم وساعدنا في تعديل الخطة أثناء الرحلة.'},
+    {name: 'يوسف', country: 'قطر', date: '4 نوفمبر 2026', text: 'مناسبة جداً للعائلات. الأطفال استمتعوا والفندق نظيف ومركزي.'}
   ]
 };

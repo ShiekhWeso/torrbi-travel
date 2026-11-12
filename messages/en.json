@@ -198,7 +198,10 @@
     "excludesList": ["Flights", "Personal expenses and tips", "Travel insurance"],
     "important": "Important information",
     "bring": "What to bring",
-    "bringList": ["Comfortable shoes", "Sun hat", "Sunscreen", "Passport and visa documents"]
+    "bringList": ["Comfortable shoes", "Sun hat", "Sunscreen", "Passport and visa documents"],
+    "seeMoreReviews": "See more reviews",
+    "customerReviews": "Customer reviews",
+    "close": "Close"
   },
   "values": {
     "v1": {
