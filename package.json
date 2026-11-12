@@ -11,10 +11,13 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "@stripe/stripe-js": "^10.2.1",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.4",
+    "jose": "^6.2.17",
     "next": "16.4.6",
     "next-auth": "^4.24.15",
     "next-intl": "^4.15.0",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "resend": "^6.38.0",
@@ -23,12 +26,15 @@
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^18.0.10",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
