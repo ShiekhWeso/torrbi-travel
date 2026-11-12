@@ -38,6 +38,13 @@
   "destinations": {
     "title": "Popular Destinations",
     "book": "Book on WhatsApp",
+    "details": "More details",
+    "seeAll": "See all destinations",
+    "tagline": "Beaches, culture and unforgettable food in {name}.",
+    "bestTime": "Best time",
+    "flight": "Flight",
+    "climate": "Climate",
+    "hours": "{n} h",
     "items": {
       "bali": {
         "name": "Bali",

@@ -26,3 +26,15 @@ export const packages: {id: string; image: string; days: number; price: string; 
   {id: 'vietnam', image: '/destinations/vietnam.webp', days: 8, price: '$910', priceNum: 910, region: 'asia'},
   {id: 'georgia', image: '/destinations/georgia.webp', days: 6, price: '$690', priceNum: 690, region: 'caucasus'}
 ];
+
+export const destinationInfo: Record<string, {temp: string; flight: number; best: [number, number]; rating: number}> = {
+  bali: {temp: '26–32°C', flight: 9, best: [4, 10], rating: 4.8},
+  istanbul: {temp: '12–28°C', flight: 3, best: [4, 6], rating: 4.9},
+  penang: {temp: '27–33°C', flight: 9, best: [12, 2], rating: 4.6},
+  kualaLumpur: {temp: '26–33°C', flight: 8, best: [5, 7], rating: 4.7},
+  vietnam: {temp: '20–32°C', flight: 9, best: [2, 4], rating: 4.8},
+  langkawi: {temp: '27–32°C', flight: 9, best: [11, 3], rating: 4.7},
+  phuket: {temp: '26–33°C', flight: 8, best: [11, 4], rating: 4.7},
+  azerbaijan: {temp: '8–30°C', flight: 4, best: [5, 9], rating: 4.6},
+  georgia: {temp: '5–27°C', flight: 4, best: [5, 9], rating: 4.7}
+};

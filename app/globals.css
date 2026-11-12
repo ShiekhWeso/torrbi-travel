@@ -53,3 +53,8 @@ section[id] {
 @keyframes hero-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .hero-marquee { animation: hero-marquee 35s linear infinite; }
 .hero-marquee:hover { animation-play-state: paused; }
+
+@keyframes dest-in { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: none; } }
+@keyframes dest-in-rtl { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: none; } }
+.dest-in { animation: dest-in 0.45s ease-out both; }
+[dir='rtl'] .dest-in { animation-name: dest-in-rtl; }
