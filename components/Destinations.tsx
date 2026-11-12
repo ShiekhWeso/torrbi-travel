@@ -4,17 +4,17 @@ import {useState} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {useLocale, useTranslations} from 'next-intl';
-import {destinations, destinationInfo} from '@/lib/data';
+import type {Dest} from '@/lib/queries';
 
 const SHOWN = 5; // rows on the home page, change as needed
 
-export default function Destinations() {
+export default function Destinations({destinations}: {destinations: Dest[]}) {
   const t = useTranslations('destinations');
   const locale = useLocale();
   const list = destinations.slice(0, SHOWN);
   const [active, setActive] = useState<string | null>(null);
   const cur = destinations.find((x) => x.id === active);
-  const info = cur ? destinationInfo[cur.id] : null;
+  const info = cur ?? null;
   const href = (id: string) => `/${locale}/destinations/${id}`;
   const month = (m: number) =>
     new Intl.DateTimeFormat(locale, {month: 'short'}).format(new Date(2026, m - 1, 1));
@@ -43,9 +43,9 @@ export default function Destinations() {
                   </span>
                   <div className="flex-1">
                     <h3 className={`font-display text-2xl font-bold transition-colors lg:text-4xl ${active === x.id ? 'text-sky' : 'text-navy'}`}>
-                      {t(`items.${x.id}.name`)}
+                      {x.name}
                     </h3>
-                    <p className="text-sm text-navy/60">{t(`items.${x.id}.country`)}</p>
+                    <p className="text-sm text-navy/60">{x.country}</p>
                   </div>
                   <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-navy/20 text-navy transition-colors group-hover:border-brand-warm group-hover:bg-brand-warm">
                     <span className="material-symbols-outlined text-[22px] leading-none rtl:rotate-180">arrow_forward</span>
@@ -65,13 +65,13 @@ export default function Destinations() {
                   <Image src={cur.image} alt="" fill sizes="30vw" className="object-cover" />
                 </div>
                 <div className="mt-5 flex items-center justify-between">
-                  <h3 className="font-display text-3xl font-bold">{t(`items.${cur.id}.name`)}</h3>
+                  <h3 className="font-display text-3xl font-bold">{cur.name}</h3>
                   <span className="flex items-center gap-1 font-bold">
                     <span className="material-symbols-outlined text-[20px] text-brand-warm">star</span>
                     {info.rating}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-snow/70">{t('tagline', {name: t(`items.${cur.id}.name`)})}</p>
+                <p className="mt-2 text-sm text-snow/70">{t('tagline', {name: cur.name})}</p>
 
                 <div className="mt-5 grid grid-cols-3 gap-3 border-t border-snow/15 pt-5 text-sm">
                   <div>

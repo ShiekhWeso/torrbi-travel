@@ -4,25 +4,20 @@ import {useState} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {useLocale, useTranslations} from 'next-intl';
-import {destinations} from '@/lib/data';
+import type {Dest} from '@/lib/queries';
 
-const regionOf: Record<string, string> = {
-  bali: 'asia', penang: 'asia', kualaLumpur: 'asia', vietnam: 'asia', langkawi: 'asia', phuket: 'asia',
-  istanbul: 'turkey', azerbaijan: 'caucasus', georgia: 'caucasus'
-};
 const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
 
-export default function DestinationsExplorer() {
-  const t = useTranslations('destinations');
+export default function DestinationsExplorer({items}: {items: Dest[]}) {
   const f = useTranslations('packagesPage');
   const locale = useLocale();
   const [q, setQ] = useState('');
   const [region, setRegion] = useState<(typeof regions)[number]>('all');
 
-  const list = destinations.filter(
+  const list = items.filter(
     (x) =>
-      t(`items.${x.id}.name`).toLowerCase().includes(q.trim().toLowerCase()) &&
-      (region === 'all' || regionOf[x.id] === region)
+      x.name.toLowerCase().includes(q.trim().toLowerCase()) &&
+      (region === 'all' || x.region === region)
   );
 
   return (
@@ -64,7 +59,7 @@ export default function DestinationsExplorer() {
             >
               <Image
                 src={x.image}
-                alt={t(`items.${x.id}.name`)}
+                alt={x.name}
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -72,8 +67,8 @@ export default function DestinationsExplorer() {
               <div className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 text-snow lg:p-5">
                 <div>
-                  <h3 className="font-display text-xl font-bold lg:text-2xl">{t(`items.${x.id}.name`)}</h3>
-                  <p className="text-xs text-snow/70 lg:text-sm">{t(`items.${x.id}.country`)}</p>
+                  <h3 className="font-display text-xl font-bold lg:text-2xl">{x.name}</h3>
+                  <p className="text-xs text-snow/70 lg:text-sm">{x.country}</p>
                 </div>
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-warm text-navy transition-transform duration-300 group-hover:-rotate-45 rtl:rotate-180 rtl:group-hover:rotate-[225deg]">
                   <span className="material-symbols-outlined text-[20px] leading-none">arrow_forward</span>

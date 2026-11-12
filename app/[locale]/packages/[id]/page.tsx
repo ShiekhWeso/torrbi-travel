@@ -3,34 +3,35 @@ import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import {packages} from '@/lib/data';
+import {getPackages, getPackage} from '@/lib/queries';
 import {packageDetails, reviews} from '@/lib/packageDetails';
 import BookingBox from '@/components/BookingBox';
 import ItineraryPath from '@/components/ItineraryPath';
 import ReviewsModal from '@/components/ReviewsModal';
 import { Suspense } from 'react';
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const packages = await getPackages('en');
   return ['en', 'ar'].flatMap((locale) => packages.map((p) => ({locale, id: p.id})));
 }
 
 export default async function PackagePage({params}: {params: Promise<{locale: string; id: string}>}) {
   const {locale, id} = await params;
   setRequestLocale(locale);
-  const pkg = packages.find((p) => p.id === id);
-  const det = packageDetails[id];
-  if (!pkg || !det) notFound();
+  const pkg = await getPackage(locale, id);
+  if (!pkg) notFound();
+  const det = Object.assign({rating: 4.8, reviews: 100}, packageDetails[id]);
 
   const t = await getTranslations('packageDetail');
   const p = await getTranslations('packages');
-  const text = locale === 'ar' ? det.ar : det.en;
+  const gallery = pkg.gallery.length ? pkg.gallery : [pkg.image];
 
   return (
     <>
       <Header />
       <main className="bg-snow pt-32 pb-20">
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-          <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{p(`items.${id}.title`)}</h1>
+          <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{pkg.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-navy/70">
             <span className="rounded-md bg-navy px-2 py-1 text-xs font-bold text-snow">{t('topRated')}</span>
             <span className="flex items-center gap-1 font-bold text-navy">
@@ -43,7 +44,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
             <div>
               <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-3xl lg:grid-cols-4">
-                {det.gallery.map((src, i) => (
+                {gallery.map((src, i) => (
                   <div
                     key={src + i}
                     className={`relative ${i === 0 ? 'col-span-2 row-span-2 min-h-[240px]' : 'aspect-[4/3]'}`}
@@ -52,7 +53,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                   </div>
                 ))}
               </div>
-              <p className="mt-6 text-lg text-navy/80">{text.description}</p>
+              <p className="mt-6 text-lg text-navy/80">{pkg.intro}</p>
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 {([
                     ['event_available', 'freeCancel'],
@@ -103,7 +104,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 <ItineraryPath
                   steps={[
                     {title: t('pickupPoint'), text: t('pickupPointText')},
-                    ...(p.raw(`items.${id}.stops`) as string[]).map((s) => ({title: s, text: t('stopText')})),
+                    ...pkg.steps.map((s) => ({title: s.title, text: s.text || t('stopText')})),
                     {title: t('returnPoint'), text: t('returnPointText')}
                   ]}
                 />
@@ -111,7 +112,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                   <div className="rounded-3xl bg-mist p-6 lg:p-8">
                     <h2 className="font-display text-2xl font-bold text-navy">{t('highlights')}</h2>
                     <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-                      {(t.raw('highlightsList') as string[]).map((h) => (
+                      {pkg.highlights.map((h) => (
                         <li key={h} className="flex gap-3 text-navy/80">
                           <span className="material-symbols-outlined text-brand-warm">auto_awesome</span>
                           {h}
@@ -136,7 +137,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                     <div className="rounded-3xl border border-navy/10 p-6 lg:p-8">
                       <h2 className="font-display text-2xl font-bold text-navy">{t('includes')}</h2>
                       <ul className="mt-4 space-y-3">
-                        {(t.raw('includesList') as string[]).map((i) => (
+                        {pkg.includes.map((i) => (
                           <li key={i} className="flex gap-3 text-navy/80">
                             <span className="material-symbols-outlined text-[20px] text-[#16a34a]">check_circle</span>
                             {i}
@@ -147,7 +148,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                     <div className="rounded-3xl border border-navy/10 p-6 lg:p-8">
                       <h2 className="font-display text-2xl font-bold text-navy">{t('excludes')}</h2>
                       <ul className="mt-4 space-y-3">
-                        {(t.raw('excludesList') as string[]).map((i) => (
+                        {pkg.excludes.map((i) => (
                           <li key={i} className="flex gap-3 text-navy/80">
                             <span className="material-symbols-outlined text-[20px] text-[#ef4444]">cancel</span>
                             {i}
@@ -169,7 +170,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </section>
             </div>
             <Suspense fallback={null}>
-              <BookingBox title={p(`items.${id}.title`)} price={pkg.price} />
+              <BookingBox title={pkg.title} price={pkg.price ? `$${pkg.price}` : ''} />
             </Suspense>
           </div>
         </div>

@@ -7,10 +7,12 @@ import ValueProps from '@/components/ValueProps';
 import PlanWithUs from '@/components/PlanWithUs';
 import Footer from '@/components/Footer';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+import {getDestinations} from '@/lib/queries';
 
 export default async function HomePage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
+  const dests = await getDestinations(locale);
 
   return (
     <>
@@ -18,7 +20,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
       <main className="flex-1">
         <Hero />
         <Packages />
-        <Destinations />
+        <Destinations destinations={dests} />
         <ValueProps />
         <PlanWithUs />
       </main>
