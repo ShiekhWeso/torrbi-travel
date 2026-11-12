@@ -77,6 +77,21 @@
       }
     }
   },
+  "packagesPage": {
+    "title": "All Packages",
+    "subtitle": "Browse every trip and filter by region, duration or price.",
+    "search": "Search packages",
+    "region": "Region",
+    "regions": { "all": "All", "asia": "Asia", "turkey": "Türkiye", "caucasus": "Caucasus" },
+    "duration": "Duration",
+    "durations": { "any": "Any", "short": "Up to 5 days", "medium": "6–7 days", "long": "8+ days" },
+    "results": "{count, plural, one {# package} other {# packages}}",
+    "sortDefault": "Recommended",
+    "sortLow": "Price: low to high",
+    "sortHigh": "Price: high to low",
+    "reset": "Reset",
+    "empty": "No packages match your filters."
+  },
   "packageCards": {
     "title": "Our Tourist Packages",
     "item": "{name} Package",
