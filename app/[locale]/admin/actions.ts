@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, offers, packages, packageDays} from '@/lib/db/schema';
+import {admins, destinations, offers, packages, packageDays, faqs} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 
@@ -94,6 +94,31 @@ export async function deleteOffer(formData: FormData) {
   await db.delete(offers).where(eq(offers.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
   await go('/admin/offers');
+}
+
+export async function saveFaq(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = num(formData.get('id'));
+  const f = (k: string) => str(formData.get(k));
+  const data = {
+    sort: num(formData.get('sort')) ?? 0,
+    published: formData.get('published') === 'on',
+    i18n: {
+      en: {question: f('question_en'), answer: f('answer_en')},
+      ar: {question: f('question_ar'), answer: f('answer_ar')}
+    }
+  };
+  if (id) await db.update(faqs).set(data).where(eq(faqs.id, id));
+  else await db.insert(faqs).values(data);
+  revalidatePath('/', 'layout');
+  await go('/admin/faqs');
+}
+
+export async function deleteFaq(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  await db.delete(faqs).where(eq(faqs.id, Number(formData.get('id'))));
+  revalidatePath('/', 'layout');
+  await go('/admin/faqs');
 }
 
 const lines = (v: FormDataEntryValue | null) =>

@@ -6,7 +6,7 @@ export default function PlanWithUs() {
   const t = useTranslations('plan');
   const w = useTranslations('wa');
   return (
-    <section id="contact" className="w-full bg-snow py-16 lg:py-24">
+    <section className="w-full bg-snow py-16 lg:py-24">
       <div className="max-w-[1440px] mx-auto px-4 lg:px-12">
         <div className="relative overflow-hidden rounded-3xl bg-navy text-snow p-8 lg:p-14 shadow-2xl">
           <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-sky/30 blur-[100px] pointer-events-none" />

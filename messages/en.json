@@ -8,7 +8,9 @@
     "destinations": "Destinations",
     "packages": "Packages",
     "why": "Why TORRBI",
-    "contact": "Contact"
+    "about": "About",
+    "contact": "Contact",
+    "faq": "FAQ"
   },
   "header": {
     "bookWhatsapp": "Book on WhatsApp",
@@ -109,6 +111,11 @@
   "destinationsPage": {
     "title": "All Destinations",
     "subtitle": "Pick a destination to see the best time to go and what to do there."
+  },
+  "faqPage": {
+    "title": "Frequently asked questions",
+    "subtitle": "Quick answers about booking, payment and your trip.",
+    "empty": "No questions yet."
   },
   "offers": {
     "title": "Special Offers",
@@ -213,6 +220,29 @@
     "seeMoreReviews": "See more reviews",
     "customerReviews": "Customer reviews",
     "close": "Close"
+  },
+  "aboutPage": {
+    "title": "About TORRBI TRAVEL",
+    "subtitle": "We turn travel dreams into well-planned trips.",
+    "storyTitle": "Our story",
+    "story": "TORRBI TRAVEL started with a simple idea: planning a trip should be as enjoyable as taking it. We bring together hand-picked hotels, trusted guides and honest prices, and we stay with you on WhatsApp from the first question to the flight home.",
+    "whatTitle": "What we do",
+    "items": [
+      {"title": "Tour packages", "text": "Complete trips with hotel, transfers and guided tours, designed around each destination."},
+      {"title": "Flights", "text": "Tell us where and when, and we find you the best options."},
+      {"title": "Activities", "text": "Local experiences and day tours to make your trip memorable."}
+    ]
+  },
+  "contactPage": {
+    "title": "Contact us",
+    "subtitle": "We usually reply within a few hours.",
+    "whatsapp": "WhatsApp",
+    "chatNow": "Chat now",
+    "phone": "Phone",
+    "email": "Email",
+    "instagram": "Instagram",
+    "hours": "Working hours",
+    "hoursText": "Sunday – Thursday, 9:00 – 18:00"
   },
   "values": {
     "v1": {

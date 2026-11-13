@@ -1,9 +1,10 @@
 const en = {
-  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', offers: 'Offers',
+  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', offers: 'Offers', faq: 'FAQ',
   logout: 'Log out', add: '+ Add', edit: 'Edit', delete: 'Delete', save: 'Save',
   published: 'Published', hidden: '(hidden)', featured: 'Featured (home page)', none: 'None',
   newPackage: 'New package', editPackage: 'Edit package', newDestination: 'New destination',
   editDestination: 'Edit destination', newOffer: 'New offer', editOffer: 'Edit offer',
+  newFaq: 'New FAQ', editFaq: 'Edit FAQ', question: 'Question', answer: 'Answer',
   itinerary: 'Itinerary days', noItems: 'Nothing yet.',
   slug: 'Slug (url)', region: 'Region', name: 'Name', country: 'Country', about: 'About',
   image: 'Image URL / path', temp: 'Temp (e.g. 28°C)', rating: 'Rating', flightHours: 'Flight hours',
@@ -18,11 +19,12 @@ const en = {
 };
 
 const ar: typeof en = {
-  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', offers: 'العروض',
+  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', offers: 'العروض', faq: 'الأسئلة الشائعة',
   logout: 'تسجيل الخروج', add: '+ إضافة', edit: 'تعديل', delete: 'حذف', save: 'حفظ',
   published: 'منشور', hidden: '(مخفي)', featured: 'مميز (الصفحة الرئيسية)', none: 'بدون',
   newPackage: 'باقة جديدة', editPackage: 'تعديل الباقة', newDestination: 'وجهة جديدة',
   editDestination: 'تعديل الوجهة', newOffer: 'عرض جديد', editOffer: 'تعديل العرض',
+  newFaq: 'سؤال شائع جديد', editFaq: 'تعديل السؤال الشائع', question: 'السؤال', answer: 'الإجابة',
   itinerary: 'أيام البرنامج', noItems: 'لا يوجد شيء بعد.',
   slug: 'الرابط (slug)', region: 'المنطقة', name: 'الاسم', country: 'الدولة', about: 'نبذة',
   image: 'رابط / مسار الصورة', temp: 'الحرارة (مثال 28°C)', rating: 'التقييم', flightHours: 'ساعات الطيران',

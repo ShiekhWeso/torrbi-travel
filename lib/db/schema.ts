@@ -53,6 +53,13 @@ export const offers = pgTable('offers', {
   i18n: jsonb('i18n').$type<Record<Lang, {title: string; text: string; badge: string}>>().notNull()
 });
 
+export const faqs = pgTable('faqs', {
+  id: serial('id').primaryKey(),
+  published: boolean('published').notNull().default(true),
+  sort: integer('sort').notNull().default(0),
+  i18n: jsonb('i18n').$type<Record<Lang, {question: string; answer: string}>>().notNull()
+});
+
 export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),

@@ -11,6 +11,7 @@ const items = [
   {id: 'packages', key: 'packages'},
   {id: 'destinations', key: 'destinations'},
   {id: 'why', key: 'why'},
+  {id: 'about', key: 'about'},
   {id: 'contact', key: 'contact'}
 ] as const;
 
@@ -21,11 +22,14 @@ export default function Header() {
   const locale = useLocale();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [cur, setCur] = useState('top');
-  const active = pathname === '/' ? cur : '';
+  const [cur, setCur] = useState('');
+  const active = cur;
 
   useEffect(() => {
-    if (pathname !== '/') return;
+    if (!document.getElementById('top')) {
+      setCur('');
+      return;
+    }
     const onScroll = () => {
       let c = 'top';
       items.forEach(({id}) => {
@@ -45,7 +49,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-snow/90 backdrop-blur-xl shadow-[0_4px_24px_rgba(15,24,89,0.06)]">
       <div className="h-20 max-w-[1440px] mx-auto px-4 lg:px-12 flex items-center justify-between gap-6">
         <div className="flex items-center gap-8">
-          <Link href="#top" className="flex items-center gap-3">
+          <Link href={{pathname: '/', hash: 'top'}} className="flex items-center gap-3">
             <Image src="/logo.webp" alt="" width={44} height={44} priority className="rounded-full" />
             <span className="font-display font-bold text-xl text-navy tracking-wide">TORRBI TRAVEL</span>
           </Link>
@@ -62,6 +66,15 @@ export default function Header() {
                 {t(key)}
               </Link>
             ))}
+            <Link
+              href="/faq"
+              aria-current={pathname === '/faq' ? 'page' : undefined}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+                pathname === '/faq' ? 'bg-navy text-snow shadow-sm' : 'text-navy/70 hover:text-navy hover:bg-mist'
+              }`}
+            >
+              {t('faq')}
+            </Link>
           </nav>
         </div>
 
@@ -98,10 +111,28 @@ export default function Header() {
       {open && (
         <nav className="lg:hidden flex flex-col border-t border-navy/10 bg-snow px-4 py-3">
           {items.map(({id, key}) => (
-            <Link key={id} href={`/#${id}`} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-navy">
+            <Link
+              key={id}
+              href={{pathname: '/', hash: id}}
+              onClick={() => setOpen(false)}
+              aria-current={active === id ? 'page' : undefined}
+              className={`py-3 text-sm font-bold ${
+                active === id ? 'rounded-lg bg-navy text-snow shadow-sm' : 'text-navy'
+              }`}
+            >
               {t(key)}
             </Link>
           ))}
+          <Link
+            href="/faq"
+            onClick={() => setOpen(false)}
+            aria-current={pathname === '/faq' ? 'page' : undefined}
+            className={`py-3 text-sm font-bold ${
+              pathname === '/faq' ? 'rounded-lg bg-navy text-snow shadow-sm' : 'text-navy'
+            }`}
+          >
+            {t('faq')}
+          </Link>
           <Link href={pathname} locale={other} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-sky">
             {locale === 'ar' ? 'English' : 'العربية'}
           </Link>

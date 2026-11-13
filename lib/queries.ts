@@ -1,6 +1,6 @@
 import {asc, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays, destinations, offers} from '@/lib/db/schema';
+import {packages, packageDays, destinations, offers, faqs} from '@/lib/db/schema';
 
 const lang = (l: string) => (l === 'ar' ? 'ar' : 'en');
 
@@ -48,4 +48,14 @@ export async function getOffers(locale: string) {
   return rows
     .filter(({o}) => !o.validUntil || o.validUntil.getTime() + 86400000 >= Date.now())
     .map(({o, slug}) => ({id: o.id, image: o.image ?? '', slug, until: o.validUntil, ...o.i18n[l]}));
+}
+
+export async function getFaqs(locale: string) {
+  const l = lang(locale);
+  const rows = await db.select().from(faqs).where(eq(faqs.published, true)).orderBy(asc(faqs.sort), asc(faqs.id));
+  return rows.map((row) => ({
+    id: row.id,
+    question: row.i18n[l].question,
+    answer: row.i18n[l].answer
+  }));
 }
