@@ -72,13 +72,12 @@ export default function BookingBox({slug, price}: {slug: string; price: string |
 
       <button
         onClick={book}
-        className="mt-5 w-full rounded-full bg-brand-warm py-4 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02]"
         disabled={busy}
-        disabled:opacity-60
+        className="mt-5 w-full rounded-full bg-brand-warm py-4 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02] disabled:opacity-60"
       >
         {t('check')}
-        {err && <p className="mt-3 text-sm font-bold text-[#ef4444]">{err}</p>}
       </button>
+      {err && <p className="mt-3 text-sm font-bold text-[#ef4444]">{err}</p>}
 
       <ul className="mt-5 space-y-3 border-t border-navy/10 pt-5 text-sm">
         {(['freeCancel', 'payLater'] as const).map((k) => (
