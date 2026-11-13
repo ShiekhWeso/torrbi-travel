@@ -80,6 +80,13 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           <Link
+            href="/account"
+            aria-label="Account"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-mist text-navy transition-colors hover:bg-sky-light/40"
+          >
+            <span className="material-symbols-outlined text-[20px]">person</span>
+          </Link>
+          <Link
             href={pathname}
             locale={other}
             aria-label={h('switchLang')}

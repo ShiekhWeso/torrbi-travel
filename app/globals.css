@@ -61,3 +61,9 @@ section[id] {
 
 @keyframes pop-in { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
 .pop-in { animation: pop-in 0.25s ease-out both; }
+
+button:not(:disabled),
+[role='button'],
+a[href] {
+  cursor: pointer;
+}

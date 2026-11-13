@@ -66,3 +66,13 @@ export const admins = pgTable('admins', {
   passwordHash: text('password_hash').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  name: text('name').notNull(),
+  phone: text('phone'),
+  passwordHash: text('password_hash'), // null for Google-only accounts
+  googleId: text('google_id').unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
