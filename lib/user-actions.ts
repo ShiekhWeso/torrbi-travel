@@ -36,6 +36,10 @@ export async function userLogin(_prev: string | null | undefined, fd: FormData) 
   const email = str(fd.get('email')).toLowerCase();
   const password = String(fd.get('password') ?? '');
   const [u] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (u && !u.passwordHash)
+  return ar
+    ? 'هذا الحساب أُنشئ عبر Google. استخدم "المتابعة عبر Google" ثم عيّن كلمة مرور من حسابك.'
+    : 'This account was created with Google. Use "Continue with Google", then set a password from Account → Password & security.';
   const ok = u?.passwordHash ? await bcrypt.compare(password, u.passwordHash) : false;
   if (!u || !ok) return ar ? 'البريد أو كلمة المرور غير صحيحة' : 'Wrong email or password';
   await createUserSession(u.id);
@@ -53,4 +57,20 @@ export async function updateProfile(fd: FormData) {
   const name = str(fd.get('name'));
   if (name) await db.update(users).set({name, phone: str(fd.get('phone')) || null}).where(eq(users.id, user.id));
   await go('/account?saved=1');
+}
+
+export async function setPassword(_prev: string | null | undefined, fd: FormData) {
+  const ar = (await getLocale()) === 'ar';
+  const user = await getCurrentUser();
+  if (!user) return go('/login');
+  const [row] = await db.select({hash: users.passwordHash}).from(users).where(eq(users.id, user.id)).limit(1);
+  const current = String(fd.get('current') ?? '');
+  const next = String(fd.get('password') ?? '');
+  const confirm = String(fd.get('confirm') ?? '');
+  if (row?.hash && !(await bcrypt.compare(current, row.hash)))
+    return ar ? 'كلمة المرور الحالية غير صحيحة' : 'Current password is wrong';
+  if (next.length < 8) return ar ? 'كلمة المرور 8 أحرف على الأقل' : 'Password must be at least 8 characters';
+  if (next !== confirm) return ar ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match';
+  await db.update(users).set({passwordHash: await bcrypt.hash(next, 10)}).where(eq(users.id, user.id));
+  await go('/account/security?saved=1');
 }
