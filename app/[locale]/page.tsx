@@ -8,6 +8,9 @@ import PlanWithUs from '@/components/PlanWithUs';
 import Footer from '@/components/Footer';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import {getDestinations} from '@/lib/queries';
+import Offers from '@/components/Offers';
+
+export const revalidate = 3600;
 
 export default async function HomePage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
@@ -20,6 +23,7 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
       <main className="flex-1">
         <Hero />
         <Packages />
+        <Offers />
         <Destinations destinations={dests} />
         <ValueProps />
         <PlanWithUs />

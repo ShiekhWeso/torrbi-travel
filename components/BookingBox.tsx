@@ -26,7 +26,8 @@ export default function BookingBox({title, price}: {title: string; price: string
     <aside className="h-fit rounded-3xl border border-navy/10 bg-snow p-6 shadow-[0_16px_40px_rgba(15,24,89,0.08)] lg:sticky lg:top-28">
       <p className="text-sm text-navy/60">{p('from')}</p>
       <p className="font-display text-3xl font-bold text-navy">
-        {price} <span className="text-base font-normal text-navy/60">{p('perPerson')}</span>
+        {price || p('onRequest')}
+        {price && <span className="text-base font-normal text-navy/60"> {p('perPerson')}</span>}
       </p>
 
       <div className="mt-5 space-y-3">

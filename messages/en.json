@@ -110,6 +110,11 @@
     "title": "All Destinations",
     "subtitle": "Pick a destination to see the best time to go and what to do there."
   },
+  "offers": {
+    "title": "Special Offers",
+    "view": "View offer",
+    "until": "Valid until {date}"
+  },
   "packagesPage": {
     "title": "All Packages",
     "subtitle": "Browse every trip and filter by region, duration or price.",
