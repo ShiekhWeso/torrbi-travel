@@ -14,7 +14,7 @@ export async function getPackages(locale: string) {
       id: r.slug, image: r.cover ?? '', days: r.days, nights: r.nights, price: r.priceUsd,
       region: r.region, featured: r.featured, gallery: r.gallery,
       ...r.i18n[l],
-      stops: mine.map((d) => d.i18n[l].title),
+      stops: [...new Set(mine.map((d) => d.i18n[l].stage ?? d.i18n[l].title))],
       steps: mine.map((d) => ({title: d.i18n[l].title, text: d.i18n[l].items.join(' · ')}))
     };
   });

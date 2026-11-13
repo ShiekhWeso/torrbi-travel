@@ -25,7 +25,7 @@ export const packageDays = pgTable('package_days', {
   packageId: integer('package_id').notNull().references(() => packages.id, {onDelete: 'cascade'}),
   dayNo: integer('day_no').notNull(),
   stage: text('stage'),
-  i18n: jsonb('i18n').$type<Record<Lang, {title: string; items: string[]}>>().notNull()
+  i18n: jsonb('i18n').$type<Record<Lang, {title: string; items: string[]; stage?: string}>>().notNull()
 });
 
 export const destinations = pgTable('destinations', {
