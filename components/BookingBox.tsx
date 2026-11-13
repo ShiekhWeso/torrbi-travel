@@ -1,22 +1,34 @@
 'use client';
 
 import {useState} from 'react';
-import {useTranslations} from 'next-intl';
-import {waLink} from '@/lib/whatsapp';
+import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
+import {useRouter, usePathname} from '@/i18n/navigation';
+import {createBooking} from '@/lib/booking-actions';
 
-export default function BookingBox({title, price}: {title: string; price: string | null}) {
+export default function BookingBox({slug, price}: {slug: string; price: string | null}) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
-  const w = useTranslations('wa');
   const sp = useSearchParams();
   const [pax, setPax] = useState(Math.min(6, Math.max(1, Number(sp.get('pax')) || 2)));
   const [date, setDate] = useState(sp.get('date') ?? '');
   const [lang, setLang] = useState('en');
 
-  const book = () => {
-    const name = `${title} | ${date || '-'} | ${pax} | ${t(lang === 'ar' ? 'langArabic' : 'langEnglish')}`;
-    window.open(waLink(w('book', {name})), '_blank', 'noopener');
+  const router = useRouter();
+  const pathname = usePathname();
+  const ar = useLocale() === 'ar';
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const book = async () => {
+    if (!date) return setErr(ar ? 'اختر تاريخ السفر' : 'Choose a travel date');
+    setBusy(true);
+    setErr('');
+    const res = await createBooking({slug, date, pax, lang});
+    if (res.ok) return router.push('/account/bookings');
+    setBusy(false);
+    if (res.error === 'login') return router.push(`/login?next=${encodeURIComponent(pathname)}`);
+    setErr(ar ? 'تعذر إنشاء الحجز' : 'Could not create the booking');
   };
 
   const box = 'flex w-full items-center gap-3 rounded-xl border border-navy/20 bg-snow px-4 py-3 font-bold text-navy';
@@ -61,8 +73,11 @@ export default function BookingBox({title, price}: {title: string; price: string
       <button
         onClick={book}
         className="mt-5 w-full rounded-full bg-brand-warm py-4 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02]"
+        disabled={busy}
+        disabled:opacity-60
       >
         {t('check')}
+        {err && <p className="mt-3 text-sm font-bold text-[#ef4444]">{err}</p>}
       </button>
 
       <ul className="mt-5 space-y-3 border-t border-navy/10 pt-5 text-sm">

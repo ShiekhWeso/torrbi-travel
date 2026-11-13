@@ -1,4 +1,4 @@
-import {pgTable, serial, text, integer, boolean, jsonb, timestamp, real} from 'drizzle-orm/pg-core';
+import {pgTable, serial, text, integer, boolean, jsonb, timestamp, real, date} from 'drizzle-orm/pg-core';
 
 export type Lang = 'ar' | 'en';
 
@@ -74,5 +74,18 @@ export const users = pgTable('users', {
   phone: text('phone'),
   passwordHash: text('password_hash'), // null for Google-only accounts
   googleId: text('google_id').unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+export const bookings = pgTable('bookings', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, {onDelete: 'cascade'}),
+  packageId: integer('package_id').references(() => packages.id, {onDelete: 'set null'}),
+  packageTitle: text('package_title').notNull(),
+  travelDate: date('travel_date').notNull(),
+  pax: integer('pax').notNull(),
+  lang: text('lang').notNull().default('en'),
+  totalUsd: integer('total_usd'),
+  status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });

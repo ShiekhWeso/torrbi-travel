@@ -27,6 +27,9 @@ export default async function Account({searchParams}: {searchParams: Promise<{sa
         {saved && <p className="text-sm font-bold text-green-600">{t('Saved', 'تم الحفظ')}</p>}
         <button className="w-full rounded-full bg-brand-warm py-3 font-bold text-navy">{t('Save', 'حفظ')}</button>
       </form>
+      <Link href="/account/bookings" className="mt-4 block w-full rounded-full bg-mist py-3 text-center font-bold text-navy">
+        {t('My bookings', 'حجوزاتي')}
+      </Link>
       <form action={userLogout} className="mt-4">
         <button className="w-full rounded-full border-2 border-navy py-3 font-bold text-navy">{t('Log out', 'تسجيل الخروج')}</button>
       </form>
