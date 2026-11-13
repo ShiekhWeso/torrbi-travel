@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, offers, packages, packageDays, faqs} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 
@@ -152,6 +152,40 @@ export async function savePackage(formData: FormData) {
   await go(`/admin/packages/${pid}`);
 }
 
+export async function saveActivity(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = num(formData.get('id'));
+  const f = (k: string) => str(formData.get(k));
+  const l = (k: string) => lines(formData.get(k));
+  const data = {
+    slug: f('slug'),
+    city: f('city'),
+    image: f('image') || null,
+    gallery: l('gallery'),
+    priceUsd: num(formData.get('priceUsd')),
+    durationHours: num(formData.get('durationHours')),
+    featured: formData.get('featured') === 'on',
+    published: formData.get('published') === 'on',
+    sort: num(formData.get('sort')) ?? 0,
+    i18n: {
+      en: {title: f('title_en'), description: f('description_en'), includes: l('includes_en'), highlights: l('highlights_en')},
+      ar: {title: f('title_ar'), description: f('description_ar'), includes: l('includes_ar'), highlights: l('highlights_ar')}
+    }
+  };
+  let aid = id;
+  if (id) await db.update(activities).set(data).where(eq(activities.id, id));
+  else [{id: aid}] = await db.insert(activities).values(data).returning({id: activities.id});
+  revalidatePath('/', 'layout');
+  await go(`/admin/activities/${aid}`);
+}
+
+export async function deleteActivity(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  await db.delete(activities).where(eq(activities.id, Number(formData.get('id'))));
+  revalidatePath('/', 'layout');
+  await go('/admin/activities');
+}
+
 export async function deletePackage(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(packages).where(eq(packages.id, Number(formData.get('id'))));
@@ -184,4 +218,12 @@ export async function deleteDay(formData: FormData) {
   await db.delete(packageDays).where(eq(packageDays.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
   await go(`/admin/packages/${formData.get('packageId')}`);
+}
+
+export async function setBookingStatus(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const status = String(formData.get('status'));
+  if (!['pending', 'confirmed', 'cancelled'].includes(status)) return;
+  await db.update(bookings).set({status}).where(eq(bookings.id, Number(formData.get('id'))));
+  revalidatePath('/', 'layout');
 }

@@ -43,6 +43,23 @@ export const destinations = pgTable('destinations', {
   i18n: jsonb('i18n').$type<Record<Lang, {name: string; country: string; about: string}>>().notNull()
 });
 
+export const activities = pgTable('activities', {
+  id: serial('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  city: text('city').notNull(),
+  image: text('image'),
+  gallery: jsonb('gallery').$type<string[]>().notNull().default([]),
+  priceUsd: integer('price_usd'),
+  durationHours: integer('duration_hours'),
+  featured: boolean('featured').notNull().default(false),
+  published: boolean('published').notNull().default(true),
+  sort: integer('sort').notNull().default(0),
+  i18n: jsonb('i18n')
+    .$type<Record<Lang, {title: string; description: string; includes: string[]; highlights: string[]}>>()
+    .notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
 export const offers = pgTable('offers', {
   id: serial('id').primaryKey(),
   image: text('image'),
@@ -80,7 +97,9 @@ export const users = pgTable('users', {
 export const bookings = pgTable('bookings', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').notNull().references(() => users.id, {onDelete: 'cascade'}),
+  kind: text('kind').$type<'package' | 'activity'>().notNull().default('package'),
   packageId: integer('package_id').references(() => packages.id, {onDelete: 'set null'}),
+  activityId: integer('activity_id').references(() => activities.id, {onDelete: 'set null'}),
   packageTitle: text('package_title').notNull(),
   travelDate: date('travel_date').notNull(),
   pax: integer('pax').notNull(),

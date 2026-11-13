@@ -1,12 +1,14 @@
 const en = {
-  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', offers: 'Offers', faq: 'FAQ',
+  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', faq: 'FAQ',
   logout: 'Log out', add: '+ Add', edit: 'Edit', delete: 'Delete', save: 'Save',
   published: 'Published', hidden: '(hidden)', featured: 'Featured (home page)', none: 'None',
   newPackage: 'New package', editPackage: 'Edit package', newDestination: 'New destination',
-  editDestination: 'Edit destination', newOffer: 'New offer', editOffer: 'Edit offer',
+  editDestination: 'Edit destination', newActivity: 'New activity', editActivity: 'Edit activity',
+  newOffer: 'New offer', editOffer: 'Edit offer',
   newFaq: 'New FAQ', editFaq: 'Edit FAQ', question: 'Question', answer: 'Answer',
   itinerary: 'Itinerary days', noItems: 'Nothing yet.',
   slug: 'Slug (url)', region: 'Region', name: 'Name', country: 'Country', about: 'About',
+  city: 'City', duration: 'Duration (hours)', description: 'Description',
   image: 'Image URL / path', temp: 'Temp (e.g. 28°C)', rating: 'Rating', flightHours: 'Flight hours',
   bestFrom: 'Best from (month 1-12)', bestTo: 'Best to (month 1-12)', sort: 'Sort order',
   title: 'Title', intro: 'Intro', highlights: 'Highlights', stay: 'Stay (hotels)',
@@ -15,18 +17,21 @@ const en = {
   price: 'Price USD (empty = on request)', cover: 'Cover image URL / path',
   gallery: 'Gallery - one URL per line', perLine: 'one per line',
   dayNo: 'Day #', stage: 'Stage / city', items: 'Items', saveDay: 'Save day',
-  addDay: '+ Add day', deleteDay: 'Delete day'
+  addDay: '+ Add day', deleteDay: 'Delete day',
+  bookings: 'Bookings'
 };
 
 const ar: typeof en = {
-  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', offers: 'العروض', faq: 'الأسئلة الشائعة',
+  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', faq: 'الأسئلة الشائعة',
   logout: 'تسجيل الخروج', add: '+ إضافة', edit: 'تعديل', delete: 'حذف', save: 'حفظ',
   published: 'منشور', hidden: '(مخفي)', featured: 'مميز (الصفحة الرئيسية)', none: 'بدون',
   newPackage: 'باقة جديدة', editPackage: 'تعديل الباقة', newDestination: 'وجهة جديدة',
-  editDestination: 'تعديل الوجهة', newOffer: 'عرض جديد', editOffer: 'تعديل العرض',
+  editDestination: 'تعديل الوجهة', newActivity: 'نشاط جديد', editActivity: 'تعديل النشاط',
+  newOffer: 'عرض جديد', editOffer: 'تعديل العرض',
   newFaq: 'سؤال شائع جديد', editFaq: 'تعديل السؤال الشائع', question: 'السؤال', answer: 'الإجابة',
   itinerary: 'أيام البرنامج', noItems: 'لا يوجد شيء بعد.',
   slug: 'الرابط (slug)', region: 'المنطقة', name: 'الاسم', country: 'الدولة', about: 'نبذة',
+  city: 'المدينة', duration: 'المدة (بالساعات)', description: 'الوصف',
   image: 'رابط / مسار الصورة', temp: 'الحرارة (مثال 28°C)', rating: 'التقييم', flightHours: 'ساعات الطيران',
   bestFrom: 'أفضل وقت من (شهر 1-12)', bestTo: 'إلى (شهر 1-12)', sort: 'الترتيب',
   title: 'العنوان', intro: 'مقدمة', highlights: 'أبرز النقاط', stay: 'الإقامة (الفنادق)',
@@ -35,7 +40,8 @@ const ar: typeof en = {
   price: 'السعر بالدولار (فارغ = عند الطلب)', cover: 'رابط / مسار صورة الغلاف',
   gallery: 'المعرض - رابط في كل سطر', perLine: 'واحد في كل سطر',
   dayNo: 'رقم اليوم', stage: 'المرحلة / المدينة', items: 'العناصر', saveDay: 'حفظ اليوم',
-  addDay: '+ إضافة يوم', deleteDay: 'حذف اليوم'
+  addDay: '+ إضافة يوم', deleteDay: 'حذف اليوم',
+  bookings: 'الحجوزات'
 };
 
 export const tr = (locale: string) => (locale === 'ar' ? ar : en);

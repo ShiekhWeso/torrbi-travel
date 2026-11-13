@@ -1,6 +1,6 @@
 import {asc, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays, destinations, offers, faqs} from '@/lib/db/schema';
+import {packages, packageDays, destinations, activities, offers, faqs} from '@/lib/db/schema';
 
 const lang = (l: string) => (l === 'ar' ? 'ar' : 'en');
 
@@ -36,6 +36,19 @@ export async function getDestinations(locale: string) {
 export type Dest = Awaited<ReturnType<typeof getDestinations>>[number];
 export const getDestination = async (locale: string, slug: string) =>
   (await getDestinations(locale)).find((d) => d.id === slug) ?? null;
+
+export async function getActivities(locale: string) {
+  const l = lang(locale);
+  const rows = await db.select().from(activities).where(eq(activities.published, true)).orderBy(asc(activities.sort), asc(activities.id));
+  return rows.map((r) => ({
+    id: r.slug, city: r.city, image: r.image ?? '', gallery: r.gallery,
+    price: r.priceUsd, durationHours: r.durationHours, featured: r.featured,
+    ...r.i18n[l]
+  }));
+}
+export type Activity = Awaited<ReturnType<typeof getActivities>>[number];
+export const getActivity = async (locale: string, slug: string) =>
+  (await getActivities(locale)).find((activity) => activity.id === slug) ?? null;
 
 export async function getOffers(locale: string) {
   const l = lang(locale);

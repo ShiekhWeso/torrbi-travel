@@ -73,6 +73,15 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
                 {t(key)}
               </Link>
             ))}
+            <Link
+              href="/activities"
+              aria-current={pathname.startsWith('/activities') ? 'page' : undefined}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+                pathname.startsWith('/activities') ? 'bg-navy text-snow shadow-sm' : 'text-navy/70 hover:text-navy hover:bg-mist'
+              }`}
+            >
+              {ar ? 'الأنشطة' : 'Activities'}
+            </Link>
           </nav>
         </div>
 
@@ -137,6 +146,16 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               {t(key)}
             </Link>
           ))}
+          <Link
+            href="/activities"
+            onClick={() => setOpen(false)}
+            aria-current={pathname.startsWith('/activities') ? 'page' : undefined}
+            className={`py-3 text-sm font-bold ${
+              pathname.startsWith('/activities') ? 'rounded-lg bg-navy text-snow shadow-sm' : 'text-navy'
+            }`}
+          >
+            {ar ? 'الأنشطة' : 'Activities'}
+          </Link>
           {!hideAuth && user === null && (
             <>
               <Link href="/login" onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-navy">

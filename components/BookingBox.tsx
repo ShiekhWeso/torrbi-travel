@@ -25,7 +25,7 @@ export default function BookingBox({slug, price}: {slug: string; price: string |
     setBusy(true);
     setErr('');
     const res = await createBooking({slug, date, pax, lang});
-    if (res.ok) return router.push('/account/bookings');
+    if (res.ok) return router.push(`/account/bookings?new=${res.id}`);
     setBusy(false);
     if (res.error === 'login') return router.push(`/login?next=${encodeURIComponent(pathname)}`);
     setErr(ar ? 'تعذر إنشاء الحجز' : 'Could not create the booking');

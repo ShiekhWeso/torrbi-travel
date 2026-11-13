@@ -14,7 +14,9 @@ export default async function PanelLayout({children}: {children: React.ReactNode
   const nav = [
     [t.dashboard, '/admin'],
     [t.packages, '/admin/packages'],
+    [t.bookings, '/admin/bookings'],
     [t.destinations, '/admin/destinations'],
+    [t.activities, '/admin/activities'],
     [t.offers, '/admin/offers'],
     [t.faq, '/admin/faqs']
   ] as const;
