@@ -4,6 +4,8 @@ import {useEffect, useState} from 'react';
 import Image from 'next/image';
 import {useLocale, useTranslations} from 'next-intl';
 import {Link, usePathname} from '@/i18n/navigation';
+import {useCurrency} from '@/components/CurrencyProvider';
+import {CURRENCIES} from '@/lib/currency';
 
 const items = [
   {id: 'top', key: 'home'},
@@ -19,9 +21,11 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
   const ar = locale === 'ar';
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [cur, setCur] = useState('');
+  const {cur, setCur} = useCurrency();
+  const [curOpen, setCurOpen] = useState(false);
+  const [sectionState, setSectionState] = useState({pathname, section: ''});
   const [user, setUser] = useState<{name: string} | null | undefined>(undefined);
-  const active = cur;
+  const active = sectionState.pathname === pathname ? sectionState.section : '';
 
   useEffect(() => {
     fetch('/api/me', {cache: 'no-store'})
@@ -31,17 +35,14 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
   }, [pathname]);
 
   useEffect(() => {
-    if (!document.getElementById('top')) {
-      setCur('');
-      return;
-    }
+    if (!document.getElementById('top')) return;
     const onScroll = () => {
       let c = 'top';
       items.forEach(({id}) => {
         const el = document.getElementById(id);
         if (el && el.getBoundingClientRect().top < 140) c = id;
       });
-      setCur(c);
+      setSectionState({pathname, section: c});
     };
     onScroll();
     window.addEventListener('scroll', onScroll, {passive: true});
@@ -86,6 +87,23 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="relative">
+            <button type="button" onClick={() => setCurOpen(!curOpen)} aria-label="Currency"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mist text-navy text-sm font-bold hover:bg-sky-light/40 transition-colors">
+              <span className="material-symbols-outlined text-[18px] text-sky">payments</span>
+              <span>{cur}</span>
+            </button>
+            {curOpen && (
+              <div className="absolute end-0 mt-2 w-28 rounded-xl bg-snow p-1 shadow-[0_12px_32px_rgba(15,24,89,0.15)]">
+                {CURRENCIES.map((c) => (
+                  <button key={c} type="button" onClick={() => { setCur(c); setCurOpen(false); }}
+                    className={`block w-full rounded-lg px-3 py-2 text-start text-sm font-bold ${cur === c ? 'bg-navy text-snow' : 'text-navy hover:bg-mist'}`}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Link
             href={pathname}
             locale={other}

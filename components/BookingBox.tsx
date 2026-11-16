@@ -4,6 +4,7 @@ import {useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
 import {waLink} from '@/lib/whatsapp';
+import {useCurrency} from '@/components/CurrencyProvider';
 
 type Props = {
   title: string;
@@ -23,6 +24,7 @@ export default function BookingBox({title, days, adult, child, infant, policies}
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const sp = useSearchParams();
+  const {cur, money} = useCurrency();
   const ar = useLocale() === 'ar';
   const L = (en: string, a: string) => (ar ? a : en);
 
@@ -41,9 +43,10 @@ export default function BookingBox({title, days, adult, child, infant, policies}
     {n: infants, price: infant}
   ];
   const known = rows.reduce((s, r) => s + (r.price != null ? r.n * r.price : 0), 0);
+  const usdTotal = '$' + known;
   const unknown = rows.some((r) => r.n > 0 && r.price == null);
   const total =
-    unknown && known === 0 ? p('onRequest') : `$${known}${unknown ? ` + ${p('onRequest')}` : ''}`;
+    unknown && known === 0 ? p('onRequest') : `${money(known)}${unknown ? ` + ${p('onRequest')}` : ''}`;
 
   const send = () => {
     if (!date) return setErr(L('Choose a travel date', 'اختر تاريخ السفر'));
@@ -59,7 +62,7 @@ export default function BookingBox({title, days, adult, child, infant, policies}
           `الأطفال (2-11): ${children}`,
           `الرضع (أقل من سنتين): ${infants}`,
           `اللغة: ${langName}`,
-          `الإجمالي التقريبي: ${total}`,
+          `الإجمالي التقريبي: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
           notes.trim() ? `ملاحظات: ${notes.trim()}` : ''
         ]
       : [
@@ -71,7 +74,7 @@ export default function BookingBox({title, days, adult, child, infant, policies}
           `Children (2-11): ${children}`,
           `Infants (under 2): ${infants}`,
           `Language: ${langName}`,
-          `Estimated total: ${total}`,
+          `Estimated total: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
           notes.trim() ? `Notes: ${notes.trim()}` : ''
         ];
     window.open(waLink(text.filter(Boolean).join('\n')), '_blank', 'noopener');
@@ -79,7 +82,7 @@ export default function BookingBox({title, days, adult, child, infant, policies}
 
   const box = 'flex w-full items-center gap-3 rounded-xl border border-navy/20 bg-snow px-4 py-3 font-bold text-navy';
   const input = 'w-full bg-transparent focus:outline-none';
-  const price = (v: number | null) => (v != null ? `$${v}` : p('onRequest'));
+  const price = (v: number | null) => (v != null ? money(v) : p('onRequest'));
 
   const counter = (
     label: string,
@@ -113,7 +116,7 @@ export default function BookingBox({title, days, adult, child, infant, policies}
     <aside className="h-fit rounded-3xl border border-navy/10 bg-snow p-6 shadow-[0_16px_40px_rgba(15,24,89,0.08)] lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
       <p className="text-sm text-navy/60">{p('from')}</p>
       <p className="font-display text-3xl font-bold text-navy">
-        {adult != null ? `$${adult}` : p('onRequest')}
+        {adult != null ? money(adult) : p('onRequest')}
         {adult != null && <span className="text-base font-normal text-navy/60"> {p('perPerson')}</span>}
       </p>
 
@@ -157,6 +160,9 @@ export default function BookingBox({title, days, adult, child, infant, policies}
         <span className="font-bold text-navy">{L('Total', 'الإجمالي')}</span>
         <span className="font-display text-xl font-bold text-navy">{total}</span>
       </div>
+      {cur !== 'USD' && known > 0 && (
+        <p className="mt-2 text-xs text-navy/60">{L(`Shown in ${cur} for reference. Payment is charged in USD (${usdTotal}).`, `السعر معروض بعملة ${cur} للاسترشاد. يتم الدفع بالدولار الأمريكي (${usdTotal}).`)}</p>
+      )}
       <button
         onClick={send}
         className="mt-5 w-full rounded-full bg-brand-warm py-4 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02]"

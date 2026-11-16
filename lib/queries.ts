@@ -1,8 +1,14 @@
 import {asc, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays, destinations, activities, offers, faqs} from '@/lib/db/schema';
+import {packages, packageDays, destinations, activities, offers, faqs, settings} from '@/lib/db/schema';
+import {DEFAULT_RATES, type Rates} from '@/lib/currency';
 
 const lang = (l: string) => (l === 'ar' ? 'ar' : 'en');
+
+export async function getRates(): Promise<Rates> {
+  const [row] = await db.select().from(settings).where(eq(settings.key, 'rates')).limit(1);
+  return {...DEFAULT_RATES, ...(row?.value ?? {}), USD: 1} as Rates;
+}
 
 export async function getPackages(locale: string) {
   const l = lang(locale);

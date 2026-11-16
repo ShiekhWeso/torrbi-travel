@@ -7,6 +7,7 @@ import {useLocale, useTranslations} from 'next-intl';
 import type {Pkg} from '@/lib/queries';
 import { useSearchParams } from 'next/navigation';
 import { waLink } from '@/lib/whatsapp';
+import {useCurrency} from '@/components/CurrencyProvider';
 
 const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
 const durations = ['any', 'short', 'medium', 'long'] as const;
@@ -23,6 +24,7 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
   const locale = useLocale();
   const w = useTranslations('wa');
   const sp = useSearchParams();
+  const {money} = useCurrency();
   const carry = new URLSearchParams();
   ['date', 'pax'].forEach((k) => {
     const val = sp.get(k);
@@ -128,7 +130,7 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
               <p className="mt-2 px-1 text-sm text-navy/70">{x.stops.join(' → ')}</p>
               <p className="mt-3 px-1 text-sm font-bold text-navy">{p('days', {days: x.days})}</p>
               <div className="mt-4 flex items-center justify-between gap-4 border-t border-navy/10 px-1 pt-4">
-                <span className="font-display text-lg text-navy">{x.price ? `${p('from')} $${x.price}` : c('price')}</span>
+                <span className="font-display text-lg text-navy">{x.price ? `${p('from')} ${money(x.price)}` : c('price')}</span>
                 <Link
                   href={`/${locale}/packages/${x.id}${suffix}`}
                   className="group/btn inline-flex items-center gap-2 rounded-full border-2 border-navy px-5 py-2.5 text-sm font-bold text-navy transition-colors duration-300 hover:bg-navy hover:text-snow"

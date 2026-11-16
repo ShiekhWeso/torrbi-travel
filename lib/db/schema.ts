@@ -112,3 +112,8 @@ export const bookings = pgTable('bookings', {
   status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
+
+export const settings = pgTable('settings', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').$type<Record<string, number>>().notNull()
+});

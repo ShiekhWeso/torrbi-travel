@@ -19,7 +19,8 @@ export default async function PanelLayout({children}: {children: React.ReactNode
     [t.destinations, '/admin/destinations'],
     [t.activities, '/admin/activities'],
     [t.offers, '/admin/offers'],
-    [t.faq, '/admin/faqs']
+    [t.faq, '/admin/faqs'],
+    ['Currency / العملة', '/admin/currency']
   ] as const;
 
   return (

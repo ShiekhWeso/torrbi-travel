@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, settings} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 
@@ -26,6 +26,16 @@ export async function login(_prev: string | null | undefined, formData: FormData
 export async function logout() {
   await destroySession();
   await go('/admin/login');
+}
+
+export async function saveRates(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const myr = Number(str(formData.get('MYR')));
+  if (!myr || myr <= 0) return;
+  await db.insert(settings).values({key: 'rates', value: {MYR: myr}})
+    .onConflictDoUpdate({target: settings.key, set: {value: {MYR: myr}}});
+  revalidatePath('/', 'layout');
+  await go('/admin/currency');
 }
 
 const str = (v: FormDataEntryValue | null) => String(v ?? '').trim();

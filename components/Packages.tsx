@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {getTranslations, getLocale} from 'next-intl/server';
 import {getPackages} from '@/lib/queries';
+import Price from '@/components/Price';
 
 export default async function Packages() {
   const locale = await getLocale();
@@ -56,7 +57,9 @@ export default async function Packages() {
                 )}
                 
                 <div className="mt-4 flex items-center justify-between gap-4 border-t border-navy/10 pt-4 px-1">
-                  <span className="font-display text-lg lg:text-xl text-navy">{item.price ? `${p('from')} $${item.price}` : t('price')}</span>
+                  <span className="font-display text-lg lg:text-xl text-navy">
+                    {item.price ? <>{p('from')} <Price usd={item.price} /></> : t('price')}
+                  </span>
                   <Link
                     href={`/${locale}/packages/${item.id}`}
                     className="group/btn inline-flex items-center gap-2 rounded-full border-2 border-navy px-5 py-2.5 text-sm font-bold text-navy transition-colors duration-300 hover:bg-navy hover:text-snow"

@@ -4,6 +4,8 @@ import {notFound} from 'next/navigation';
 import {hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
+import {getRates} from '@/lib/queries';
+import CurrencyProvider from '@/components/CurrencyProvider';
 import '../globals.css';
 
 // Brand fonts live in app/fonts
@@ -44,6 +46,7 @@ export default async function LocaleLayout({
   const {locale} = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const rates = await getRates();
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`${aref.variable} ${pnu.variable}`}>
@@ -54,7 +57,9 @@ export default async function LocaleLayout({
         />
       </head>
       <body className="bg-snow font-body text-navy antialiased min-h-screen flex flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <CurrencyProvider rates={rates}>{children}</CurrencyProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

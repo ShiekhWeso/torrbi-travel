@@ -7,6 +7,7 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
 import type {Activity} from '@/lib/queries';
 import {waLink} from '@/lib/whatsapp';
+import {useCurrency} from '@/components/CurrencyProvider';
 
 const chip = (on: boolean) =>
   `rounded-full px-4 py-2 text-sm font-bold transition-colors ${
@@ -18,6 +19,7 @@ export default function ActivitiesExplorer({items}: {items: Activity[]}) {
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
   const w = useTranslations('wa');
+  const {money} = useCurrency();
   const sp = useSearchParams();
   const carry = new URLSearchParams();
   ['date', 'pax'].forEach((k) => {
@@ -117,7 +119,7 @@ export default function ActivitiesExplorer({items}: {items: Activity[]}) {
               <p className="mt-3 px-1 text-sm font-bold text-navy">{x.durationHours ?? '—'} {t('hours', 'ساعات')}</p>
               <div className="mt-4 flex items-center justify-between gap-4 border-t border-navy/10 px-1 pt-4">
                 <span className="font-display text-lg text-navy">
-                  {x.price != null ? `${t('From', 'ابتداءً من')} $${x.price}` : t('Price on request', 'السعر عند الطلب')}
+                  {x.price != null ? `${t('From', 'ابتداءً من')} ${money(x.price)}` : t('Price on request', 'السعر عند الطلب')}
                 </span>
                 <Link
                   href={`/${locale}/activities/${x.id}${suffix}`}
