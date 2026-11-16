@@ -129,6 +129,15 @@ export async function savePackage(formData: FormData) {
   const id = num(formData.get('id'));
   const f = (k: string) => str(formData.get(k));
   const l = (k: string) => lines(formData.get(k));
+  type FRow = {icon: string; title_en: string; text_en: string; title_ar: string; text_ar: string};
+  let rows: FRow[] = [];
+  try {
+    rows = JSON.parse(f('features') || '[]');
+  } catch (error) {
+    console.error('Failed to parse package features', error);
+    throw error;
+  }
+  rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim());
   const data = {
     slug: f('slug'),
     region: f('region') || 'asia',
@@ -143,8 +152,8 @@ export async function savePackage(formData: FormData) {
     published: formData.get('published') === 'on',
     sort: num(formData.get('sort')) ?? 0,
     i18n: {
-      en: {title: f('title_en'), intro: f('intro_en'), stay: l('stay_en'), includes: l('includes_en'), excludes: l('excludes_en'), highlights: l('highlights_en')},
-      ar: {title: f('title_ar'), intro: f('intro_ar'), stay: l('stay_ar'), includes: l('includes_ar'), excludes: l('excludes_ar'), highlights: l('highlights_ar')}
+      en: {title: f('title_en'), intro: f('intro_en'), stay: l('stay_en'), includes: l('includes_en'), excludes: l('excludes_en'), highlights: l('highlights_en'), policies: l('policies_en'), features: rows.map((r) => ({icon: r.icon, title: r.title_en.trim(), text: r.text_en.trim()}))},
+      ar: {title: f('title_ar'), intro: f('intro_ar'), stay: l('stay_ar'), includes: l('includes_ar'), excludes: l('excludes_ar'), highlights: l('highlights_ar'), policies: l('policies_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_ar.trim(), text: r.text_ar.trim()}))}
     }
   };
   let pid = id;
@@ -172,8 +181,8 @@ export async function saveActivity(formData: FormData) {
     published: formData.get('published') === 'on',
     sort: num(formData.get('sort')) ?? 0,
     i18n: {
-      en: {title: f('title_en'), description: f('description_en'), includes: l('includes_en'), highlights: l('highlights_en')},
-      ar: {title: f('title_ar'), description: f('description_ar'), includes: l('includes_ar'), highlights: l('highlights_ar')}
+      en: {title: f('title_en'), description: f('description_en'), includes: l('includes_en'), highlights: l('highlights_en'), policies: l('policies_en')},
+      ar: {title: f('title_ar'), description: f('description_ar'), includes: l('includes_ar'), highlights: l('highlights_ar'), policies: l('policies_ar')}
     }
   };
   let aid = id;

@@ -30,6 +30,7 @@ export default async function ActivityForm({a}: {a?: A}) {
       <Field label={`${t.description} (AR)`}><textarea name="description_ar" dir="rtl" rows={4} defaultValue={a?.i18n.ar.description} className={inp} /></Field>
       {area('highlights', t.highlights, a?.i18n.en.highlights, a?.i18n.ar.highlights)}
       {area('includes', t.includes, a?.i18n.en.includes, a?.i18n.ar.includes)}
+      {area('policies', 'Policies (Title | Text)', a?.i18n.en.policies, a?.i18n.ar.policies)}
       <Field label={t.slug}><input name="slug" defaultValue={a?.slug} required className={inp} /></Field>
       <Field label={t.city}><input name="city" defaultValue={a?.city} required className={inp} /></Field>
       <Field label={t.image}><input name="image" defaultValue={a?.image ?? ''} className={inp} /></Field>

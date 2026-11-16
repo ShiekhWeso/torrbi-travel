@@ -4,6 +4,7 @@ import {Link} from '@/i18n/navigation';
 import {getSession} from '@/lib/auth';
 import {tr} from '@/lib/adminT';
 import LangSwitch from '@/components/admin/LangSwitch';
+import UnsavedChangesGuard from '@/components/admin/UnsavedChangesGuard';
 import {logout} from '../actions';
 
 export default async function PanelLayout({children}: {children: React.ReactNode}) {
@@ -23,6 +24,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
 
   return (
     <div className="min-h-screen bg-mist">
+      <UnsavedChangesGuard />
       <header className="border-b border-navy/10 bg-snow">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <nav className="flex flex-wrap gap-1">

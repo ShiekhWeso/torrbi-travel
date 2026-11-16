@@ -5,6 +5,7 @@ import {asc} from 'drizzle-orm';
 import {db} from '@/lib/db';
 import {packages} from '@/lib/db/schema';
 import {deletePackage} from '../../actions';
+import ConfirmButton from '@/components/admin/ConfirmButton';
 
 export default async function Page() {
   const t = tr(await getLocale());
@@ -27,7 +28,7 @@ export default async function Page() {
               <Link href={`/admin/packages/${r.id}`} className="font-bold text-navy underline">{t.edit}</Link>
               <form action={deletePackage}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="font-bold text-red-600">{t.delete}</button>
+                <ConfirmButton className="font-bold text-red-600">{t.delete}</ConfirmButton>
               </form>
             </div>
           </div>

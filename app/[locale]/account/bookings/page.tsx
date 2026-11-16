@@ -8,6 +8,7 @@ import {activities, bookings, packages} from '@/lib/db/schema';
 import {getCurrentUser} from '@/lib/auth';
 import {cancelBooking} from '@/lib/booking-actions';
 import {bookingRef} from '@/lib/bookingRef';
+import ConfirmButton from '@/components/admin/ConfirmButton';
 
 const STATUS: Record<string, {en: string; ar: string; cls: string}> = {
   pending: {en: 'Pending', ar: 'قيد الانتظار', cls: 'bg-[#F2C14E]/25 text-[#8a6410]'},
@@ -81,9 +82,9 @@ export default async function MyBookings({searchParams}: {searchParams: Promise<
                 {b.status === 'pending' && (
                   <form action={cancelBooking} className="mt-3">
                     <input type="hidden" name="id" value={b.id} />
-                    <button className="text-sm font-bold text-[#ef4444] hover:underline">
+                    <ConfirmButton className="text-sm font-bold text-[#ef4444] hover:underline" message={{en: 'Cancel this booking?', ar: 'هل تريد إلغاء هذا الحجز؟'}}>
                       {t('Cancel booking', 'إلغاء الحجز')}
-                    </button>
+                    </ConfirmButton>
                   </form>
                 )}
               </div>

@@ -2,6 +2,7 @@ import {saveDay, deleteDay} from '@/app/[locale]/admin/actions';
 import type {packageDays} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
+import ConfirmButton from '@/components/admin/ConfirmButton';
 
 type D = typeof packageDays.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-mist px-3 py-2 text-sm text-navy';
@@ -25,7 +26,7 @@ export default async function DayForm({packageId, d, nextNo}: {packageId: number
         <form action={deleteDay} className="mt-2">
           <input type="hidden" name="id" value={d.id} />
           <input type="hidden" name="packageId" value={packageId} />
-          <button className="text-sm font-bold text-red-600">{t.deleteDay}</button>
+          <ConfirmButton className="text-sm font-bold text-red-600">{t.deleteDay}</ConfirmButton>
         </form>
       )}
     </div>

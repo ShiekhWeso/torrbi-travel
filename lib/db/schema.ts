@@ -17,7 +17,7 @@ export const packages = pgTable('packages', {
   published: boolean('published').notNull().default(true),
   sort: integer('sort').notNull().default(0),
   i18n: jsonb('i18n')
-    .$type<Record<Lang, {title: string; intro: string; stay: string[]; includes: string[]; excludes: string[]; highlights: string[]}>>()
+    .$type<Record<Lang, {title: string; intro: string; stay: string[]; includes: string[]; excludes: string[]; highlights: string[]; policies?: string[]; features?: {icon: string; title: string; text: string}[]}>>()
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
@@ -59,7 +59,7 @@ export const activities = pgTable('activities', {
   published: boolean('published').notNull().default(true),
   sort: integer('sort').notNull().default(0),
   i18n: jsonb('i18n')
-    .$type<Record<Lang, {title: string; description: string; includes: string[]; highlights: string[]}>>()
+    .$type<Record<Lang, {title: string; description: string; includes: string[]; highlights: string[]; policies?: string[]}>>()
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });

@@ -25,6 +25,17 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
   const t = await getTranslations('packageDetail');
   const p = await getTranslations('packages');
   const gallery = pkg.gallery.length ? pkg.gallery : [pkg.image];
+  const defaults = [
+    {icon: 'event_available', title: t('freeCancel'), text: t('freeCancelText')},
+    {icon: 'account_balance_wallet', title: t('payLater'), text: t('payLaterText')},
+    {icon: 'flag', title: t('guide'), text: t('guideText')},
+    {icon: 'airport_shuttle', title: t('pickup'), text: t('pickupText')}
+  ];
+  const custom = (pkg.features ?? []).filter((x) => x.title);
+  const infoItems = [
+    {icon: 'schedule', title: t('duration'), text: p('days', {days: pkg.days ?? 1})},
+    ...(custom.length ? custom : defaults)
+  ];
 
   return (
     <>
@@ -55,22 +66,14 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
               </div>
               <p className="mt-6 text-lg text-navy/80">{pkg.intro}</p>
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                {([
-                    ['event_available', 'freeCancel'],
-                    ['account_balance_wallet', 'payLater'],
-                    ['schedule', 'duration'],
-                    ['flag', 'guide'],
-                    ['airport_shuttle', 'pickup']
-                ] as const).map(([icon, k]) => (
-                    <div key={k} className="flex gap-4">
+                {infoItems.map((x) => (
+                    <div key={x.title} className="flex gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mist">
-                        <span className="material-symbols-outlined text-sky">{icon}</span>
+                        <span className="material-symbols-outlined text-sky">{x.icon}</span>
                     </div>
                     <div>
-                        <h3 className="font-bold text-navy">{t(k)}</h3>
-                        <p className="text-sm text-navy/70">
-                        {k === 'duration' ? p('days', {days: pkg.days ?? 1}) : t(`${k}Text`)}
-                        </p>
+                        <h3 className="font-bold text-navy">{x.title}</h3>
+                        <p className="text-sm text-navy/70">{x.text}</p>
                     </div>
                   </div>
                 ))}
@@ -170,7 +173,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </section>
             </div>
             <Suspense fallback={null}>
-              <BookingBox title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} />
+              <BookingBox title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} />
             </Suspense>
           </div>
         </div>

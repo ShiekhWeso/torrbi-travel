@@ -10,9 +10,10 @@ type Props = {
   adult: number | null;
   child: number | null;
   infant: number | null;
+  policies?: string[];
 };
 
-export default function ActivityBookingBox({title, adult, child, infant}: Props) {
+export default function ActivityBookingBox({title, adult, child, infant, policies}: Props) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const sp = useSearchParams();
@@ -83,6 +84,16 @@ export default function ActivityBookingBox({title, adult, child, infant}: Props)
     </label>
   );
 
+  const parsed = (policies ?? [])
+    .map((line) => {
+      const [a, ...b] = line.split('|');
+      return {title: a.trim(), text: b.join('|').trim()};
+    })
+    .filter((x) => x.title);
+  const list = parsed.length
+    ? parsed
+    : (['freeCancel', 'payLater'] as const).map((k) => ({title: t(k), text: t(`${k}Text`)}));
+
   return (
     <aside className="h-fit rounded-3xl border border-navy/10 bg-snow p-6 shadow-[0_16px_40px_rgba(15,24,89,0.08)] lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
       <p className="text-sm text-navy/60">{p('from')}</p>
@@ -134,6 +145,17 @@ export default function ActivityBookingBox({title, adult, child, infant}: Props)
         {t('check')}
       </button>
       {err && <p className="mt-3 text-sm font-bold text-[#ef4444]">{err}</p>}
+      <ul className="mt-5 space-y-3 border-t border-navy/10 pt-5 text-sm">
+        {list.map((x) => (
+          <li key={x.title} className="flex gap-3">
+            <span className="material-symbols-outlined text-[20px] text-sky">check_circle</span>
+            <div>
+              <p className="font-bold text-navy">{x.title}</p>
+              {x.text && <p className="text-navy/70">{x.text}</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
     </aside>
   );
 }

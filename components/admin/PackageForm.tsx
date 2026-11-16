@@ -2,6 +2,7 @@ import {savePackage} from '@/app/[locale]/admin/actions';
 import type {packages} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
+import FeaturesEditor from '@/components/admin/FeaturesEditor';
 
 type P = typeof packages.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
@@ -31,6 +32,8 @@ export default async function PackageForm({p}: {p?: P}) {
       {area('highlights', t.highlights, p?.i18n.en.highlights, p?.i18n.ar.highlights)}
       {area('stay', t.stay, p?.i18n.en.stay, p?.i18n.ar.stay)}
       {area('includes', t.includes, p?.i18n.en.includes, p?.i18n.ar.includes)}
+      {area('policies', 'Policies (Title | Text)', p?.i18n.en.policies, p?.i18n.ar.policies)}
+      <FeaturesEditor initial={(p?.i18n.en.features ?? []).map((x, i) => ({icon: x.icon, title_en: x.title, text_en: x.text, title_ar: p?.i18n.ar.features?.[i]?.title ?? '', text_ar: p?.i18n.ar.features?.[i]?.text ?? ''}))} />
       {area('excludes', t.excludes, p?.i18n.en.excludes, p?.i18n.ar.excludes)}
       <Field label={t.slug}><input name="slug" defaultValue={p?.slug} required className={inp} /></Field>
       <Field label={t.region}><input name="region" defaultValue={p?.region ?? 'asia'} className={inp} /></Field>
