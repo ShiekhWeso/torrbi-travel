@@ -1,11 +1,11 @@
 import {redirect} from 'next/navigation';
 import {getLocale} from 'next-intl/server';
 import {count, eq} from 'drizzle-orm';
-import {Link} from '@/i18n/navigation';
 import {getSession} from '@/lib/auth';
 import {db} from '@/lib/db';
 import {bookings} from '@/lib/db/schema';
 import {tr} from '@/lib/adminT';
+import AdminNav from '@/components/admin/AdminNav';
 import LangSwitch from '@/components/admin/LangSwitch';
 import UnsavedChangesGuard from '@/components/admin/UnsavedChangesGuard';
 import {logout} from '../actions';
@@ -25,6 +25,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
     [t.destinations, '/admin/destinations'],
     [t.activities, '/admin/activities'],
     [t.offers, '/admin/offers'],
+    [t.coupons, '/admin/coupons'],
     [t.faq, '/admin/faqs'],
     ['Currency / العملة', '/admin/currency']
   ] as const;
@@ -34,16 +35,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
       <UnsavedChangesGuard />
       <header className="border-b border-navy/10 bg-snow">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <nav className="flex flex-wrap gap-1">
-            {nav.map(([label, href]) => (
-              <Link key={href} href={href} className="rounded-lg px-4 py-2 text-sm font-bold text-navy hover:bg-mist">
-                {label}
-                {href === '/admin/bookings' && pendingCount > 0 && (
-                  <span className="ms-2 rounded-full bg-red-600 px-2 py-0.5 text-xs text-white">{pendingCount}</span>
-                )}
-              </Link>
-            ))}
-          </nav>
+          <AdminNav items={nav} pendingCount={pendingCount} />
           <div className="flex items-center gap-3 text-sm text-navy/70">
             <LangSwitch />
             <form action={logout} className="flex items-center gap-3">

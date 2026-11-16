@@ -87,7 +87,7 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               </section>
             </div>
             <Suspense fallback={null}>
-              <ActivityBookingBox slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} policies={activity.policies} user={user} />
+              <ActivityBookingBox id={favoriteTarget.itemId} slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} policies={activity.policies} user={user} />
             </Suspense>
           </div>
         </div>

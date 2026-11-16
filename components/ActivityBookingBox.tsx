@@ -5,9 +5,10 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
 import {useCurrency} from '@/components/CurrencyProvider';
 import {useRouter} from '@/i18n/navigation';
-import {saveBookingFromBox, startActivityPayment} from '@/lib/booking-actions';
+import {saveBookingFromBox, startActivityPayment, validateCoupon} from '@/lib/booking-actions';
 
 type Props = {
+  id: number;
   slug: string;
   adult: number | null;
   child: number | null;
@@ -16,7 +17,7 @@ type Props = {
   user?: {phone: string | null} | null;
 };
 
-export default function ActivityBookingBox({slug, adult, child, infant, policies, user}: Props) {
+export default function ActivityBookingBox({id, slug, adult, child, infant, policies, user}: Props) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const sp = useSearchParams();
@@ -32,6 +33,10 @@ export default function ActivityBookingBox({slug, adult, child, infant, policies
   const [lang, setLang] = useState(ar ? 'ar' : 'en');
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
+  const [couponInput, setCouponInput] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discountUsd: number; totalUsd: number} | null>(null);
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [saving, setSaving] = useState(false);
   const [paymentSoon, setPaymentSoon] = useState(false);
@@ -42,10 +47,39 @@ export default function ActivityBookingBox({slug, adult, child, infant, policies
     {n: infants, price: infant}
   ];
   const known = rows.reduce((s, r) => s + (r.price != null ? r.n * r.price : 0), 0);
-  const usdTotal = '$' + known;
   const unknown = rows.some((r) => r.n > 0 && r.price == null);
+  const currentCoupon = appliedCoupon && appliedCoupon.totalUsd === known && known > 0 && !unknown ? appliedCoupon : null;
+  const payableKnown = known - (currentCoupon?.discountUsd ?? 0);
+  const usdTotal = '$' + payableKnown;
   const total =
-    unknown && known === 0 ? p('onRequest') : `${money(known)}${unknown ? ` + ${p('onRequest')}` : ''}`;
+    unknown && known === 0 ? p('onRequest') : `${money(payableKnown)}${unknown ? ` + ${p('onRequest')}` : ''}`;
+
+  const couponErrorText = (reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope') => ({
+    invalid: L('Invalid coupon code', 'كود الخصم غير صالح'),
+    expired: L('This coupon has expired', 'انتهت صلاحية هذا الكوبون'),
+    min: L('Minimum order total not met', 'لم يتم استيفاء الحد الأدنى للطلب'),
+    used_up: L('Coupon has reached its usage limit', 'تم بلوغ الحد الأقصى لاستخدام الكوبون'),
+    scope: L('Coupon is not valid for this item', 'الكوبون غير صالح لهذا المنتج')
+  })[reason];
+
+  const applyCoupon = async () => {
+    setCouponError('');
+    setAppliedCoupon(null);
+    setCheckingCoupon(true);
+    try {
+      const result = await validateCoupon({code: couponInput, kind: 'activity', id, totalUsd: known});
+      if (!result.ok) {
+        setCouponError(couponErrorText(result.reason));
+        return;
+      }
+      setAppliedCoupon({code: couponInput.trim().toUpperCase(), discountUsd: result.discountUsd, totalUsd: known});
+    } catch (error) {
+      console.error('Failed to validate coupon', error);
+      setCouponError(L('Unable to validate coupon. Please try again.', 'تعذر التحقق من الكوبون. حاول مرة أخرى.'));
+    } finally {
+      setCheckingCoupon(false);
+    }
+  };
 
   const bookNow = async () => {
     if (!user) {
@@ -67,7 +101,8 @@ export default function ActivityBookingBox({slug, adult, child, infant, policies
         infants,
         lang,
         notes,
-        phone
+        phone,
+        couponCode: currentCoupon?.code
       });
       if (bookingId == null) {
         router.push('/login');
@@ -157,12 +192,35 @@ export default function ActivityBookingBox({slug, adult, child, infant, policies
           placeholder={L('Notes', 'ملاحظات')}
           className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
         />
+        {known > 0 && !unknown && (
+          <div className="flex gap-2">
+            <input
+              value={couponInput}
+              onChange={(e) => setCouponInput(e.target.value)}
+              placeholder={L('Coupon code', 'كود الخصم')}
+              className="min-w-0 flex-1 rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={applyCoupon}
+              disabled={checkingCoupon}
+              className="rounded-xl bg-mist px-4 py-3 text-sm font-bold text-navy disabled:opacity-60"
+            >
+              {checkingCoupon ? '…' : L('Apply', 'تطبيق')}
+            </button>
+          </div>
+        )}
+        {couponError && <p className="text-sm font-bold text-[#ef4444]">{couponError}</p>}
       </div>
 
       <div className="mt-5 flex items-center justify-between border-t border-navy/10 pt-4">
         <span className="font-bold text-navy">{L('Total', 'الإجمالي')}</span>
-        <span className="font-display text-xl font-bold text-navy">{total}</span>
+        <span className="font-display text-xl font-bold text-navy">
+          {currentCoupon && <del className="me-2 text-base font-normal text-navy/50">{money(known)}</del>}
+          {total}
+        </span>
       </div>
+      {currentCoupon && <p className="mt-2 text-sm font-bold text-[#15803d]">{L('Coupon applied: -$', 'تم تطبيق الكوبون: -$')}{currentCoupon.discountUsd}</p>}
       {cur !== 'USD' && known > 0 && (
         <p className="mt-2 text-xs text-navy/60">{L(`Shown in ${cur} for reference. Payment is charged in USD (${usdTotal}).`, `السعر معروض بعملة ${cur} للاسترشاد. يتم الدفع بالدولار الأمريكي (${usdTotal}).`)}</p>
       )}

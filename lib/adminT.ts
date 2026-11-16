@@ -1,5 +1,5 @@
 const en = {
-  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', faq: 'FAQ',
+  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ',
   customers: 'Customers', pendingBookings: 'Pending bookings', bookingsToday: 'Bookings today', totalBookings: 'Total bookings',
   totalCustomers: 'Total customers', newCustomers: 'New customers (last 7 days)', latestBookings: 'Latest bookings',
   email: 'Email', phone: 'Phone', nationality: 'Nationality', joined: 'Joined', bookingsCount: 'Bookings',
@@ -13,6 +13,12 @@ const en = {
   newPackage: 'New package', editPackage: 'Edit package', newDestination: 'New destination',
   editDestination: 'Edit destination', newActivity: 'New activity', editActivity: 'Edit activity',
   newOffer: 'New offer', editOffer: 'Edit offer',
+  newCoupon: 'New coupon', editCoupon: 'Edit coupon', code: 'Code', scope: 'Scope', target: 'Target',
+  scopeAll: 'All', scopePackage: 'Packages', scopeActivity: 'Activities', scopeHotel: 'Hotel',
+  allPackages: 'All packages', allActivities: 'All activities', discount: 'Discount', percent: 'Percent',
+  fixedUsd: 'Fixed USD', discountValue: 'Discount value', minTotalUsd: 'Minimum total USD', maxUses: 'Maximum uses',
+  usedCount: 'Uses', validFrom: 'Valid from', isPublic: 'Show in customers’ Coupons tab', active: 'Active',
+  inactive: 'Inactive', terms: 'Terms', unlimited: 'Unlimited',
   newFaq: 'New FAQ', editFaq: 'Edit FAQ', question: 'Question', answer: 'Answer',
   itinerary: 'Itinerary days', noItems: 'Nothing yet.',
   slug: 'Slug (url)', region: 'Region', name: 'Name', country: 'Country', about: 'About',
@@ -30,7 +36,7 @@ const en = {
 };
 
 const ar: typeof en = {
-  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', faq: 'الأسئلة الشائعة',
+  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة',
   customers: 'العملاء', pendingBookings: 'الحجوزات المعلقة', bookingsToday: 'حجوزات اليوم', totalBookings: 'إجمالي الحجوزات',
   totalCustomers: 'إجمالي العملاء', newCustomers: 'عملاء جدد (آخر 7 أيام)', latestBookings: 'أحدث الحجوزات',
   email: 'البريد الإلكتروني', phone: 'الهاتف', nationality: 'الجنسية', joined: 'تاريخ الانضمام', bookingsCount: 'الحجوزات',
@@ -44,6 +50,12 @@ const ar: typeof en = {
   newPackage: 'باقة جديدة', editPackage: 'تعديل الباقة', newDestination: 'وجهة جديدة',
   editDestination: 'تعديل الوجهة', newActivity: 'نشاط جديد', editActivity: 'تعديل النشاط',
   newOffer: 'عرض جديد', editOffer: 'تعديل العرض',
+  newCoupon: 'كوبون جديد', editCoupon: 'تعديل الكوبون', code: 'الرمز', scope: 'النطاق', target: 'الهدف',
+  scopeAll: 'الكل', scopePackage: 'الباقات', scopeActivity: 'الأنشطة', scopeHotel: 'الفندق',
+  allPackages: 'كل الباقات', allActivities: 'كل الأنشطة', discount: 'الخصم', percent: 'نسبة مئوية',
+  fixedUsd: 'مبلغ ثابت بالدولار', discountValue: 'قيمة الخصم', minTotalUsd: 'الحد الأدنى بالدولار', maxUses: 'الحد الأقصى للاستخدام',
+  usedCount: 'مرات الاستخدام', validFrom: 'صالح من', isPublic: 'إظهاره في تبويب الكوبونات للعملاء', active: 'نشط',
+  inactive: 'غير نشط', terms: 'الشروط', unlimited: 'غير محدود',
   newFaq: 'سؤال شائع جديد', editFaq: 'تعديل السؤال الشائع', question: 'السؤال', answer: 'الإجابة',
   itinerary: 'أيام البرنامج', noItems: 'لا يوجد شيء بعد.',
   slug: 'الرابط (slug)', region: 'المنطقة', name: 'الاسم', country: 'الدولة', about: 'نبذة',

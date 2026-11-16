@@ -55,6 +55,7 @@ export default async function Page() {
               </div>
               <div className="text-xs text-navy/60">
                 {b.travelDate} · {b.pax} · {b.lang.toUpperCase()} · {b.totalUsd != null ? `$${b.totalUsd}` : '-'}
+                {b.couponCode && b.discountUsd != null && <> · {b.couponCode} (-${b.discountUsd})</>}
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">

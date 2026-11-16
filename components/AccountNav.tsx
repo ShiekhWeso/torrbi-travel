@@ -8,6 +8,7 @@ const tabs = [
   {href: '/account', icon: 'person', en: 'Personal info', ar: 'البيانات الشخصية'},
   {href: '/account/bookings', icon: 'luggage', en: 'My bookings', ar: 'حجوزاتي'},
   {href: '/account/favorites', icon: 'favorite', en: 'Favorites', ar: 'المفضلة'},
+  {href: '/account/coupons', icon: 'sell', en: 'Coupons', ar: 'الكوبونات'},
   {href: '/account/security', icon: 'lock', en: 'Account settings', ar: 'إعدادات الحساب'}
 ] as const;
 

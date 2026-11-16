@@ -81,6 +81,28 @@ export const faqs = pgTable('faqs', {
   i18n: jsonb('i18n').$type<Record<Lang, {question: string; answer: string}>>().notNull()
 });
 
+export type CouponScope = 'all' | 'package' | 'activity' | 'hotel';
+export type CouponDiscountType = 'percent' | 'fixed';
+
+export const coupons = pgTable('coupons', {
+  id: serial('id').primaryKey(),
+  code: text('code').notNull().unique(),
+  scope: text('scope').$type<CouponScope>().notNull().default('all'),
+  packageId: integer('package_id').references(() => packages.id, {onDelete: 'cascade'}),
+  activityId: integer('activity_id').references(() => activities.id, {onDelete: 'cascade'}),
+  discountType: text('discount_type').$type<CouponDiscountType>().notNull(),
+  discountValue: integer('discount_value').notNull(),
+  minTotalUsd: integer('min_total_usd'),
+  maxUses: integer('max_uses'),
+  usedCount: integer('used_count').notNull().default(0),
+  validFrom: timestamp('valid_from'),
+  validUntil: timestamp('valid_until'),
+  isPublic: boolean('is_public').notNull().default(false),
+  active: boolean('active').notNull().default(true),
+  i18n: jsonb('i18n').$type<Record<Lang, {title: string; terms: string}>>().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
 export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
@@ -140,6 +162,8 @@ export const bookings = pgTable('bookings', {
   phone: text('phone'),
   lang: text('lang').notNull().default('en'),
   totalUsd: integer('total_usd'),
+  couponCode: text('coupon_code'),
+  discountUsd: integer('discount_usd'),
   status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });

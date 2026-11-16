@@ -1,10 +1,10 @@
 'use server';
 
-import {and, eq} from 'drizzle-orm';
+import {and, eq, sql} from 'drizzle-orm';
 import {revalidatePath} from 'next/cache';
 import {getLocale} from 'next-intl/server';
 import {db} from '@/lib/db';
-import {activities, bookings, packages} from '@/lib/db/schema';
+import {activities, bookings, coupons, packages} from '@/lib/db/schema';
 import {getCurrentUser} from '@/lib/auth';
 
 type Result = {ok: true; id: number} | {ok: false; error: 'login' | 'date' | 'package' | 'activity'};
@@ -20,7 +20,58 @@ type BookingBoxInput = {
   lang: string;
   notes: string;
   phone: string;
+  couponCode?: string | null;
 };
+
+type CouponInput = {code: string; kind: 'package' | 'activity'; id: number; totalUsd: number};
+type CouponCheck =
+  | {ok: true; couponId: number; code: string; discountUsd: number; title: string}
+  | {ok: false; reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope'};
+
+function checkCoupon(
+  coupon: typeof coupons.$inferSelect | undefined,
+  input: CouponInput,
+  code: string,
+  locale: 'en' | 'ar'
+): CouponCheck {
+  if (!coupon || coupon.code !== code || !coupon.active) return {ok: false, reason: 'invalid'};
+  const now = new Date();
+  if ((coupon.validFrom && coupon.validFrom > now) || (coupon.validUntil && coupon.validUntil < now)) {
+    return {ok: false, reason: 'expired'};
+  }
+  if (coupon.maxUses != null && coupon.usedCount >= coupon.maxUses) return {ok: false, reason: 'used_up'};
+  if (coupon.minTotalUsd != null && input.totalUsd < coupon.minTotalUsd) return {ok: false, reason: 'min'};
+  const scopeMatches = coupon.scope === 'all' ||
+    (coupon.scope === 'package' && input.kind === 'package' && (coupon.packageId == null || coupon.packageId === input.id)) ||
+    (coupon.scope === 'activity' && input.kind === 'activity' && (coupon.activityId == null || coupon.activityId === input.id));
+  if (!scopeMatches) {
+    return {ok: false, reason: 'scope'};
+  }
+  const discountUsd = coupon.discountType === 'percent'
+    ? Math.round(input.totalUsd * coupon.discountValue / 100)
+    : Math.min(coupon.discountValue, input.totalUsd);
+  return {ok: true, couponId: coupon.id, code, discountUsd, title: coupon.i18n[locale].title};
+}
+
+export async function validateCoupon(input: CouponInput) {
+  const code = input.code.trim().toUpperCase();
+  if (
+    !code ||
+    (input.kind !== 'package' && input.kind !== 'activity') ||
+    !Number.isInteger(input.id) ||
+    input.id < 1 ||
+    !Number.isInteger(input.totalUsd) ||
+    input.totalUsd <= 0
+  ) {
+    return {ok: false as const, reason: 'invalid' as const};
+  }
+  const [coupon] = await db.select().from(coupons).where(eq(coupons.code, code)).limit(1);
+  const locale = (await getLocale()) === 'ar' ? 'ar' : 'en';
+  const result = checkCoupon(coupon, input, code, locale);
+  return result.ok
+    ? {ok: true as const, discountUsd: result.discountUsd, title: result.title}
+    : result;
+}
 
 export async function saveBookingFromBox(input: BookingBoxInput) {
   const user = await getCurrentUser();
@@ -35,6 +86,7 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
   let title: string;
   let packageId: number | null = null;
   let activityId: number | null = null;
+  let couponTargetId: number | null = null;
   let adultPrice: number | null;
   let childPrice: number | null;
   let infantPrice: number | null;
@@ -44,6 +96,7 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     if (!pkg) throw new Error(`Package not found: ${slug}`);
     title = pkg.i18n[lang].title;
     packageId = pkg.id;
+    couponTargetId = pkg.id;
     adultPrice = pkg.priceUsd;
     childPrice = pkg.childPriceUsd;
     infantPrice = pkg.infantPriceUsd;
@@ -52,6 +105,7 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     if (!activity) throw new Error(`Activity not found: ${slug}`);
     title = activity.i18n[lang].title;
     activityId = activity.id;
+    couponTargetId = activity.id;
     adultPrice = activity.priceUsd;
     childPrice = activity.childPriceUsd;
     infantPrice = activity.infantPriceUsd;
@@ -63,7 +117,7 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     ? null
     : counts.reduce((total, count, index) => total + count * (prices[index] ?? 0), 0);
   const pax = adults + children + infants;
-  const [booking] = await db.insert(bookings).values({
+  const values = {
     userId: user.id,
     kind,
     packageId,
@@ -80,7 +134,28 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     lang: input.lang === 'ar' ? 'ar' : 'en',
     totalUsd,
     status: 'pending'
-  }).returning({id: bookings.id});
+  };
+  const code = input.couponCode?.trim().toUpperCase() ?? '';
+  if (!code) {
+    const [booking] = await db.insert(bookings).values({...values, couponCode: null, discountUsd: null}).returning({id: bookings.id});
+    return booking.id;
+  }
+  if (totalUsd == null || totalUsd <= 0) throw new Error('Coupon requires a known positive booking total');
+
+  const [booking] = await db.transaction(async (tx) => {
+    const [coupon] = await tx.select().from(coupons).where(eq(coupons.code, code)).for('update').limit(1);
+    if (couponTargetId == null) throw new Error('Booking coupon target not found');
+    const result = checkCoupon(coupon, {code, kind, id: couponTargetId, totalUsd}, code, lang);
+    if (!result.ok) throw new Error(`Coupon is no longer valid: ${result.reason}`);
+    const [created] = await tx.insert(bookings).values({
+      ...values,
+      totalUsd: totalUsd - result.discountUsd,
+      couponCode: code,
+      discountUsd: result.discountUsd
+    }).returning({id: bookings.id});
+    await tx.update(coupons).set({usedCount: sql`${coupons.usedCount} + 1`}).where(eq(coupons.id, result.couponId));
+    return [created];
+  });
 
   return booking.id;
 }

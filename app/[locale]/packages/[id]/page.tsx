@@ -196,7 +196,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </section>
             </div>
             <Suspense fallback={null}>
-              <BookingBox slug={pkg.id} title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} user={user} />
+              <BookingBox id={favoriteTarget.itemId} slug={pkg.id} title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} user={user} />
             </Suspense>
           </div>
         </div>

@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, settings} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, settings, coupons, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 
@@ -129,6 +129,103 @@ export async function deleteFaq(formData: FormData) {
   await db.delete(faqs).where(eq(faqs.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
   await go('/admin/faqs');
+}
+
+function couponData(formData: FormData) {
+  const f = (key: string) => str(formData.get(key));
+  const scope = f('scope') as CouponScope;
+  const discountType = f('discountType') as CouponDiscountType;
+  const code = f('code').toUpperCase();
+  const discountValue = num(formData.get('discountValue'));
+  const minTotalUsd = num(formData.get('minTotalUsd'));
+  const maxUses = num(formData.get('maxUses'));
+  const validFromValue = f('validFrom');
+  const validUntilValue = f('validUntil');
+  const validFrom = validFromValue ? new Date(validFromValue) : null;
+  const validUntil = validUntilValue ? new Date(validUntilValue) : null;
+
+  if (!code) throw new Error('Coupon code is required');
+  if (!['all', 'package', 'activity'].includes(scope)) throw new Error('Invalid coupon scope');
+  if (!['percent', 'fixed'].includes(discountType)) throw new Error('Invalid coupon discount type');
+  if (!Number.isInteger(discountValue) || discountValue === null || discountValue < 1) {
+    throw new Error('Coupon discount must be a positive whole number');
+  }
+  if (discountType === 'percent' && discountValue > 100) {
+    throw new Error('Percent discounts cannot exceed 100');
+  }
+  if (minTotalUsd !== null && (!Number.isInteger(minTotalUsd) || minTotalUsd < 0)) {
+    throw new Error('Minimum total must be a non-negative whole number');
+  }
+  if (maxUses !== null && (!Number.isInteger(maxUses) || maxUses < 1)) {
+    throw new Error('Maximum uses must be a positive whole number');
+  }
+  if (validFrom && Number.isNaN(validFrom.getTime())) throw new Error('Invalid valid-from date');
+  if (validUntil && Number.isNaN(validUntil.getTime())) throw new Error('Invalid valid-until date');
+  if (validFrom && validUntil && validUntil <= validFrom) {
+    throw new Error('Valid-until must be after valid-from');
+  }
+
+  return {
+    code,
+    scope,
+    packageId: scope === 'package' ? num(formData.get('packageId')) : null,
+    activityId: scope === 'activity' ? num(formData.get('activityId')) : null,
+    discountType,
+    discountValue,
+    minTotalUsd,
+    maxUses,
+    validFrom,
+    validUntil,
+    isPublic: formData.get('isPublic') === 'on',
+    active: formData.get('active') === 'on',
+    i18n: {
+      en: {title: f('title_en'), terms: f('terms_en')},
+      ar: {title: f('title_ar'), terms: f('terms_ar')}
+    }
+  };
+}
+
+async function ensureCouponCodeAvailable(code: string, id?: number) {
+  const [existing] = await db.select({id: coupons.id}).from(coupons).where(eq(coupons.code, code)).limit(1);
+  if (existing && existing.id !== id) throw new Error('A coupon with this code already exists');
+}
+
+export async function createCoupon(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const data = couponData(formData);
+  await ensureCouponCodeAvailable(data.code);
+  const [{id}] = await db.insert(coupons).values(data).returning({id: coupons.id});
+  revalidatePath('/', 'layout');
+  await go(`/admin/coupons/${id}`);
+}
+
+export async function updateCoupon(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = Number(formData.get('id'));
+  if (!Number.isInteger(id) || id < 1) throw new Error('Invalid coupon id');
+  const data = couponData(formData);
+  await ensureCouponCodeAvailable(data.code, id);
+  await db.update(coupons).set(data).where(eq(coupons.id, id));
+  revalidatePath('/', 'layout');
+  await go(`/admin/coupons/${id}`);
+}
+
+export async function deleteCoupon(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  await db.delete(coupons).where(eq(coupons.id, Number(formData.get('id'))));
+  revalidatePath('/', 'layout');
+  await go('/admin/coupons');
+}
+
+export async function toggleCoupon(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = Number(formData.get('id'));
+  const active = str(formData.get('active'));
+  if (!Number.isInteger(id) || id < 1 || !['true', 'false'].includes(active)) {
+    throw new Error('Invalid coupon status');
+  }
+  await db.update(coupons).set({active: active === 'true'}).where(eq(coupons.id, id));
+  revalidatePath('/', 'layout');
 }
 
 const lines = (v: FormDataEntryValue | null) =>
