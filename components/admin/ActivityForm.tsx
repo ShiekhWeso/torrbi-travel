@@ -2,6 +2,8 @@ import {saveActivity} from '@/app/[locale]/admin/actions';
 import type {activities} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
+import ImageUpload from '@/components/admin/ImageUpload';
+import GalleryUpload from '@/components/admin/GalleryUpload';
 
 type A = typeof activities.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
@@ -33,8 +35,8 @@ export default async function ActivityForm({a}: {a?: A}) {
       {area('policies', 'Policies (Title | Text)', a?.i18n.en.policies, a?.i18n.ar.policies)}
       <Field label={t.slug}><input name="slug" defaultValue={a?.slug} required className={inp} /></Field>
       <Field label={t.city}><input name="city" defaultValue={a?.city} required className={inp} /></Field>
-      <Field label={t.image}><input name="image" defaultValue={a?.image ?? ''} className={inp} /></Field>
-      <Field label={t.gallery}><textarea name="gallery" rows={3} defaultValue={J(a?.gallery)} className={inp} /></Field>
+      <ImageUpload name="image" defaultValue={a?.image ?? ''} label={t.image} />
+      <GalleryUpload name="gallery" defaultValue={(a?.gallery ?? []).join('\n')} label={t.gallery} />
       <Field label="Adult price (USD) / سعر البالغ"><input name="priceUsd" type="number" defaultValue={a?.priceUsd ?? ''} className={inp} /></Field>
       <Field label="Child price 2–11 (USD) / سعر الطفل"><input name="childPriceUsd" type="number" defaultValue={a?.childPriceUsd ?? ''} className={inp} /></Field>
       <Field label="Infant price under 2 (USD) / سعر الرضيع"><input name="infantPriceUsd" type="number" defaultValue={a?.infantPriceUsd ?? ''} className={inp} /></Field>

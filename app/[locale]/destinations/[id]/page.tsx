@@ -29,17 +29,23 @@ export default async function DestinationPage({params}: {params: Promise<{locale
     new Intl.DateTimeFormat(locale, {month: 'long'}).format(new Date(2026, m - 1, 1));
 
   const facts = [
-    ['calendar_month', t('bestTime'), `${month(info.best[0])} – ${month(info.best[1])}`],
-    ['flight', t('flight'), t('hours', {n: info.flight})],
-    ['thermostat', t('climate'), info.temp]
-  ] as const;
+    {icon: 'calendar_month', label: t('bestTime'), value: `${month(info.best[0])} – ${month(info.best[1])}`},
+    {icon: 'flight', label: t('flight'), value: t('hours', {n: info.flight})},
+    {icon: 'thermostat', label: t('climate'), value: info.temp},
+    ...(info.currency ? [{icon: 'payments', label: dd('currency'), value: info.currency}] : []),
+    ...(info.language ? [{icon: 'translate', label: dd('language'), value: info.language}] : []),
+    ...(info.timezone ? [{icon: 'schedule', label: dd('timezone'), value: info.timezone}] : []),
+    ...(info.visa ? [{icon: 'confirmation_number', label: dd('visa'), value: info.visa}] : [])
+  ];
 
-  const todo = [
-    ['restaurant', 'food'],
-    ['beach_access', 'nature'],
-    ['museum', 'culture'],
-    ['shopping_bag', 'shopping']
-  ] as const;
+  const todo = info.features?.length
+    ? info.features
+    : [
+        {icon: 'restaurant', title: dd('food'), text: dd('foodText', {name})},
+        {icon: 'beach_access', title: dd('nature'), text: dd('natureText', {name})},
+        {icon: 'museum', title: dd('culture'), text: dd('cultureText', {name})},
+        {icon: 'shopping_bag', title: dd('shopping'), text: dd('shoppingText', {name})}
+      ];
 
   return (
     <>
@@ -61,8 +67,8 @@ export default async function DestinationPage({params}: {params: Promise<{locale
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {facts.map(([icon, label, value]) => (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {facts.map(({icon, label, value}) => (
               <div key={label} className="flex items-center gap-4 rounded-2xl bg-mist p-5">
                 <span className="material-symbols-outlined text-[28px] text-sky">{icon}</span>
                 <div>
@@ -80,18 +86,43 @@ export default async function DestinationPage({params}: {params: Promise<{locale
 
               <h2 className="mt-12 font-display text-2xl font-bold text-navy lg:text-3xl">{dd('todo')}</h2>
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                {todo.map(([icon, k]) => (
-                  <div key={k} className="flex gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mist">
-                      <span className="material-symbols-outlined text-sky">{icon}</span>
+                {todo.map((item, index) => (
+                  <div key={`${item.title}-${index}`} className="rounded-2xl bg-mist p-6 transition-transform duration-200 hover:-translate-y-1">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-light/50">
+                      <span className="material-symbols-outlined text-[28px] text-sky">{item.icon}</span>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-navy">{dd(k)}</h3>
-                      <p className="text-sm text-navy/70">{dd(`${k}Text`, {name})}</p>
-                    </div>
+                    <h3 className="mt-4 text-lg font-bold text-navy">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-navy/70">{item.text}</p>
                   </div>
                 ))}
               </div>
+
+              {info.gallery.length > 0 && (
+                <section className="mt-12">
+                  <h2 className="font-display text-2xl font-bold text-navy lg:text-3xl">{dd('gallery')}</h2>
+                  <div className="mt-5 grid auto-rows-[180px] gap-3 sm:grid-cols-3 sm:auto-rows-[220px]">
+                    {info.gallery.map((src, index) => (
+                      <div key={`${src}-${index}`} className={`relative overflow-hidden rounded-2xl ${index === 0 ? 'sm:col-span-2 sm:row-span-2' : ''}`}>
+                        <Image src={src} alt={`${name} ${index + 1}`} fill sizes={index === 0 ? '(max-width: 640px) 100vw, 66vw' : '(max-width: 640px) 100vw, 33vw'} className="object-cover transition-transform duration-300 hover:scale-105" unoptimized />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {!!info.tips?.length && (
+                <section className="mt-12">
+                  <h2 className="font-display text-2xl font-bold text-navy lg:text-3xl">{dd('tips')}</h2>
+                  <ul className="mt-5 space-y-3">
+                    {info.tips.map((tip, index) => (
+                      <li key={`${tip}-${index}`} className="flex gap-3 text-navy/80">
+                        <span className="material-symbols-outlined shrink-0 text-[22px] text-sky">check_circle</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </div>
 
             <aside className="h-fit rounded-3xl bg-navy p-6 text-snow shadow-[0_24px_56px_rgba(15,24,89,0.3)] lg:sticky lg:top-28">

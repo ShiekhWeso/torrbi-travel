@@ -3,6 +3,8 @@ import type {packages} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import FeaturesEditor from '@/components/admin/FeaturesEditor';
+import ImageUpload from '@/components/admin/ImageUpload';
+import GalleryUpload from '@/components/admin/GalleryUpload';
 
 type P = typeof packages.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
@@ -43,8 +45,8 @@ export default async function PackageForm({p}: {p?: P}) {
       <Field label="Child price 2–11 (USD) / سعر الطفل"><input name="childPriceUsd" type="number" defaultValue={p?.childPriceUsd ?? ''} className={inp} /></Field>
       <Field label="Infant price under 2 (USD) / سعر الرضيع"><input name="infantPriceUsd" type="number" defaultValue={p?.infantPriceUsd ?? ''} className={inp} /></Field>
       <Field label={t.sort}><input name="sort" type="number" defaultValue={p?.sort ?? 0} className={inp} /></Field>
-      <Field label={t.cover}><input name="cover" defaultValue={p?.cover ?? ''} className={inp} /></Field>
-      <Field label={t.gallery}><textarea name="gallery" rows={3} defaultValue={J(p?.gallery)} className={inp} /></Field>
+      <ImageUpload name="cover" defaultValue={p?.cover ?? ''} label={t.cover} />
+      <GalleryUpload name="gallery" defaultValue={(p?.gallery ?? []).join('\n')} label={t.gallery} />
       <label className="flex items-center gap-2 text-sm font-bold text-navy">
         <input type="checkbox" name="featured" defaultChecked={p?.featured ?? false} /> {t.featured}
       </label>

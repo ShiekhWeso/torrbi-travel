@@ -35,6 +35,9 @@ export const destinations = pgTable('destinations', {
   slug: text('slug').notNull().unique(),
   region: text('region').notNull().default('asia'),
   image: text('image'),
+  gallery: jsonb('gallery').$type<string[]>().notNull().default([]),
+  currency: text('currency'),
+  timezone: text('timezone'),
   rating: real('rating'),
   flightHours: integer('flight_hours'),
   temp: text('temp'),
@@ -42,7 +45,17 @@ export const destinations = pgTable('destinations', {
   bestTo: integer('best_to'),
   published: boolean('published').notNull().default(true),
   sort: integer('sort').notNull().default(0),
-  i18n: jsonb('i18n').$type<Record<Lang, {name: string; country: string; about: string}>>().notNull()
+  i18n: jsonb('i18n')
+    .$type<Record<Lang, {
+      name: string;
+      country: string;
+      about: string;
+      language?: string;
+      visa?: string;
+      tips?: string[];
+      features?: {icon: string; title: string; text: string}[];
+    }>>()
+    .notNull()
 });
 
 export const activities = pgTable('activities', {

@@ -48,10 +48,23 @@ export async function saveDestination(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   const id = num(formData.get('id'));
   const f = (k: string) => str(formData.get(k));
+  const l = (k: string) => lines(formData.get(k));
+  type FRow = {icon: string; title_en: string; text_en: string; title_ar: string; text_ar: string};
+  let rows: FRow[] = [];
+  try {
+    rows = JSON.parse(f('features') || '[]');
+  } catch (error) {
+    console.error('Failed to parse destination features', error);
+    throw error;
+  }
+  rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim());
   const data = {
     slug: f('slug'),
     region: f('region') || 'asia',
     image: f('image') || null,
+    gallery: l('gallery'),
+    currency: f('currency') || null,
+    timezone: f('timezone') || null,
     rating: num(formData.get('rating')),
     flightHours: num(formData.get('flightHours')),
     temp: f('temp') || null,
@@ -60,8 +73,8 @@ export async function saveDestination(formData: FormData) {
     published: formData.get('published') === 'on',
     sort: num(formData.get('sort')) ?? 0,
     i18n: {
-      en: {name: f('name_en'), country: f('country_en'), about: f('about_en')},
-      ar: {name: f('name_ar'), country: f('country_ar'), about: f('about_ar')}
+      en: {name: f('name_en'), country: f('country_en'), about: f('about_en'), language: f('language_en'), visa: f('visa_en'), tips: l('tips_en'), features: rows.map((r) => ({icon: r.icon, title: r.title_en.trim(), text: r.text_en.trim()}))},
+      ar: {name: f('name_ar'), country: f('country_ar'), about: f('about_ar'), language: f('language_ar'), visa: f('visa_ar'), tips: l('tips_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_ar.trim(), text: r.text_ar.trim()}))}
     }
   };
   if (id) await db.update(destinations).set(data).where(eq(destinations.id, id));

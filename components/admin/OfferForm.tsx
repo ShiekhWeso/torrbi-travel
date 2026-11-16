@@ -2,6 +2,7 @@ import {saveOffer} from '@/app/[locale]/admin/actions';
 import type {offers, packages} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 type O = typeof offers.$inferSelect;
 type P = Pick<typeof packages.$inferSelect, 'id' | 'i18n'>;
@@ -24,7 +25,7 @@ export default async function OfferForm({o, pkgs}: {o?: O; pkgs: P[]}) {
       <Field label={`${t.text} (AR)`}><textarea name="text_ar" dir="rtl" rows={3} defaultValue={o?.i18n.ar.text} className={inp} /></Field>
       <Field label={`${t.badge} (EN)`}><input name="badge_en" defaultValue={o?.i18n.en.badge} className={inp} /></Field>
       <Field label={`${t.badge} (AR)`}><input name="badge_ar" dir="rtl" defaultValue={o?.i18n.ar.badge} className={inp} /></Field>
-      <Field label={t.image}><input name="image" defaultValue={o?.image ?? ''} className={inp} /></Field>
+      <ImageUpload name="image" defaultValue={o?.image ?? ''} label={t.image} />
       <Field label={t.linkedPackage}>
         <select name="packageId" defaultValue={o?.packageId ?? ''} className={inp}>
           <option value="">{t.none}</option>

@@ -35,6 +35,7 @@ export async function getDestinations(locale: string) {
   const rows = await db.select().from(destinations).where(eq(destinations.published, true)).orderBy(asc(destinations.sort), asc(destinations.id));
   return rows.map((r) => ({
     id: r.slug, image: r.image ?? '', region: r.region, rating: r.rating ?? 0,
+    gallery: r.gallery, currency: r.currency, timezone: r.timezone,
     flight: r.flightHours ?? 0, temp: r.temp ?? '',
     best: [r.bestFrom ?? 1, r.bestTo ?? 12] as [number, number],
     ...r.i18n[l]

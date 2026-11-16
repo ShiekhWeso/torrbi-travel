@@ -51,11 +51,13 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
     {icon: 'flag', title: t('guide'), text: t('guideText')},
     {icon: 'airport_shuttle', title: t('pickup'), text: t('pickupText')}
   ];
-  const custom = (pkg.features ?? []).filter((x) => x.title);
-  const infoItems = [
-    {icon: 'schedule', title: t('duration'), text: p('days', {days: pkg.days ?? 1})},
-    ...(custom.length ? custom : defaults)
-  ];
+  const custom = pkg.features ?? [];
+  const infoItems = custom.length
+    ? custom
+    : [
+        {icon: 'schedule', title: t('duration'), text: p('days', {days: pkg.days ?? 1})},
+        ...defaults
+      ];
 
   return (
     <>
@@ -89,8 +91,8 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
               </div>
               <p className="mt-6 text-lg text-navy/80">{pkg.intro}</p>
               <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                {infoItems.map((x) => (
-                    <div key={x.title} className="flex gap-4">
+                {infoItems.map((x, i) => (
+                    <div key={`${i}-${x.title}`} className="flex gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mist">
                         <span className="material-symbols-outlined text-sky">{x.icon}</span>
                     </div>
