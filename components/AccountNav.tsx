@@ -7,7 +7,8 @@ import {userLogout} from '@/lib/user-actions';
 const tabs = [
   {href: '/account', icon: 'person', en: 'Personal info', ar: 'البيانات الشخصية'},
   {href: '/account/bookings', icon: 'luggage', en: 'My bookings', ar: 'حجوزاتي'},
-  {href: '/account/security', icon: 'lock', en: 'Password & security', ar: 'كلمة المرور والأمان'}
+  {href: '/account/favorites', icon: 'favorite', en: 'Favorites', ar: 'المفضلة'},
+  {href: '/account/security', icon: 'lock', en: 'Account settings', ar: 'إعدادات الحساب'}
 ] as const;
 
 export default function AccountNav() {

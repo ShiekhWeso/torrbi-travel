@@ -62,7 +62,15 @@ export async function getCurrentUser() {
   try {
     const {payload} = await jwtVerify(token, key());
     const [u] = await db
-      .select({id: users.id, name: users.name, email: users.email, phone: users.phone})
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        name: users.name,
+        phone: users.phone,
+        nationality: users.nationality,
+        email: users.email
+      })
       .from(users)
       .where(eq(users.id, Number(payload.uid)))
       .limit(1);

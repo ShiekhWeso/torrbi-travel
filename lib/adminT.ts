@@ -1,5 +1,13 @@
 const en = {
   dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', faq: 'FAQ',
+  customers: 'Customers', pendingBookings: 'Pending bookings', bookingsToday: 'Bookings today', totalBookings: 'Total bookings',
+  totalCustomers: 'Total customers', newCustomers: 'New customers (last 7 days)', latestBookings: 'Latest bookings',
+  email: 'Email', phone: 'Phone', nationality: 'Nationality', joined: 'Joined', bookingsCount: 'Bookings',
+  pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Cancelled',
+  visitsToday: 'Visits today', uniqueVisitorsToday: 'Unique visitors today', uniqueVisitorsWeek: 'Unique visitors (last 7 days)',
+  dailyTraffic: 'Daily traffic (last 7 days)', date: 'Date', visits: 'Visits', uniqueVisitors: 'Unique visitors', topPages: 'Top pages (last 7 days)',
+  customerActivity: 'Customer activity', pageViews: 'Page views (latest 50)', travelDate: 'Travel date', returnDate: 'Return date',
+  adults: 'Adults', children: 'Children', infants: 'Infants', notes: 'Notes', total: 'Total',
   logout: 'Log out', add: '+ Add', edit: 'Edit', delete: 'Delete', save: 'Save',
   published: 'Published', hidden: '(hidden)', featured: 'Featured (home page)', none: 'None',
   newPackage: 'New package', editPackage: 'Edit package', newDestination: 'New destination',
@@ -23,6 +31,14 @@ const en = {
 
 const ar: typeof en = {
   dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', faq: 'الأسئلة الشائعة',
+  customers: 'العملاء', pendingBookings: 'الحجوزات المعلقة', bookingsToday: 'حجوزات اليوم', totalBookings: 'إجمالي الحجوزات',
+  totalCustomers: 'إجمالي العملاء', newCustomers: 'عملاء جدد (آخر 7 أيام)', latestBookings: 'أحدث الحجوزات',
+  email: 'البريد الإلكتروني', phone: 'الهاتف', nationality: 'الجنسية', joined: 'تاريخ الانضمام', bookingsCount: 'الحجوزات',
+  pending: 'معلق', confirmed: 'مؤكد', cancelled: 'ملغي',
+  visitsToday: 'الزيارات اليوم', uniqueVisitorsToday: 'الزوار الفريدون اليوم', uniqueVisitorsWeek: 'الزوار الفريدون (آخر 7 أيام)',
+  dailyTraffic: 'الزيارات اليومية (آخر 7 أيام)', date: 'التاريخ', visits: 'الزيارات', uniqueVisitors: 'الزوار الفريدون', topPages: 'أكثر الصفحات زيارة (آخر 7 أيام)',
+  customerActivity: 'نشاط العميل', pageViews: 'مشاهدات الصفحات (آخر 50)', travelDate: 'تاريخ السفر', returnDate: 'تاريخ العودة',
+  adults: 'البالغون', children: 'الأطفال', infants: 'الرضع', notes: 'ملاحظات', total: 'الإجمالي',
   logout: 'تسجيل الخروج', add: '+ إضافة', edit: 'تعديل', delete: 'حذف', save: 'حفظ',
   published: 'منشور', hidden: '(مخفي)', featured: 'مميز (الصفحة الرئيسية)', none: 'بدون',
   newPackage: 'باقة جديدة', editPackage: 'تعديل الباقة', newDestination: 'وجهة جديدة',

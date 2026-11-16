@@ -9,6 +9,89 @@ import {getCurrentUser} from '@/lib/auth';
 
 type Result = {ok: true; id: number} | {ok: false; error: 'login' | 'date' | 'package' | 'activity'};
 
+type BookingBoxInput = {
+  kind: 'package' | 'activity';
+  slug: string;
+  date: string;
+  returnDate: string | null;
+  adults: number;
+  children: number;
+  infants: number;
+  lang: string;
+  notes: string;
+  phone: string;
+};
+
+export async function saveBookingFromBox(input: BookingBoxInput) {
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  const {kind, slug, date, returnDate, adults, children, infants, notes, phone} = input;
+  if (kind !== 'package' && kind !== 'activity') throw new Error('Invalid booking kind');
+  if (![adults, children, infants].every((count) => Number.isInteger(count) && count >= 0)) {
+    throw new Error('Booking counts must be non-negative integers');
+  }
+  const lang = (await getLocale()) === 'ar' ? 'ar' : 'en';
+  let title: string;
+  let packageId: number | null = null;
+  let activityId: number | null = null;
+  let adultPrice: number | null;
+  let childPrice: number | null;
+  let infantPrice: number | null;
+
+  if (kind === 'package') {
+    const [pkg] = await db.select().from(packages).where(eq(packages.slug, slug)).limit(1);
+    if (!pkg) throw new Error(`Package not found: ${slug}`);
+    title = pkg.i18n[lang].title;
+    packageId = pkg.id;
+    adultPrice = pkg.priceUsd;
+    childPrice = pkg.childPriceUsd;
+    infantPrice = pkg.infantPriceUsd;
+  } else {
+    const [activity] = await db.select().from(activities).where(eq(activities.slug, slug)).limit(1);
+    if (!activity) throw new Error(`Activity not found: ${slug}`);
+    title = activity.i18n[lang].title;
+    activityId = activity.id;
+    adultPrice = activity.priceUsd;
+    childPrice = activity.childPriceUsd;
+    infantPrice = activity.infantPriceUsd;
+  }
+
+  const counts = [adults, children, infants];
+  const prices = [adultPrice, childPrice, infantPrice];
+  const totalUsd = counts.some((count, index) => count > 0 && prices[index] == null)
+    ? null
+    : counts.reduce((total, count, index) => total + count * (prices[index] ?? 0), 0);
+  const pax = adults + children + infants;
+  const [booking] = await db.insert(bookings).values({
+    userId: user.id,
+    kind,
+    packageId,
+    activityId,
+    packageTitle: title,
+    travelDate: date,
+    returnDate,
+    pax,
+    adults,
+    children,
+    infants,
+    notes: notes.trim() || null,
+    phone: phone.trim() || null,
+    lang: input.lang === 'ar' ? 'ar' : 'en',
+    totalUsd,
+    status: 'pending'
+  }).returning({id: bookings.id});
+
+  return booking.id;
+}
+
+type ActivityPaymentResult = {ok: true; url: string} | {ok: false; reason: 'soon'};
+
+export async function startActivityPayment(_bookingId: number): Promise<ActivityPaymentResult> {
+  // TODO: create Stripe Checkout session (USD) and return its URL.
+  return {ok: false, reason: 'soon'};
+}
+
 export async function createBooking(input: {slug: string; date: string; pax: number; lang: string}): Promise<Result> {
   const user = await getCurrentUser();
   if (!user) return {ok: false, error: 'login'};

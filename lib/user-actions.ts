@@ -1,17 +1,41 @@
 'use server';
 
 import {redirect} from 'next/navigation';
+import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
-import {eq} from 'drizzle-orm';
+import {and, eq} from 'drizzle-orm';
 import {getLocale} from 'next-intl/server';
 import {db} from '@/lib/db';
-import {users} from '@/lib/db/schema';
+import {favorites, users} from '@/lib/db/schema';
 import {createUserSession, destroyUserSession, getCurrentUser} from '@/lib/auth';
 
 async function go(path: string): Promise<never> {
   redirect(`/${await getLocale()}${path}`);
 }
 const str = (v: FormDataEntryValue | null) => String(v ?? '').trim();
+
+export async function toggleFavorite(kind: 'package' | 'activity', id: number) {
+  const user = await getCurrentUser();
+  if (!user) return go('/login');
+  if ((kind !== 'package' && kind !== 'activity') || !Number.isInteger(id) || id <= 0) {
+    throw new Error('Invalid favorite target');
+  }
+  const where = kind === 'package'
+    ? and(eq(favorites.userId, user.id), eq(favorites.kind, kind), eq(favorites.packageId, id))
+    : and(eq(favorites.userId, user.id), eq(favorites.kind, kind), eq(favorites.activityId, id));
+  const [existing] = await db.select({id: favorites.id}).from(favorites).where(where).limit(1);
+  if (existing) {
+    await db.delete(favorites).where(eq(favorites.id, existing.id));
+  } else {
+    await db.insert(favorites).values({
+      userId: user.id,
+      kind,
+      packageId: kind === 'package' ? id : null,
+      activityId: kind === 'activity' ? id : null
+    });
+  }
+  revalidatePath('/', 'layout');
+}
 
 export async function signup(_prev: string | null | undefined, fd: FormData) {
   const ar = (await getLocale()) === 'ar';
@@ -54,8 +78,16 @@ export async function userLogout() {
 export async function updateProfile(fd: FormData) {
   const user = await getCurrentUser();
   if (!user) return go('/login');
-  const name = str(fd.get('name'));
-  if (name) await db.update(users).set({name, phone: str(fd.get('phone')) || null}).where(eq(users.id, user.id));
+  const firstName = str(fd.get('firstName'));
+  const lastName = str(fd.get('lastName'));
+  if (!firstName) return go('/account');
+  await db.update(users).set({
+    firstName,
+    lastName: lastName || null,
+    name: `${firstName} ${lastName}`.trim(),
+    phone: str(fd.get('phone')) || null,
+    nationality: str(fd.get('nationality')) || null
+  }).where(eq(users.id, user.id));
   await go('/account?saved=1');
 }
 

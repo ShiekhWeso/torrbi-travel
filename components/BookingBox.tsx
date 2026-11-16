@@ -5,14 +5,17 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
 import {waLink} from '@/lib/whatsapp';
 import {useCurrency} from '@/components/CurrencyProvider';
+import {saveBookingFromBox} from '@/lib/booking-actions';
 
 type Props = {
+  slug: string;
   title: string;
   days: number;
   adult: number | null;
   child: number | null;
   infant: number | null;
   policies?: string[];
+  user?: {firstName: string | null; lastName: string | null; phone: string | null; email: string; nationality: string | null} | null;
 };
 
 const addDays = (iso: string, n: number) => {
@@ -20,7 +23,7 @@ const addDays = (iso: string, n: number) => {
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 };
 
-export default function BookingBox({title, days, adult, child, infant, policies}: Props) {
+export default function BookingBox({slug, title, days, adult, child, infant, policies, user}: Props) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const sp = useSearchParams();
@@ -35,6 +38,10 @@ export default function BookingBox({title, days, adult, child, infant, policies}
   const [lang, setLang] = useState(ar ? 'ar' : 'en');
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
+  const [firstName, setFirstName] = useState(user?.firstName ?? '');
+  const [lastName, setLastName] = useState(user?.lastName ?? '');
+  const [phone, setPhone] = useState(user?.phone ?? '');
+  const [nationality, setNationality] = useState(user?.nationality ?? '');
 
   const ret = date ? addDays(date, days - 1) : '';
   const rows = [
@@ -51,6 +58,20 @@ export default function BookingBox({title, days, adult, child, infant, policies}
   const send = () => {
     if (!date) return setErr(L('Choose a travel date', 'اختر تاريخ السفر'));
     setErr('');
+    if (user) {
+      void saveBookingFromBox({
+        kind: 'package',
+        slug,
+        date,
+        returnDate: ret || null,
+        adults,
+        children,
+        infants,
+        lang,
+        notes,
+        phone
+      }).catch((error) => console.error('Failed to save package booking', error));
+    }
     const langName = lang === 'ar' ? L('Arabic', 'العربية') : L('English', 'الإنجليزية');
     const text = ar
       ? [
@@ -63,6 +84,10 @@ export default function BookingBox({title, days, adult, child, infant, policies}
           `الرضع (أقل من سنتين): ${infants}`,
           `اللغة: ${langName}`,
           `الإجمالي التقريبي: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
+          `الاسم الأول: ${firstName}`,
+          `اسم العائلة: ${lastName}`,
+          `الهاتف: ${phone}`,
+          `الجنسية: ${nationality}`,
           notes.trim() ? `ملاحظات: ${notes.trim()}` : ''
         ]
       : [
@@ -75,6 +100,10 @@ export default function BookingBox({title, days, adult, child, infant, policies}
           `Infants (under 2): ${infants}`,
           `Language: ${langName}`,
           `Estimated total: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
+          `First name: ${firstName}`,
+          `Last name: ${lastName}`,
+          `Phone: ${phone}`,
+          `Nationality: ${nationality}`,
           notes.trim() ? `Notes: ${notes.trim()}` : ''
         ];
     window.open(waLink(text.filter(Boolean).join('\n')), '_blank', 'noopener');
@@ -125,6 +154,31 @@ export default function BookingBox({title, days, adult, child, infant, policies}
         {counter(L('Child 2–11', 'طفل 2–11'), children, setChildren, child, 0)}
         {counter(L('Infant <2', 'رضيع أقل من سنتين'), infants, setInfants, infant, 0)}
 
+        <input
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder={L('First name', 'الاسم الأول')}
+          className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
+        />
+        <input
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          placeholder={L('Last name', 'اسم العائلة')}
+          className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
+        />
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder={L('Phone', 'رقم الهاتف')}
+          className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
+        />
+        <input
+          value={nationality}
+          onChange={(e) => setNationality(e.target.value)}
+          placeholder={L('Nationality', 'الجنسية')}
+          className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
+        />
         <label className={box}>
           <span className="material-symbols-outlined text-sky">calendar_today</span>
           <input

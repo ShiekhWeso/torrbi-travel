@@ -3,21 +3,24 @@
 import {useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
-import {waLink} from '@/lib/whatsapp';
 import {useCurrency} from '@/components/CurrencyProvider';
+import {useRouter} from '@/i18n/navigation';
+import {saveBookingFromBox, startActivityPayment} from '@/lib/booking-actions';
 
 type Props = {
-  title: string;
+  slug: string;
   adult: number | null;
   child: number | null;
   infant: number | null;
   policies?: string[];
+  user?: {phone: string | null} | null;
 };
 
-export default function ActivityBookingBox({title, adult, child, infant, policies}: Props) {
+export default function ActivityBookingBox({slug, adult, child, infant, policies, user}: Props) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const sp = useSearchParams();
+  const router = useRouter();
   const {cur, money} = useCurrency();
   const ar = useLocale() === 'ar';
   const L = (en: string, a: string) => (ar ? a : en);
@@ -29,6 +32,9 @@ export default function ActivityBookingBox({title, adult, child, infant, policie
   const [lang, setLang] = useState(ar ? 'ar' : 'en');
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
+  const [phone, setPhone] = useState(user?.phone ?? '');
+  const [saving, setSaving] = useState(false);
+  const [paymentSoon, setPaymentSoon] = useState(false);
 
   const rows = [
     {n: adults, price: adult},
@@ -41,34 +47,44 @@ export default function ActivityBookingBox({title, adult, child, infant, policie
   const total =
     unknown && known === 0 ? p('onRequest') : `${money(known)}${unknown ? ` + ${p('onRequest')}` : ''}`;
 
-  const send = () => {
+  const bookNow = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     if (!date) return setErr(L('Choose a date', 'اختر التاريخ'));
     setErr('');
-    const langName = lang === 'ar' ? L('Arabic', 'العربية') : L('English', 'الإنجليزية');
-    const text = ar
-      ? [
-          'مرحباً TORRBI TRAVEL، أرغب في التحقق من تفاصيل النشاط التالي:',
-          `النشاط: ${title}`,
-          `التاريخ: ${date}`,
-          `البالغين: ${adults}`,
-          `الأطفال (2-11): ${children}`,
-          `الرضع (أقل من سنتين): ${infants}`,
-          `اللغة: ${langName}`,
-          `الإجمالي التقريبي: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
-          notes.trim() ? `ملاحظات: ${notes.trim()}` : ''
-        ]
-      : [
-          'Hello TORRBI TRAVEL, I would like to check the details of this activity:',
-          `Activity: ${title}`,
-          `Date: ${date}`,
-          `Adults: ${adults}`,
-          `Children (2-11): ${children}`,
-          `Infants (under 2): ${infants}`,
-          `Language: ${langName}`,
-          `Estimated total: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
-          notes.trim() ? `Notes: ${notes.trim()}` : ''
-        ];
-    window.open(waLink(text.filter(Boolean).join('\n')), '_blank', 'noopener');
+    setPaymentSoon(false);
+    setSaving(true);
+    try {
+      const bookingId = await saveBookingFromBox({
+        kind: 'activity',
+        slug,
+        date,
+        returnDate: null,
+        adults,
+        children,
+        infants,
+        lang,
+        notes,
+        phone
+      });
+      if (bookingId == null) {
+        router.push('/login');
+        return;
+      }
+      const payment = await startActivityPayment(bookingId);
+      if (payment.ok) {
+        window.location.assign(payment.url);
+      } else if (payment.reason === 'soon') {
+        setPaymentSoon(true);
+      }
+    } catch (error) {
+      console.error('Failed to book activity', error);
+      setErr(L('Unable to save your booking. Please try again.', 'تعذر حفظ حجزك. حاول مرة أخرى.'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const box = 'flex w-full items-center gap-3 rounded-xl border border-navy/20 bg-snow px-4 py-3 font-bold text-navy';
@@ -110,6 +126,13 @@ export default function ActivityBookingBox({title, adult, child, infant, policie
         {counter(L('Child 2–11', 'طفل 2–11'), children, setChildren, child, 0)}
         {counter(L('Infant <2', 'رضيع أقل من سنتين'), infants, setInfants, infant, 0)}
 
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder={L('Phone', 'رقم الهاتف')}
+          className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
+        />
         <label className={box}>
           <span className="material-symbols-outlined text-sky">calendar_today</span>
           <input
@@ -145,12 +168,15 @@ export default function ActivityBookingBox({title, adult, child, infant, policie
       )}
 
       <button
-        onClick={send}
+        type="button"
+        onClick={bookNow}
+        disabled={saving}
         className="mt-5 w-full rounded-full bg-brand-warm py-4 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02]"
       >
-        {t('check')}
+        {saving ? L('Saving…', 'جارٍ الحفظ…') : L('Book now', 'احجز الآن')}
       </button>
       {err && <p className="mt-3 text-sm font-bold text-[#ef4444]">{err}</p>}
+      {paymentSoon && <p className="mt-3 text-sm text-navy/70">{L('Online payment is coming soon. Your booking was saved as pending.', 'الدفع الإلكتروني قريباً. تم حفظ حجزك قيد الانتظار.')}</p>}
       <ul className="mt-5 space-y-3 border-t border-navy/10 pt-5 text-sm">
         {list.map((x) => (
           <li key={x.title} className="flex gap-3">

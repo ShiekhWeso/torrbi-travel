@@ -6,6 +6,7 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
 import {getRates} from '@/lib/queries';
 import CurrencyProvider from '@/components/CurrencyProvider';
+import Tracker from '@/components/Tracker';
 import '../globals.css';
 
 // Brand fonts live in app/fonts
@@ -58,7 +59,10 @@ export default async function LocaleLayout({
       </head>
       <body className="bg-snow font-body text-navy antialiased min-h-screen flex flex-col">
         <NextIntlClientProvider>
-          <CurrencyProvider rates={rates}>{children}</CurrencyProvider>
+          <CurrencyProvider rates={rates}>
+            <Tracker />
+            {children}
+          </CurrencyProvider>
         </NextIntlClientProvider>
       </body>
     </html>

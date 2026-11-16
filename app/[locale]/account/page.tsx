@@ -12,6 +12,10 @@ export default async function Profile({searchParams}: {searchParams: Promise<{sa
   const t = (en: string, a: string) => (ar ? a : en);
   const input = 'w-full rounded-xl bg-mist px-4 py-3 font-bold text-navy focus:outline-none';
   const label = 'mb-1 block text-sm font-bold text-navy/70';
+  const firstSpace = user.name.indexOf(' ');
+  const fallbackFirstName = firstSpace < 0 ? user.name : user.name.slice(0, firstSpace);
+  const fallbackLastName = firstSpace < 0 ? '' : user.name.slice(firstSpace + 1);
+  const hasSavedNames = Boolean(user.firstName || user.lastName);
 
   return (
     <section className="rounded-3xl bg-snow p-6 shadow-[0_16px_40px_rgba(15,24,89,0.06)] lg:p-8">
@@ -19,12 +23,20 @@ export default async function Profile({searchParams}: {searchParams: Promise<{sa
       <p className="mt-1 text-sm text-navy/60">{t('Keep your details up to date for faster bookings.', 'حافظ على تحديث بياناتك لحجز أسرع.')}</p>
       <form action={updateProfile} className="mt-6 grid gap-5 sm:grid-cols-2">
         <div>
-          <label className={label}>{t('Full name', 'الاسم الكامل')}</label>
-          <input name="name" required defaultValue={user.name} className={input} />
+          <label className={label}>{t('First name', 'الاسم الأول')}</label>
+          <input name="firstName" required defaultValue={hasSavedNames ? user.firstName ?? '' : fallbackFirstName} className={input} />
         </div>
         <div>
-          <label className={label}>{t('Phone', 'الهاتف')}</label>
+          <label className={label}>{t('Last name', 'اسم العائلة')}</label>
+          <input name="lastName" defaultValue={hasSavedNames ? user.lastName ?? '' : fallbackLastName} className={input} />
+        </div>
+        <div>
+          <label className={label}>{t('Phone', 'رقم الهاتف')}</label>
           <input name="phone" type="tel" defaultValue={user.phone ?? ''} className={input} />
+        </div>
+        <div>
+          <label className={label}>{t('Nationality', 'الجنسية')}</label>
+          <input name="nationality" defaultValue={user.nationality ?? ''} className={input} />
         </div>
         <div className="sm:col-span-2">
           <label className={label}>{t('Email', 'البريد الإلكتروني')}</label>

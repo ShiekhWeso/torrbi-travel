@@ -1,7 +1,10 @@
 import {redirect} from 'next/navigation';
 import {getLocale} from 'next-intl/server';
+import {count, eq} from 'drizzle-orm';
 import {Link} from '@/i18n/navigation';
 import {getSession} from '@/lib/auth';
+import {db} from '@/lib/db';
+import {bookings} from '@/lib/db/schema';
 import {tr} from '@/lib/adminT';
 import LangSwitch from '@/components/admin/LangSwitch';
 import UnsavedChangesGuard from '@/components/admin/UnsavedChangesGuard';
@@ -12,10 +15,13 @@ export default async function PanelLayout({children}: {children: React.ReactNode
   const session = await getSession();
   if (!session) redirect(`/${locale}/admin/login`);
   const t = tr(locale);
+  const [pendingRow] = await db.select({value: count()}).from(bookings).where(eq(bookings.status, 'pending'));
+  const pendingCount = pendingRow?.value ?? 0;
   const nav = [
     [t.dashboard, '/admin'],
     [t.packages, '/admin/packages'],
     [t.bookings, '/admin/bookings'],
+    [t.customers, '/admin/customers'],
     [t.destinations, '/admin/destinations'],
     [t.activities, '/admin/activities'],
     [t.offers, '/admin/offers'],
@@ -32,6 +38,9 @@ export default async function PanelLayout({children}: {children: React.ReactNode
             {nav.map(([label, href]) => (
               <Link key={href} href={href} className="rounded-lg px-4 py-2 text-sm font-bold text-navy hover:bg-mist">
                 {label}
+                {href === '/admin/bookings' && pendingCount > 0 && (
+                  <span className="ms-2 rounded-full bg-red-600 px-2 py-0.5 text-xs text-white">{pendingCount}</span>
+                )}
               </Link>
             ))}
           </nav>

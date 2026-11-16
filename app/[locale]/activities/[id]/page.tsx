@@ -1,11 +1,16 @@
 import Image from 'next/image';
 import {notFound} from 'next/navigation';
 import {setRequestLocale} from 'next-intl/server';
+import {and, eq} from 'drizzle-orm';
 import {getActivities, getActivity} from '@/lib/queries';
+import {db} from '@/lib/db';
+import {activities, favorites} from '@/lib/db/schema';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ActivityBookingBox from '@/components/ActivityBookingBox';
 import {Suspense} from 'react';
+import {getCurrentUser} from '@/lib/auth';
+import FavoriteButton from '@/components/FavoriteButton';
 
 export async function generateStaticParams() {
   const activities = await getActivities('en');
@@ -17,6 +22,21 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
   setRequestLocale(locale);
   const activity = await getActivity(locale, id);
   if (!activity) notFound();
+  const user = await getCurrentUser();
+  const [favoriteTarget] = await db
+    .select({itemId: activities.id, favoriteId: favorites.id})
+    .from(activities)
+    .leftJoin(
+      favorites,
+      and(
+        eq(favorites.activityId, activities.id),
+        eq(favorites.userId, user?.id ?? -1),
+        eq(favorites.kind, 'activity')
+      )
+    )
+    .where(eq(activities.slug, id))
+    .limit(1);
+  if (!favoriteTarget) notFound();
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
   const gallery = activity.gallery.length ? activity.gallery : activity.image ? [activity.image] : [];
@@ -26,7 +46,10 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
       <Header />
       <main className="bg-snow pb-20 pt-32">
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-          <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{activity.title}</h1>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{activity.title}</h1>
+            <FavoriteButton kind="activity" id={favoriteTarget.itemId} active={favoriteTarget.favoriteId != null} loggedIn={Boolean(user)} />
+          </div>
           <p className="mt-3 text-sm text-navy/70">{activity.city} · {activity.durationHours ?? '—'} {t('hours', 'ساعات')}</p>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
             <div>
@@ -64,7 +87,7 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               </section>
             </div>
             <Suspense fallback={null}>
-              <ActivityBookingBox title={activity.title} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} policies={activity.policies} />
+              <ActivityBookingBox slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} policies={activity.policies} user={user} />
             </Suspense>
           </div>
         </div>

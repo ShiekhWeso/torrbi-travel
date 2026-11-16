@@ -4,11 +4,16 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import {getPackages, getPackage} from '@/lib/queries';
+import {and, eq} from 'drizzle-orm';
+import {db} from '@/lib/db';
+import {favorites, packages} from '@/lib/db/schema';
 import {packageDetails, reviews} from '@/lib/packageDetails';
 import BookingBox from '@/components/BookingBox';
+import FavoriteButton from '@/components/FavoriteButton';
 import ItineraryPath from '@/components/ItineraryPath';
 import ReviewsModal from '@/components/ReviewsModal';
 import { Suspense } from 'react';
+import {getCurrentUser} from '@/lib/auth';
 
 export async function generateStaticParams() {
   const packages = await getPackages('en');
@@ -20,6 +25,21 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
   setRequestLocale(locale);
   const pkg = await getPackage(locale, id);
   if (!pkg) notFound();
+  const user = await getCurrentUser();
+  const [favoriteTarget] = await db
+    .select({itemId: packages.id, favoriteId: favorites.id})
+    .from(packages)
+    .leftJoin(
+      favorites,
+      and(
+        eq(favorites.packageId, packages.id),
+        eq(favorites.userId, user?.id ?? -1),
+        eq(favorites.kind, 'package')
+      )
+    )
+    .where(eq(packages.slug, id))
+    .limit(1);
+  if (!favoriteTarget) notFound();
   const det = Object.assign({rating: 4.8, reviews: 100}, packageDetails[id]);
 
   const t = await getTranslations('packageDetail');
@@ -42,7 +62,10 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
       <Header />
       <main className="bg-snow pt-32 pb-20">
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-          <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{pkg.title}</h1>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{pkg.title}</h1>
+            <FavoriteButton kind="package" id={favoriteTarget.itemId} active={favoriteTarget.favoriteId != null} loggedIn={Boolean(user)} />
+          </div>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-navy/70">
             <span className="rounded-md bg-navy px-2 py-1 text-xs font-bold text-snow">{t('topRated')}</span>
             <span className="flex items-center gap-1 font-bold text-navy">
@@ -173,7 +196,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </section>
             </div>
             <Suspense fallback={null}>
-              <BookingBox title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} />
+              <BookingBox slug={pkg.id} title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} user={user} />
             </Suspense>
           </div>
         </div>

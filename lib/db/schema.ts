@@ -1,4 +1,4 @@
-import {pgTable, serial, text, integer, boolean, jsonb, timestamp, real, date} from 'drizzle-orm/pg-core';
+import {pgTable, serial, text, integer, boolean, jsonb, timestamp, real, date, index, uniqueIndex} from 'drizzle-orm/pg-core';
 
 export type Lang = 'ar' | 'en';
 
@@ -90,6 +90,9 @@ export const admins = pgTable('admins', {
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
+  firstName: text('first_name'),
+  lastName: text('last_name'),
+  nationality: text('nationality'),
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   phone: text('phone'),
@@ -97,6 +100,28 @@ export const users = pgTable('users', {
   googleId: text('google_id').unique(),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
+
+export const pageViews = pgTable('page_views', {
+  id: serial('id').primaryKey(),
+  visitorId: text('visitor_id').notNull(),
+  userId: integer('user_id').references(() => users.id, {onDelete: 'set null'}),
+  path: text('path').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => [
+  index('page_views_created_at_idx').on(table.createdAt),
+  index('page_views_user_id_idx').on(table.userId)
+]);
+
+export const favorites = pgTable('favorites', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, {onDelete: 'cascade'}),
+  kind: text('kind').$type<'package' | 'activity'>().notNull(),
+  packageId: integer('package_id').references(() => packages.id, {onDelete: 'cascade'}),
+  activityId: integer('activity_id').references(() => activities.id, {onDelete: 'cascade'}),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => [
+  uniqueIndex('favorites_user_kind_package_activity_unique').on(table.userId, table.kind, table.packageId, table.activityId)
+]);
 
 export const bookings = pgTable('bookings', {
   id: serial('id').primaryKey(),
@@ -106,7 +131,13 @@ export const bookings = pgTable('bookings', {
   activityId: integer('activity_id').references(() => activities.id, {onDelete: 'set null'}),
   packageTitle: text('package_title').notNull(),
   travelDate: date('travel_date').notNull(),
+  returnDate: date('return_date'),
   pax: integer('pax').notNull(),
+  adults: integer('adults'),
+  children: integer('children'),
+  infants: integer('infants'),
+  notes: text('notes'),
+  phone: text('phone'),
   lang: text('lang').notNull().default('en'),
   totalUsd: integer('total_usd'),
   status: text('status').notNull().default('pending'),
