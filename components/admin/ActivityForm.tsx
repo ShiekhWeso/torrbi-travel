@@ -34,7 +34,9 @@ export default async function ActivityForm({a}: {a?: A}) {
       <Field label={t.city}><input name="city" defaultValue={a?.city} required className={inp} /></Field>
       <Field label={t.image}><input name="image" defaultValue={a?.image ?? ''} className={inp} /></Field>
       <Field label={t.gallery}><textarea name="gallery" rows={3} defaultValue={J(a?.gallery)} className={inp} /></Field>
-      <Field label={t.price}><input name="priceUsd" type="number" defaultValue={a?.priceUsd ?? ''} className={inp} /></Field>
+      <Field label="Adult price (USD) / سعر البالغ"><input name="priceUsd" type="number" defaultValue={a?.priceUsd ?? ''} className={inp} /></Field>
+      <Field label="Child price 2–11 (USD) / سعر الطفل"><input name="childPriceUsd" type="number" defaultValue={a?.childPriceUsd ?? ''} className={inp} /></Field>
+      <Field label="Infant price under 2 (USD) / سعر الرضيع"><input name="infantPriceUsd" type="number" defaultValue={a?.infantPriceUsd ?? ''} className={inp} /></Field>
       <Field label={t.duration}><input name="durationHours" type="number" defaultValue={a?.durationHours ?? ''} className={inp} /></Field>
       <Field label={t.sort}><input name="sort" type="number" defaultValue={a?.sort ?? 0} className={inp} /></Field>
       <label className="flex items-center gap-2 text-sm font-bold text-navy">

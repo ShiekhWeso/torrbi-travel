@@ -170,7 +170,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </section>
             </div>
             <Suspense fallback={null}>
-              <BookingBox slug={pkg.id} price={pkg.price ? `$${pkg.price}` : ''} />
+              <BookingBox title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} />
             </Suspense>
           </div>
         </div>

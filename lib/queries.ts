@@ -12,6 +12,7 @@ export async function getPackages(locale: string) {
     const mine = days.filter((d) => d.packageId === r.id);
     return {
       id: r.slug, image: r.cover ?? '', days: r.days, nights: r.nights, price: r.priceUsd,
+      childPrice: r.childPriceUsd, infantPrice: r.infantPriceUsd,
       region: r.region, featured: r.featured, gallery: r.gallery,
       ...r.i18n[l],
       stops: [...new Set(mine.map((d) => d.i18n[l].stage ?? d.i18n[l].title))],
@@ -42,7 +43,8 @@ export async function getActivities(locale: string) {
   const rows = await db.select().from(activities).where(eq(activities.published, true)).orderBy(asc(activities.sort), asc(activities.id));
   return rows.map((r) => ({
     id: r.slug, city: r.city, image: r.image ?? '', gallery: r.gallery,
-    price: r.priceUsd, durationHours: r.durationHours, featured: r.featured,
+    price: r.priceUsd, childPrice: r.childPriceUsd, infantPrice: r.infantPriceUsd,
+    durationHours: r.durationHours, featured: r.featured,
     ...r.i18n[l]
   }));
 }

@@ -36,7 +36,9 @@ export default async function PackageForm({p}: {p?: P}) {
       <Field label={t.region}><input name="region" defaultValue={p?.region ?? 'asia'} className={inp} /></Field>
       <Field label={t.days}><input name="days" type="number" defaultValue={p?.days ?? ''} required className={inp} /></Field>
       <Field label={t.nights}><input name="nights" type="number" defaultValue={p?.nights ?? ''} required className={inp} /></Field>
-      <Field label={t.price}><input name="priceUsd" type="number" defaultValue={p?.priceUsd ?? ''} className={inp} /></Field>
+      <Field label="Adult price (USD) / سعر البالغ"><input name="priceUsd" type="number" defaultValue={p?.priceUsd ?? ''} className={inp} /></Field>
+      <Field label="Child price 2–11 (USD) / سعر الطفل"><input name="childPriceUsd" type="number" defaultValue={p?.childPriceUsd ?? ''} className={inp} /></Field>
+      <Field label="Infant price under 2 (USD) / سعر الرضيع"><input name="infantPriceUsd" type="number" defaultValue={p?.infantPriceUsd ?? ''} className={inp} /></Field>
       <Field label={t.sort}><input name="sort" type="number" defaultValue={p?.sort ?? 0} className={inp} /></Field>
       <Field label={t.cover}><input name="cover" defaultValue={p?.cover ?? ''} className={inp} /></Field>
       <Field label={t.gallery}><textarea name="gallery" rows={3} defaultValue={J(p?.gallery)} className={inp} /></Field>
