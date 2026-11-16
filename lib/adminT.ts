@@ -1,5 +1,5 @@
 const en = {
-  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ',
+  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ', contact: 'Contact / اتصل بنا',
   customers: 'Customers', pendingBookings: 'Pending bookings', bookingsToday: 'Bookings today', totalBookings: 'Total bookings',
   totalCustomers: 'Total customers', newCustomers: 'New customers (last 7 days)', latestBookings: 'Latest bookings',
   email: 'Email', phone: 'Phone', nationality: 'Nationality', joined: 'Joined', bookingsCount: 'Bookings',
@@ -32,11 +32,16 @@ const en = {
   gallery: 'Gallery - one URL per line', perLine: 'one per line',
   dayNo: 'Day #', stage: 'Stage / city', items: 'Items', saveDay: 'Save day',
   addDay: '+ Add day', deleteDay: 'Delete day',
-  bookings: 'Bookings'
+  bookings: 'Bookings',
+  social: 'Social', direct: 'Direct', section: 'Section', type: 'Type', value: 'Value',
+  label: 'Optional label', address: 'Address', hours: 'Working hours', newContact: 'New contact link',
+  editContact: 'Edit contact link', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok',
+  x: 'X', snapchat: 'Snapchat', youtube: 'YouTube', linkedin: 'LinkedIn',
+  whatsapp: 'WhatsApp'
 };
 
 const ar: typeof en = {
-  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة',
+  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة', contact: 'اتصل بنا',
   customers: 'العملاء', pendingBookings: 'الحجوزات المعلقة', bookingsToday: 'حجوزات اليوم', totalBookings: 'إجمالي الحجوزات',
   totalCustomers: 'إجمالي العملاء', newCustomers: 'عملاء جدد (آخر 7 أيام)', latestBookings: 'أحدث الحجوزات',
   email: 'البريد الإلكتروني', phone: 'الهاتف', nationality: 'الجنسية', joined: 'تاريخ الانضمام', bookingsCount: 'الحجوزات',
@@ -69,7 +74,12 @@ const ar: typeof en = {
   gallery: 'المعرض - رابط في كل سطر', perLine: 'واحد في كل سطر',
   dayNo: 'رقم اليوم', stage: 'المرحلة / المدينة', items: 'العناصر', saveDay: 'حفظ اليوم',
   addDay: '+ إضافة يوم', deleteDay: 'حذف اليوم',
-  bookings: 'الحجوزات'
+  bookings: 'الحجوزات',
+  social: 'التواصل الاجتماعي', direct: 'مباشر', section: 'القسم', type: 'النوع', value: 'القيمة',
+  label: 'تسمية اختيارية', address: 'العنوان', hours: 'ساعات العمل', newContact: 'إضافة وسيلة تواصل',
+  editContact: 'تعديل وسيلة التواصل', instagram: 'إنستغرام', facebook: 'فيسبوك', tiktok: 'تيك توك',
+  x: 'إكس', snapchat: 'سناب شات', youtube: 'يوتيوب', linkedin: 'لينكد إن',
+  whatsapp: 'واتساب'
 };
 
 export const tr = (locale: string) => (locale === 'ar' ? ar : en);

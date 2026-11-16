@@ -1,6 +1,6 @@
 import {asc, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays, destinations, activities, offers, faqs, settings} from '@/lib/db/schema';
+import {packages, packageDays, destinations, activities, offers, faqs, settings, contactLinks} from '@/lib/db/schema';
 import {DEFAULT_RATES, type Rates} from '@/lib/currency';
 
 const lang = (l: string) => (l === 'ar' ? 'ar' : 'en');
@@ -79,4 +79,10 @@ export async function getFaqs(locale: string) {
     question: row.i18n[l].question,
     answer: row.i18n[l].answer
   }));
+}
+
+export async function getContactLinks() {
+  return db.select().from(contactLinks)
+    .where(eq(contactLinks.published, true))
+    .orderBy(asc(contactLinks.sort), asc(contactLinks.id));
 }

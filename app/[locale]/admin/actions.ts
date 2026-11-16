@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, settings, coupons, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, settings, coupons, contactLinks, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 
@@ -225,6 +225,78 @@ export async function toggleCoupon(formData: FormData) {
     throw new Error('Invalid coupon status');
   }
   await db.update(coupons).set({active: active === 'true'}).where(eq(coupons.id, id));
+  revalidatePath('/', 'layout');
+}
+
+const contactTypes: Record<ContactSection, ContactType[]> = {
+  social: ['instagram', 'facebook', 'tiktok', 'x', 'snapchat', 'youtube', 'linkedin'],
+  direct: ['whatsapp', 'phone', 'email', 'address', 'hours']
+};
+
+function contactLinkData(formData: FormData) {
+  const section = str(formData.get('section'));
+  const type = str(formData.get('type'));
+  const value = str(formData.get('value'));
+  const sort = num(formData.get('sort')) ?? 0;
+  if (!['social', 'direct'].includes(section)) throw new Error('Invalid contact section');
+  if (!contactTypes[section as ContactSection].includes(type as ContactType)) throw new Error('Invalid contact type for section');
+  if (!value) throw new Error('Contact value is required');
+  if (section === 'social') {
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error('Social contact value must be a valid URL');
+    }
+    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Social contact URL must use HTTP or HTTPS');
+  }
+  if (!Number.isInteger(sort)) throw new Error('Contact sort order must be a whole number');
+  const labelEn = str(formData.get('label_en'));
+  const labelAr = str(formData.get('label_ar'));
+  return {
+    section: section as ContactSection,
+    type: type as ContactType,
+    value,
+    i18n: labelEn || labelAr ? {
+      ...(labelEn ? {en: {label: labelEn}} : {}),
+      ...(labelAr ? {ar: {label: labelAr}} : {})
+    } : null,
+    sort,
+    published: formData.get('published') === 'on'
+  };
+}
+
+export async function saveContactLink(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = num(formData.get('id'));
+  const data = contactLinkData(formData);
+  if (id !== null) {
+    if (!Number.isInteger(id) || id < 1) throw new Error('Invalid contact link id');
+    await db.update(contactLinks).set(data).where(eq(contactLinks.id, id));
+  } else {
+    await db.insert(contactLinks).values(data);
+  }
+  revalidatePath('/', 'layout');
+  await go('/admin/contact');
+}
+
+export async function deleteContactLink(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = Number(formData.get('id'));
+  if (!Number.isInteger(id) || id < 1) throw new Error('Invalid contact link id');
+  await db.delete(contactLinks).where(eq(contactLinks.id, id));
+  revalidatePath('/', 'layout');
+  await go('/admin/contact');
+}
+
+export async function toggleContactLink(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = Number(formData.get('id'));
+  const published = str(formData.get('published'));
+  if (!Number.isInteger(id) || id < 1 || !['true', 'false'].includes(published)) {
+    throw new Error('Invalid contact link status');
+  }
+  await db.update(contactLinks).set({published: published === 'true'}).where(eq(contactLinks.id, id));
   revalidatePath('/', 'layout');
 }
 

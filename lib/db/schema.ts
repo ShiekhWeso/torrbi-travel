@@ -81,6 +81,20 @@ export const faqs = pgTable('faqs', {
   i18n: jsonb('i18n').$type<Record<Lang, {question: string; answer: string}>>().notNull()
 });
 
+export type ContactSection = 'social' | 'direct';
+export type ContactType = 'instagram' | 'facebook' | 'tiktok' | 'x' | 'snapchat' | 'youtube' | 'linkedin'
+  | 'whatsapp' | 'phone' | 'email' | 'address' | 'hours';
+
+export const contactLinks = pgTable('contact_links', {
+  id: serial('id').primaryKey(),
+  section: text('section').$type<ContactSection>().notNull(),
+  type: text('type').$type<ContactType>().notNull(),
+  value: text('value').notNull(),
+  i18n: jsonb('i18n').$type<Partial<Record<Lang, {label?: string}>>>(),
+  published: boolean('published').notNull().default(true),
+  sort: integer('sort').notNull().default(0)
+});
+
 export type CouponScope = 'all' | 'package' | 'activity' | 'hotel';
 export type CouponDiscountType = 'percent' | 'fixed';
 

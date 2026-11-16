@@ -1,12 +1,18 @@
 import Image from 'next/image';
-import {useTranslations} from 'next-intl';
+import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
-import {contact} from '@/lib/contact';
+import {getContactLinks} from '@/lib/queries';
 
-export default function Footer() {
-  const t = useTranslations('footer');
-  const nav = useTranslations('nav');
-  const c = useTranslations('contactPage');
+export default async function Footer() {
+  const [t, nav, c, links] = await Promise.all([
+    getTranslations('footer'),
+    getTranslations('nav'),
+    getTranslations('contactPage'),
+    getContactLinks()
+  ]);
+  const phone = links.find((link) => link.section === 'direct' && link.type === 'phone');
+  const email = links.find((link) => link.section === 'direct' && link.type === 'email');
+  const instagram = links.find((link) => link.section === 'social' && link.type === 'instagram');
 
   return (
     <footer className="w-full bg-mist text-navy/70">
@@ -25,18 +31,24 @@ export default function Footer() {
               <Link href="/#contact" className="hover:text-navy">{nav('contact')}</Link>
             </nav>
             <div className="flex flex-col gap-2 text-sm">
-              <a href={`tel:${contact.phone.replace(/\s/g, '')}`} className="hover:text-navy">
-                <span className="material-symbols-outlined me-2 text-[18px] text-sky">call</span>
-                {c('phone')}: <span dir="ltr">{contact.phone}</span>
-              </a>
-              <a href={`mailto:${contact.email}`} className="hover:text-navy">
-                <span className="material-symbols-outlined me-2 text-[18px] text-sky">mail</span>
-                {c('email')}: <span dir="ltr">{contact.email}</span>
-              </a>
-              <a href={`https://instagram.com/${contact.instagram}`} className="hover:text-navy">
-                <span className="material-symbols-outlined me-2 text-[18px] text-sky">photo_camera</span>
-                {c('instagram')}: <span dir="ltr">@{contact.instagram}</span>
-              </a>
+              {phone && (
+                <a href={`tel:${phone.value.replace(/[^\d+]/g, '')}`} className="hover:text-navy">
+                  <span className="material-symbols-outlined me-2 text-[18px] text-sky">call</span>
+                  {c('phone')}: <span dir="ltr">{phone.value}</span>
+                </a>
+              )}
+              {email && (
+                <a href={`mailto:${email.value}`} className="hover:text-navy">
+                  <span className="material-symbols-outlined me-2 text-[18px] text-sky">mail</span>
+                  {c('email')}: <span dir="ltr">{email.value}</span>
+                </a>
+              )}
+              {instagram && (
+                <a href={instagram.value} target="_blank" rel="noopener noreferrer" className="hover:text-navy">
+                  <span className="material-symbols-outlined me-2 text-[18px] text-sky">photo_camera</span>
+                  {c('instagram')}: <span dir="ltr">{instagram.value}</span>
+                </a>
+              )}
             </div>
           </div>
         </div>
