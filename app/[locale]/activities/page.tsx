@@ -9,10 +9,21 @@ export function generateStaticParams() {
   return ['en', 'ar'].map((locale) => ({locale}));
 }
 
-export default async function ActivitiesPage({params}: {params: Promise<{locale: string}>}) {
+export default async function ActivitiesPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{locale: string}>;
+  searchParams: Promise<{q?: string}>;
+}) {
   const {locale} = await params;
+  const {q} = await searchParams;
   setRequestLocale(locale);
-  const activities = await getActivities(locale);
+  const all = await getActivities(locale);
+  const needle = q?.trim().toLowerCase();
+  const activities = needle
+    ? all.filter((a) => `${a.title} ${a.city}`.toLowerCase().includes(needle))
+    : all;
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
 
@@ -21,7 +32,10 @@ export default async function ActivitiesPage({params}: {params: Promise<{locale:
       <Header />
       <main className="bg-snow pb-20 pt-32">
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-          <h1 className="mb-8 font-display text-3xl font-bold text-navy lg:text-5xl">{t('Activities', 'الأنشطة')}</h1>
+          <h1 className="mb-8 font-display text-3xl font-bold text-navy lg:text-5xl">{t('Tours & Activities', 'الأنشطة والجولات السياحية')}</h1>
+          {activities.length === 0 && (
+            <p className="text-navy/70">{t('No activities found.', 'لا توجد أنشطة مطابقة.')}</p>
+          )}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {activities.map((activity) => (
               <article key={activity.id} className="flex flex-col rounded-3xl bg-mist p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(15,24,89,0.14)] lg:p-5">

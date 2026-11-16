@@ -3,7 +3,6 @@
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
-import {waLink} from '@/lib/whatsapp';
 import HeroBackground from './HeroBackground';
 
 const trending = ['bali', 'istanbul', 'phuket'] as const;
@@ -12,36 +11,24 @@ const durations = ['any', 'short', 'medium', 'long'] as const;
 export default function Hero() {
   const t = useTranslations('hero');
   const d = useTranslations('destinations');
-  const w = useTranslations('wa');
   const v = useTranslations('values');
   const locale = useLocale();
   const router = useRouter();
-  const [type, setType] = useState<'packages' | 'flights'>('packages');
+  const [type, setType] = useState<'packages' | 'activities'>('packages');
   const [dest, setDest] = useState('');
-  const [from, setFrom] = useState('');
   const [date, setDate] = useState('');
   const [pax, setPax] = useState(2);
   const [duration, setDuration] = useState<(typeof durations)[number]>('any');
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (type === 'flights') {
-      const text = w('flight', {
-        from: from.trim() || '-',
-        to: dest.trim() || '-',
-        date: date || '-',
-        pax: t('travelersCount', {count: pax})
-      });
-      window.open(waLink(text), '_blank', 'noopener');
-      return;
-    }
     const params = new URLSearchParams();
     if (dest.trim()) params.set('q', dest.trim());
-    if (duration !== 'any') params.set('duration', duration);
+    if (type === 'packages' && duration !== 'any') params.set('duration', duration);
     if (date) params.set('date', date);
     params.set('pax', String(pax));
-    router.push(`/${locale}/packages?${params}`);
-  };
+    router.push(`/${locale}/${type}?${params}`);
+  };  
 
   const field = 'flex flex-col justify-center rounded-xl bg-mist px-4 py-3 hover:bg-sky-light/25 transition-colors';
   const label = 'text-[11px] font-bold uppercase tracking-wider text-navy/60';
@@ -75,7 +62,18 @@ export default function Hero() {
           className="w-full max-w-5xl rounded-2xl bg-snow p-4 lg:p-6 shadow-[0_16px_40px_rgba(15,24,89,0.08)]"
         >
           <div className="flex flex-wrap gap-2 mb-4">
-            {(['packages', 'flights'] as const).map((k) => (
+            {(['flights', 'hotels'] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                disabled
+                className="flex cursor-not-allowed items-center gap-2 rounded-full bg-mist px-4 py-2 text-sm font-bold text-navy/40"
+              >
+                {t(`types.${k}`)}
+                <span className="rounded-full bg-brand-warm/30 px-2 py-0.5 text-[10px] text-navy">{t('soon')}</span>
+              </button>
+            ))}
+            {(['activities', 'packages'] as const).map((k) => (
               <button
                 key={k}
                 type="button"
@@ -87,35 +85,10 @@ export default function Hero() {
                 {t(`types.${k}`)}
               </button>
             ))}
-            <button
-              type="button"
-              disabled
-              className="flex cursor-not-allowed items-center gap-2 rounded-full bg-mist px-4 py-2 text-sm font-bold text-navy/40"
-            >
-              {t('types.activities')}
-              <span className="rounded-full bg-brand-warm/30 px-2 py-0.5 text-[10px] text-navy">{t('soon')}</span>
-            </button>
-          </div>
+          </div>  
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] gap-3">
-            {type === 'flights' && (
-              <label className={field}>
-                <span className={label}>{t('from')}</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="material-symbols-outlined text-[20px] text-sky">flight_land</span>
-                  <input
-                    type="text"
-                    value={from}
-                    onChange={(e) => setFrom(e.target.value)}
-                    placeholder={t('fromPlaceholder')}
-                    className={input}
-                  />
-                </div>
-              </label>
-            )}
-
-            <label className={field}>
-              <span className={label}>{type === 'flights' ? t('to') : t('destination')}</span>
+            <label className={field}><span className={label}>{t('destination')}</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="material-symbols-outlined text-[20px] text-sky">flight_takeoff</span>
                 <input
@@ -177,12 +150,12 @@ export default function Hero() {
 
             <button
               type="submit"
-              aria-label={type === 'flights' ? t('searchFlights') : t('search')}
+              aria-label={type === 'activities' ? t('searchActivities') : t('search')}
               className="group flex min-h-14 items-center justify-center overflow-hidden rounded-xl bg-brand-warm font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-all duration-300 lg:w-16 lg:hover:w-56"
             >
               <span className="material-symbols-outlined text-[22px]">search</span>
               <span className="ms-2 whitespace-nowrap lg:ms-0 lg:max-w-0 lg:opacity-0 lg:transition-all lg:duration-300 lg:group-hover:ms-2 lg:group-hover:max-w-[160px] lg:group-hover:opacity-100">
-                {type === 'flights' ? t('searchFlights') : t('search')}
+                {type === 'activities' ? t('searchActivities') : t('search')}
               </span>
             </button>
           </div>
