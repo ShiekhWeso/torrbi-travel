@@ -51,6 +51,7 @@ export async function getActivities(locale: string) {
   return rows.map((r) => ({
     id: r.slug, city: r.city, image: r.image ?? '', gallery: r.gallery,
     price: r.priceUsd, childPrice: r.childPriceUsd, infantPrice: r.infantPriceUsd,
+    carPrice1: r.carPrice1Usd, carPrice2: r.carPrice2Usd, carPrice3: r.carPrice3Usd,
     durationHours: r.durationHours, featured: r.featured,
     ...r.i18n[l]
   }));
@@ -61,15 +62,30 @@ export const getActivity = async (locale: string, slug: string) =>
 
 export async function getOffers(locale: string) {
   const l = lang(locale);
+  const now = Date.now();
   const rows = await db
-    .select({o: offers, slug: packages.slug})
+    .select({o: offers, slug: packages.slug, price: packages.priceUsd})
     .from(offers)
     .leftJoin(packages, eq(offers.packageId, packages.id))
     .where(eq(offers.published, true))
     .orderBy(asc(offers.sort), asc(offers.id));
   return rows
-    .filter(({o}) => !o.validUntil || o.validUntil.getTime() + 86400000 >= Date.now())
-    .map(({o, slug}) => ({id: o.id, image: o.image ?? '', slug, until: o.validUntil, ...o.i18n[l]}));
+    .filter(({o}) =>
+      (!o.validFrom || o.validFrom.getTime() <= now) &&
+      (!o.validUntil || o.validUntil.getTime() + 86400000 >= now)
+    )
+    .map(({o, slug, price}) => ({
+      id: o.id,
+      image: o.image ?? '',
+      slug,
+      until: o.validUntil,
+      price: price ?? null,
+      discountPercent: o.discountPercent,
+      salePrice: price != null && o.discountPercent != null
+        ? Math.round(price * (100 - o.discountPercent) / 100)
+        : null,
+      ...o.i18n[l]
+    }));
 }
 
 export async function getFaqs(locale: string) {

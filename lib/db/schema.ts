@@ -67,6 +67,9 @@ export const activities = pgTable('activities', {
   priceUsd: integer('price_usd'),
   childPriceUsd: integer('child_price_usd'),
   infantPriceUsd: integer('infant_price_usd'),
+  carPrice1Usd: integer('car_price_1_usd'),
+  carPrice2Usd: integer('car_price_2_usd'),
+  carPrice3Usd: integer('car_price_3_usd'),
   durationHours: integer('duration_hours'),
   featured: boolean('featured').notNull().default(false),
   published: boolean('published').notNull().default(true),
@@ -82,6 +85,8 @@ export const offers = pgTable('offers', {
   image: text('image'),
   packageId: integer('package_id').references(() => packages.id, {onDelete: 'set null'}),
   validUntil: timestamp('valid_until'),
+  validFrom: timestamp('valid_from'),
+  discountPercent: integer('discount_percent'),
   published: boolean('published').notNull().default(true),
   sort: integer('sort').notNull().default(0),
   i18n: jsonb('i18n').$type<Record<Lang, {title: string; text: string; badge: string}>>().notNull()

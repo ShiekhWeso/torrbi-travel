@@ -5,13 +5,15 @@ import {useLocale} from 'next-intl';
 import {Link} from '@/i18n/navigation';
 import {signup, userLogin} from '@/lib/user-actions';
 
-export default function AuthForm({mode, googleError}: {mode: 'login' | 'signup'; googleError?: boolean}) {
-  const ar = useLocale() === 'ar';
+export default function AuthForm({mode, googleError, returnTo}: {mode: 'login' | 'signup'; googleError?: boolean; returnTo?: string}) {
+  const locale = useLocale();
+  const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
   const isLogin = mode === 'login';
   const [error, action, pending] = useActionState(isLogin ? userLogin : signup, null);
   const input = 'w-full rounded-xl bg-mist px-4 py-3 font-bold text-navy focus:outline-none';
   const msg = error || (googleError ? t('Google sign-in failed', 'فشل تسجيل الدخول عبر Google') : null);
+  const returnQuery = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-mist px-4 pb-16 pt-28">
@@ -24,13 +26,14 @@ export default function AuthForm({mode, googleError}: {mode: 'login' | 'signup';
           {isLogin ? t('Log in', 'تسجيل الدخول') : t('Create account', 'إنشاء حساب')}
         </h1>
         <a
-          href={`/api/auth/google?locale=${ar ? 'ar' : 'en'}`}
+          href={`/api/auth/google?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`}
           className="flex w-full items-center justify-center rounded-full border-2 border-navy/15 py-3 font-bold text-navy transition-colors hover:bg-mist"
         >
           {t('Continue with Google', 'المتابعة عبر Google')}
         </a>
         <p className="text-center text-xs text-navy/50">{t('or', 'أو')}</p>
         <form action={action} className="space-y-4">
+          {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
           {!isLogin && <input name="name" required placeholder={t('Full name', 'الاسم الكامل')} className={input} />}
           <input name="email" type="email" required placeholder={t('Email', 'البريد الإلكتروني')} className={input} />
           {!isLogin && <input name="phone" type="tel" placeholder={t('Phone (optional)', 'الهاتف (اختياري)')} className={input} />}
@@ -45,7 +48,7 @@ export default function AuthForm({mode, googleError}: {mode: 'login' | 'signup';
         </form>
         <p className="text-center text-sm text-navy/70">
           {isLogin ? t('No account?', 'ليس لديك حساب؟') : t('Have an account?', 'لديك حساب؟')}{' '}
-          <Link href={isLogin ? '/signup' : '/login'} className="font-bold text-sky">
+          <Link href={`${isLogin ? '/signup' : '/login'}${returnQuery ? `?${returnQuery.slice(1)}` : ''}`} className="font-bold text-sky">
             {isLogin ? t('Sign up', 'إنشاء حساب') : t('Log in', 'تسجيل الدخول')}
           </Link>
         </p>

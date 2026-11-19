@@ -8,6 +8,7 @@ import {getLocale} from 'next-intl/server';
 import {db} from '@/lib/db';
 import {favorites, users} from '@/lib/db/schema';
 import {createUserSession, destroyUserSession, getCurrentUser} from '@/lib/auth';
+import {safeActivityReturnTo} from '@/lib/activity-return-to';
 
 async function go(path: string): Promise<never> {
   redirect(`/${await getLocale()}${path}`);
@@ -38,7 +39,8 @@ export async function toggleFavorite(kind: 'package' | 'activity', id: number) {
 }
 
 export async function signup(_prev: string | null | undefined, fd: FormData) {
-  const ar = (await getLocale()) === 'ar';
+  const locale = await getLocale();
+  const ar = locale === 'ar';
   const name = str(fd.get('name'));
   const email = str(fd.get('email')).toLowerCase();
   const phone = str(fd.get('phone'));
@@ -52,11 +54,14 @@ export async function signup(_prev: string | null | undefined, fd: FormData) {
     .values({name, email, phone: phone || null, passwordHash: await bcrypt.hash(password, 10)})
     .returning({id: users.id});
   await createUserSession(u.id);
+  const returnTo = safeActivityReturnTo(str(fd.get('returnTo')), locale);
+  if (returnTo) redirect(returnTo);
   await go('/account');
 }
 
 export async function userLogin(_prev: string | null | undefined, fd: FormData) {
-  const ar = (await getLocale()) === 'ar';
+  const locale = await getLocale();
+  const ar = locale === 'ar';
   const email = str(fd.get('email')).toLowerCase();
   const password = String(fd.get('password') ?? '');
   const [u] = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -67,6 +72,8 @@ export async function userLogin(_prev: string | null | undefined, fd: FormData) 
   const ok = u?.passwordHash ? await bcrypt.compare(password, u.passwordHash) : false;
   if (!u || !ok) return ar ? 'البريد أو كلمة المرور غير صحيحة' : 'Wrong email or password';
   await createUserSession(u.id);
+  const returnTo = safeActivityReturnTo(str(fd.get('returnTo')), locale);
+  if (returnTo) redirect(returnTo);
   await go('/account');
 }
 

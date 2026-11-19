@@ -1,8 +1,10 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {randomBytes} from 'node:crypto';
+import {safeActivityReturnTo} from '@/lib/activity-return-to';
 
 export function GET(req: NextRequest) {
   const locale = req.nextUrl.searchParams.get('locale') === 'ar' ? 'ar' : 'en';
+  const returnTo = safeActivityReturnTo(req.nextUrl.searchParams.get('returnTo'), locale);
   const state = randomBytes(16).toString('hex');
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   url.search = new URLSearchParams({
@@ -13,7 +15,7 @@ export function GET(req: NextRequest) {
     state
   }).toString();
   const res = NextResponse.redirect(url);
-  res.cookies.set('g_state', `${state}.${locale}`, {
+  res.cookies.set('g_state', `${state}.${locale}.${Buffer.from(returnTo ?? '').toString('base64url')}`, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

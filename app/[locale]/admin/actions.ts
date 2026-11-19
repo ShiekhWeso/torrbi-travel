@@ -368,6 +368,9 @@ export async function saveActivity(formData: FormData) {
     priceUsd: num(formData.get('priceUsd')),
     childPriceUsd: num(formData.get('childPriceUsd')),
     infantPriceUsd: num(formData.get('infantPriceUsd')),
+    carPrice1Usd: num(formData.get('carPrice1Usd')),
+    carPrice2Usd: num(formData.get('carPrice2Usd')),
+    carPrice3Usd: num(formData.get('carPrice3Usd')),
     durationHours: num(formData.get('durationHours')),
     featured: formData.get('featured') === 'on',
     published: formData.get('published') === 'on',
@@ -431,4 +434,35 @@ export async function setBookingStatus(formData: FormData) {
   if (!['pending', 'confirmed', 'cancelled'].includes(status)) return;
   await db.update(bookings).set({status}).where(eq(bookings.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
+}
+
+export async function saveOfferFromPackage(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = num(formData.get('id'));
+  const packageId = num(formData.get('packageId'));
+  const percent = num(formData.get('discountPercent'));
+  const from = str(formData.get('validFrom'));
+  const until = str(formData.get('validUntil'));
+  if (!packageId || !percent || !Number.isInteger(percent) || percent < 1 || percent > 90) throw new Error('Invalid offer');
+  const validFrom = from ? new Date(from) : null;
+  const validUntil = until ? new Date(until) : null;
+  if (validFrom && validUntil && validUntil <= validFrom) throw new Error('End date must be after start date');
+  const [pkg] = await db.select().from(packages).where(eq(packages.id, packageId)).limit(1);
+  if (!pkg) throw new Error('Package not found');
+  const data = {
+    image: pkg.cover,
+    packageId,
+    discountPercent: percent,
+    validFrom,
+    validUntil,
+    published: formData.get('published') === 'on',
+    i18n: {
+      en: {title: pkg.i18n.en.title, text: pkg.i18n.en.intro, badge: `-${percent}%`},
+      ar: {title: pkg.i18n.ar.title, text: pkg.i18n.ar.intro, badge: `-${percent}%`}
+    }
+  };
+  if (id) await db.update(offers).set(data).where(eq(offers.id, id));
+  else await db.insert(offers).values(data);
+  revalidatePath('/', 'layout');
+  await go('/admin/offers');
 }

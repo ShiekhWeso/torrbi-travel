@@ -3,6 +3,7 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
 import {offers, packages} from '@/lib/db/schema';
 import OfferForm from '@/components/admin/OfferForm';
+import PackageOfferForm from '@/components/admin/PackageOfferForm';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
@@ -15,7 +16,7 @@ export default async function Page({params}: {params: Promise<{id: string}>}) {
   return (
     <div>
       <h1 className="mb-6 font-display text-3xl text-navy">{t.editOffer}</h1>
-      <OfferForm o={o} pkgs={pkgs} />
+      {o.discountPercent != null ? <PackageOfferForm o={o} pkgs={pkgs} /> : <OfferForm o={o} pkgs={pkgs} />}
     </div>
   );
 }

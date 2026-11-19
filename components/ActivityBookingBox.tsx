@@ -5,7 +5,8 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
 import {useCurrency} from '@/components/CurrencyProvider';
 import {useRouter} from '@/i18n/navigation';
-import {saveBookingFromBox, startActivityPayment, validateCoupon} from '@/lib/booking-actions';
+import {validateCoupon} from '@/lib/booking-actions';
+import Price from '@/components/Price';
 
 type Props = {
   id: number;
@@ -13,46 +14,59 @@ type Props = {
   adult: number | null;
   child: number | null;
   infant: number | null;
+  carPrice1: number | null;
+  carPrice2: number | null;
+  carPrice3: number | null;
   policies?: string[];
   user?: {phone: string | null} | null;
 };
 
-export default function ActivityBookingBox({id, slug, adult, child, infant, policies, user}: Props) {
+export default function ActivityBookingBox({id, slug, adult, child, infant, carPrice1, carPrice2, carPrice3, policies, user}: Props) {
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
+  const c = useTranslations('activityBooking');
   const sp = useSearchParams();
   const router = useRouter();
   const {cur, money} = useCurrency();
-  const ar = useLocale() === 'ar';
+  const locale = useLocale();
+  const ar = locale === 'ar';
   const L = (en: string, a: string) => (ar ? a : en);
 
   const [adults, setAdults] = useState(Math.min(10, Math.max(1, Number(sp.get('pax')) || 2)));
   const [children, setChildren] = useState(0);
   const [infants, setInfants] = useState(0);
+  const [carMode, setCarMode] = useState(false);
+  const [carTier, setCarTier] = useState<1 | 2 | 3 | null>(null);
   const [date, setDate] = useState(sp.get('date') ?? '');
-  const [lang, setLang] = useState(ar ? 'ar' : 'en');
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [checkingCoupon, setCheckingCoupon] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discountUsd: number; totalUsd: number} | null>(null);
-  const [phone, setPhone] = useState(user?.phone ?? '');
   const [saving, setSaving] = useState(false);
-  const [paymentSoon, setPaymentSoon] = useState(false);
 
   const rows = [
     {n: adults, price: adult},
     {n: children, price: child},
     {n: infants, price: infant}
   ];
-  const known = rows.reduce((s, r) => s + (r.price != null ? r.n * r.price : 0), 0);
-  const unknown = rows.some((r) => r.n > 0 && r.price == null);
+  const carTiers = [
+    {id: 1 as const, label: c('carTier1'), price: carPrice1},
+    {id: 2 as const, label: c('carTier2'), price: carPrice2},
+    {id: 3 as const, label: c('carTier3'), price: carPrice3}
+  ].filter((tier) => tier.price != null);
+  const carAvailable = carTiers.length > 0;
+  const selectedCar = carTiers.find((tier) => tier.id === carTier);
+  const peopleKnown = rows.reduce((s, r) => s + (r.price != null ? r.n * r.price : 0), 0);
+  const known = carMode ? selectedCar?.price ?? 0 : peopleKnown;
+  const unknown = carMode ? selectedCar == null : rows.some((r) => r.n > 0 && r.price == null);
   const currentCoupon = appliedCoupon && appliedCoupon.totalUsd === known && known > 0 && !unknown ? appliedCoupon : null;
   const payableKnown = known - (currentCoupon?.discountUsd ?? 0);
   const usdTotal = '$' + payableKnown;
-  const total =
-    unknown && known === 0 ? p('onRequest') : `${money(payableKnown)}${unknown ? ` + ${p('onRequest')}` : ''}`;
+  const total = carMode
+    ? selectedCar ? `${money(payableKnown)}` : c('selectCarTier')
+    : unknown && known === 0 ? p('onRequest') : `${money(payableKnown)}${unknown ? ` + ${p('onRequest')}` : ''}`;
 
   const couponErrorText = (reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope') => ({
     invalid: L('Invalid coupon code', 'كود الخصم غير صالح'),
@@ -82,44 +96,28 @@ export default function ActivityBookingBox({id, slug, adult, child, infant, poli
   };
 
   const bookNow = async () => {
+    if (!date) return setErr(L('Choose a date', 'اختر التاريخ'));
+    if (carMode && !selectedCar) return setErr(c('chooseCarTierError'));
+    setErr('');
+    setSaving(true);
+    const params = new URLSearchParams({date});
+    if (carMode && selectedCar) {
+      params.set('car', '1');
+      params.set('tier', String(selectedCar.id));
+    } else {
+      params.set('adults', String(adults));
+      params.set('children', String(children));
+      params.set('infants', String(infants));
+    }
+    if (currentCoupon) params.set('coupon', currentCoupon.code);
+    sessionStorage.setItem(`activity-booking-notes:${slug}`, notes);
+    const path = `/activities/${encodeURIComponent(slug)}/book?${params}`;
     if (!user) {
-      router.push('/login');
+      const returnTo = `/${locale}${path}`;
+      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
       return;
     }
-    if (!date) return setErr(L('Choose a date', 'اختر التاريخ'));
-    setErr('');
-    setPaymentSoon(false);
-    setSaving(true);
-    try {
-      const bookingId = await saveBookingFromBox({
-        kind: 'activity',
-        slug,
-        date,
-        returnDate: null,
-        adults,
-        children,
-        infants,
-        lang,
-        notes,
-        phone,
-        couponCode: currentCoupon?.code
-      });
-      if (bookingId == null) {
-        router.push('/login');
-        return;
-      }
-      const payment = await startActivityPayment(bookingId);
-      if (payment.ok) {
-        window.location.assign(payment.url);
-      } else if (payment.reason === 'soon') {
-        setPaymentSoon(true);
-      }
-    } catch (error) {
-      console.error('Failed to book activity', error);
-      setErr(L('Unable to save your booking. Please try again.', 'تعذر حفظ حجزك. حاول مرة أخرى.'));
-    } finally {
-      setSaving(false);
-    }
+    router.push(path);
   };
 
   const box = 'flex w-full items-center gap-3 rounded-xl border border-navy/20 bg-snow px-4 py-3 font-bold text-navy';
@@ -157,17 +155,52 @@ export default function ActivityBookingBox({id, slug, adult, child, infant, poli
       </p>
 
       <div className="mt-5 space-y-3">
-        {counter(t('adult'), adults, setAdults, adult, 1)}
-        {counter(L('Child 2–11', 'طفل 2–11'), children, setChildren, child, 0)}
-        {counter(L('Infant <2', 'رضيع أقل من سنتين'), infants, setInfants, infant, 0)}
+        {carAvailable && (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setCarMode(false)}
+              aria-pressed={!carMode}
+              className={`rounded-xl border px-3 py-2 text-sm font-bold ${carMode ? 'border-navy/20 text-navy/60' : 'border-navy bg-navy text-snow'}`}
+            >
+              {c('peopleMode')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCarMode(true)}
+              aria-pressed={carMode}
+              className={`rounded-xl border px-3 py-2 text-sm font-bold ${carMode ? 'border-navy bg-navy text-snow' : 'border-navy/20 text-navy/60'}`}
+            >
+              {c('carMode')}
+            </button>
+          </div>
+        )}
+        {carMode ? (
+          <div>
+            <p className="mb-2 text-sm font-bold text-navy">{c('carTier')}</p>
+            <div className="space-y-2">
+              {carTiers.map((tier) => (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => setCarTier(tier.id)}
+                  aria-pressed={carTier === tier.id}
+                  className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-sm ${carTier === tier.id ? 'border-navy bg-mist font-bold text-navy' : 'border-navy/20 text-navy'}`}
+                >
+                  <span>{tier.label}</span>
+                  <span><Price usd={tier.price} /></span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {counter(t('adult'), adults, setAdults, adult, 1)}
+            {counter(L('Child 2–11', 'طفل 2–11'), children, setChildren, child, 0)}
+            {counter(L('Infant <2', 'رضيع أقل من سنتين'), infants, setInfants, infant, 0)}
+          </>
+        )}
 
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder={L('Phone', 'رقم الهاتف')}
-          className="w-full rounded-xl border border-navy/20 bg-snow px-4 py-3 text-sm text-navy focus:outline-none"
-        />
         <label className={box}>
           <span className="material-symbols-outlined text-sky">calendar_today</span>
           <input
@@ -177,13 +210,6 @@ export default function ActivityBookingBox({id, slug, adult, child, infant, poli
             onChange={(e) => setDate(e.target.value)}
             className={input}
           />
-        </label>
-        <label className={box}>
-          <span className="material-symbols-outlined text-sky">language</span>
-          <select value={lang} onChange={(e) => setLang(e.target.value)} className={input}>
-            <option value="en">{t('langEnglish')}</option>
-            <option value="ar">{t('langArabic')}</option>
-          </select>
         </label>
         <textarea
           value={notes}
@@ -231,10 +257,9 @@ export default function ActivityBookingBox({id, slug, adult, child, infant, poli
         disabled={saving}
         className="mt-5 w-full rounded-full bg-brand-warm py-4 font-bold text-navy shadow-[0_8px_24px_rgba(254,153,98,0.4)] transition-transform hover:scale-[1.02]"
       >
-        {saving ? L('Saving…', 'جارٍ الحفظ…') : L('Book now', 'احجز الآن')}
+        {saving ? c('opening') : L('Book now', 'احجز الآن')}
       </button>
       {err && <p className="mt-3 text-sm font-bold text-[#ef4444]">{err}</p>}
-      {paymentSoon && <p className="mt-3 text-sm text-navy/70">{L('Online payment is coming soon. Your booking was saved as pending.', 'الدفع الإلكتروني قريباً. تم حفظ حجزك قيد الانتظار.')}</p>}
       <ul className="mt-5 space-y-3 border-t border-navy/10 pt-5 text-sm">
         {list.map((x) => (
           <li key={x.title} className="flex gap-3">

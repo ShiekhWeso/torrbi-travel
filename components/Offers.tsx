@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {getTranslations, getLocale} from 'next-intl/server';
 import {getOffers} from '@/lib/queries';
 import {waLink} from '@/lib/whatsapp';
+import Price from '@/components/Price';
 
 export default async function Offers() {
   const locale = await getLocale();
@@ -37,6 +38,12 @@ export default async function Offers() {
                 <p className="mt-2 text-sm text-navy/70">{o.text}</p>
                 {o.until && <p className="mt-3 text-xs text-navy/50">{t('until', {date: fmt.format(o.until)})}</p>}
                 <div className="mt-auto pt-5">
+                  {o.price != null && o.salePrice != null && (
+                    <div className="mb-4">
+                      <span className="me-2 text-sm text-navy/50 line-through"><Price usd={o.price} /></span>
+                      <span className="text-xl font-bold text-navy"><Price usd={o.salePrice} /></span>
+                    </div>
+                  )}
                   {o.slug ? (
                     <Link href={`/${locale}/packages/${o.slug}`} className={btn}>{t('view')}</Link>
                   ) : (

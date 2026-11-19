@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:offers": "tsx scripts/seed-offers.ts",
+    "seed:car": "tsx scripts/seed-car-prices.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

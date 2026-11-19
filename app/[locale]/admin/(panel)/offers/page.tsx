@@ -8,13 +8,19 @@ import {deleteOffer} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
 export default async function Page() {
-  const t = tr(await getLocale());
+  const locale = await getLocale();
+  const t = tr(locale);
   const rows = await db.select().from(offers).orderBy(asc(offers.sort), asc(offers.id));
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="font-display text-3xl text-navy">{t.offers}</h1>
-        <Link href="/admin/offers/new" className="rounded-full bg-navy px-5 py-2 text-sm font-bold text-snow">{t.add}</Link>
+        <div className="flex gap-2">
+          <Link href="/admin/offers/new-package" className="rounded-full bg-brand-warm px-5 py-2 text-sm font-bold text-navy">
+            {locale === 'ar' ? '+ عرض من باقة' : '+ Offer from package'}
+          </Link>
+          <Link href="/admin/offers/new" className="rounded-full bg-navy px-5 py-2 text-sm font-bold text-snow">{t.add}</Link>
+        </div>
       </div>
       <div className="divide-y divide-navy/10 rounded-2xl bg-snow">
         {rows.length === 0 && <p className="p-6 text-navy/60">{t.noItems}</p>}

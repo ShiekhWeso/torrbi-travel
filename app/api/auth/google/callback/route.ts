@@ -3,13 +3,19 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
 import {users} from '@/lib/db/schema';
 import {createUserSession} from '@/lib/auth';
+import {safeActivityReturnTo} from '@/lib/activity-return-to';
 
 export async function GET(req: NextRequest) {
   const origin = req.nextUrl.origin;
   const code = req.nextUrl.searchParams.get('code');
   const state = req.nextUrl.searchParams.get('state');
-  const [saved, locale = 'en'] = (req.cookies.get('g_state')?.value ?? '').split('.');
-  const fail = NextResponse.redirect(`${origin}/${locale}/login?error=google`);
+  const [saved, localeValue = 'en', encodedReturnTo = ''] = (req.cookies.get('g_state')?.value ?? '').split('.');
+  const locale = localeValue === 'ar' ? 'ar' : 'en';
+  const returnTo = safeActivityReturnTo(Buffer.from(encodedReturnTo, 'base64url').toString(), locale);
+  const loginUrl = new URL(`/${locale}/login`, origin);
+  loginUrl.searchParams.set('error', 'google');
+  if (returnTo) loginUrl.searchParams.set('returnTo', returnTo);
+  const fail = NextResponse.redirect(loginUrl);
   if (!code || !state || state !== saved) return fail;
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -40,7 +46,7 @@ export async function GET(req: NextRequest) {
     await db.update(users).set({googleId: g.sub}).where(eq(users.id, u.id));
   }
   await createUserSession(u.id);
-  const res = NextResponse.redirect(`${origin}/${locale}/account`);
+  const res = NextResponse.redirect(`${origin}${returnTo ?? `/${locale}/account`}`);
   res.cookies.delete('g_state');
   return res;
 }

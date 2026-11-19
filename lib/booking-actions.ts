@@ -17,7 +17,10 @@ type BookingBoxInput = {
   adults: number;
   children: number;
   infants: number;
-  lang: string;
+  lang?: string;
+  carMode?: boolean;
+  carTier?: 1 | 2 | 3 | null;
+  fullName?: string;
   notes: string;
   phone: string;
   couponCode?: string | null;
@@ -82,7 +85,11 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
   if (![adults, children, infants].every((count) => Number.isInteger(count) && count >= 0)) {
     throw new Error('Booking counts must be non-negative integers');
   }
+  if (kind === 'activity' && (!input.fullName?.trim() || !phone.trim())) {
+    throw new Error('Activity booking name and phone are required');
+  }
   const lang = (await getLocale()) === 'ar' ? 'ar' : 'en';
+  const bookingLang = kind === 'activity' ? lang : input.lang === 'ar' ? 'ar' : 'en';
   let title: string;
   let packageId: number | null = null;
   let activityId: number | null = null;
@@ -90,6 +97,7 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
   let adultPrice: number | null;
   let childPrice: number | null;
   let infantPrice: number | null;
+  let carPrices: [number | null, number | null, number | null] | null = null;
 
   if (kind === 'package') {
     const [pkg] = await db.select().from(packages).where(eq(packages.slug, slug)).limit(1);
@@ -109,14 +117,34 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     adultPrice = activity.priceUsd;
     childPrice = activity.childPriceUsd;
     infantPrice = activity.infantPriceUsd;
+    carPrices = [activity.carPrice1Usd, activity.carPrice2Usd, activity.carPrice3Usd];
   }
 
-  const counts = [adults, children, infants];
-  const prices = [adultPrice, childPrice, infantPrice];
-  const totalUsd = counts.some((count, index) => count > 0 && prices[index] == null)
-    ? null
-    : counts.reduce((total, count, index) => total + count * (prices[index] ?? 0), 0);
-  const pax = adults + children + infants;
+  let bookingAdults = adults;
+  let bookingChildren = children;
+  let bookingInfants = infants;
+  let pax: number;
+  let totalUsd: number | null;
+  if (input.carMode) {
+    if (kind !== 'activity' || (input.carTier !== 1 && input.carTier !== 2 && input.carTier !== 3)) {
+      throw new Error('Invalid car booking selection');
+    }
+    const tierIndex = input.carTier - 1;
+    const price = carPrices?.[tierIndex];
+    if (price == null) throw new Error('Selected car tier is not available');
+    pax = [3, 6, 10][tierIndex];
+    bookingAdults = pax;
+    bookingChildren = 0;
+    bookingInfants = 0;
+    totalUsd = price;
+  } else {
+    const counts = [adults, children, infants];
+    const prices = [adultPrice, childPrice, infantPrice];
+    totalUsd = counts.some((count, index) => count > 0 && prices[index] == null)
+      ? null
+      : counts.reduce((total, count, index) => total + count * (prices[index] ?? 0), 0);
+    pax = adults + children + infants;
+  }
   const values = {
     userId: user.id,
     kind,
@@ -126,12 +154,17 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     travelDate: date,
     returnDate,
     pax,
-    adults,
-    children,
-    infants,
-    notes: notes.trim() || null,
+    adults: bookingAdults,
+    children: bookingChildren,
+    infants: bookingInfants,
+    notes: kind === 'activity'
+      ? [
+          input.fullName?.trim() ? `${lang === 'ar' ? 'الاسم الكامل' : 'Full name'}: ${input.fullName.trim()}` : '',
+          notes.trim()
+        ].filter(Boolean).join('\n') || null
+      : notes.trim() || null,
     phone: phone.trim() || null,
-    lang: input.lang === 'ar' ? 'ar' : 'en',
+    lang: bookingLang,
     totalUsd,
     status: 'pending'
   };
@@ -163,6 +196,15 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
 type ActivityPaymentResult = {ok: true; url: string} | {ok: false; reason: 'soon'};
 
 export async function startActivityPayment(_bookingId: number): Promise<ActivityPaymentResult> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Login required to pay for this booking');
+  if (!Number.isInteger(_bookingId) || _bookingId < 1) throw new Error('Invalid booking');
+  const [booking] = await db.select({id: bookings.id}).from(bookings).where(and(
+    eq(bookings.id, _bookingId),
+    eq(bookings.userId, user.id),
+    eq(bookings.kind, 'activity')
+  )).limit(1);
+  if (!booking) throw new Error('Activity booking not found');
   // TODO: create Stripe Checkout session (USD) and return its URL.
   return {ok: false, reason: 'soon'};
 }
