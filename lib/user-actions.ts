@@ -9,6 +9,8 @@ import {db} from '@/lib/db';
 import {favorites, users} from '@/lib/db/schema';
 import {createUserSession, destroyUserSession, getCurrentUser} from '@/lib/auth';
 import {safeActivityReturnTo} from '@/lib/activity-return-to';
+import {sendEmail} from '@/lib/email';
+import {welcome} from '@/lib/email-templates';
 
 async function go(path: string): Promise<never> {
   redirect(`/${await getLocale()}${path}`);
@@ -53,6 +55,7 @@ export async function signup(_prev: string | null | undefined, fd: FormData) {
     .insert(users)
     .values({name, email, phone: phone || null, passwordHash: await bcrypt.hash(password, 10)})
     .returning({id: users.id});
+  void sendEmail({to: email, ...welcome(ar ? 'ar' : 'en', {name})});
   await createUserSession(u.id);
   const returnTo = safeActivityReturnTo(str(fd.get('returnTo')), locale);
   if (returnTo) redirect(returnTo);

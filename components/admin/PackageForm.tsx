@@ -1,5 +1,5 @@
 import {savePackage} from '@/app/[locale]/admin/actions';
-import type {packages} from '@/lib/db/schema';
+import type {destinations as destinationTable, packages} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import FeaturesEditor from '@/components/admin/FeaturesEditor';
@@ -8,6 +8,7 @@ import ImageUpload from '@/components/admin/ImageUpload';
 import GalleryUpload from '@/components/admin/GalleryUpload';
 
 type P = typeof packages.$inferSelect;
+type D = Pick<typeof destinationTable.$inferSelect, 'id' | 'slug' | 'i18n'>;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
 const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
   <label className="block text-sm font-bold text-navy">
@@ -17,8 +18,9 @@ const Field = ({label, children}: {label: string; children: React.ReactNode}) =>
 );
 const J = (a?: string[]) => (a ?? []).join('\n');
 
-export default async function PackageForm({p}: {p?: P}) {
-  const t = tr(await getLocale());
+export default async function PackageForm({p, destinations}: {p?: P; destinations: D[]}) {
+  const locale = await getLocale();
+  const t = tr(locale);
   const area = (name: string, label: string, en?: string[], ar?: string[]) => (
     <>
       <Field label={`${label} (EN) - ${t.perLine}`}><textarea name={`${name}_en`} rows={4} defaultValue={J(en)} className={inp} /></Field>
@@ -39,8 +41,18 @@ export default async function PackageForm({p}: {p?: P}) {
       <FeaturesEditor initial={(p?.i18n.en.features ?? []).map((x, i) => ({icon: x.icon, title_en: x.title, text_en: x.text, title_ar: p?.i18n.ar.features?.[i]?.title ?? '', text_ar: p?.i18n.ar.features?.[i]?.text ?? ''}))} />
       {area('excludes', t.excludes, p?.i18n.en.excludes, p?.i18n.ar.excludes)}
       <Field label={t.slug}><input name="slug" defaultValue={p?.slug} required className={inp} /></Field>
+      <Field label="Destination / الوجهة">
+        <select name="destinationId" defaultValue={p?.destinationId?.toString() ?? ''} className={inp}>
+          <option value="">{t.none}</option>
+          {destinations.map((destination) => (
+            <option key={destination.id} value={destination.id}>
+              {destination.i18n[locale === 'ar' ? 'ar' : 'en'].name}
+            </option>
+          ))}
+        </select>
+      </Field>
       <Field label={t.region}><input name="region" defaultValue={p?.region ?? 'asia'} className={inp} /></Field>
-      <Field label={t.days}><input name="days" type="number" defaultValue={p?.days ?? ''} required className={inp} /></Field>
+      <Field label={t.days}><input name="packageDaysCount" type="number" defaultValue={p?.days ?? ''} required className={inp} /></Field>
       <Field label={t.nights}><input name="nights" type="number" defaultValue={p?.nights ?? ''} required className={inp} /></Field>
       <Field label="Adult price (USD) / سعر البالغ"><input name="priceUsd" type="number" defaultValue={p?.priceUsd ?? ''} className={inp} /></Field>
       <Field label="Child price 2–11 (USD) / سعر الطفل"><input name="childPriceUsd" type="number" defaultValue={p?.childPriceUsd ?? ''} className={inp} /></Field>

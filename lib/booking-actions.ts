@@ -6,6 +6,9 @@ import {getLocale} from 'next-intl/server';
 import {db} from '@/lib/db';
 import {activities, bookings, coupons, packages} from '@/lib/db/schema';
 import {getCurrentUser} from '@/lib/auth';
+import {bookingRef} from '@/lib/bookingRef';
+import {bookingReceived, newBookingAdmin, type BookingEmailData, type EmailLocale} from '@/lib/email-templates';
+import {sendEmail} from '@/lib/email';
 
 type Result = {ok: true; id: number} | {ok: false; error: 'login' | 'date' | 'package' | 'activity'};
 
@@ -30,6 +33,34 @@ type CouponInput = {code: string; kind: 'package' | 'activity'; id: number; tota
 type CouponCheck =
   | {ok: true; couponId: number; code: string; discountUsd: number; title: string}
   | {ok: false; reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope'};
+
+function notifyBookingEmails(input: {
+  id: number;
+  email: string;
+  name: string;
+  lang: EmailLocale;
+  title: string;
+  date: string;
+  guests: number;
+  totalUsd: number | null;
+}) {
+  const data: BookingEmailData = {
+    name: input.name,
+    reference: bookingRef(input.id),
+    title: input.title,
+    date: input.date,
+    guests: input.guests,
+    totalUsd: input.totalUsd
+  };
+  const customerEmail = bookingReceived(input.lang, data);
+  void sendEmail({to: input.email, ...customerEmail});
+
+  const adminEmail = process.env.ADMIN_NOTIFY_EMAIL?.trim();
+  if (adminEmail) {
+    const adminMessage = newBookingAdmin({...data, email: input.email});
+    void sendEmail({to: adminEmail, ...adminMessage});
+  }
+}
 
 function checkCoupon(
   coupon: typeof coupons.$inferSelect | undefined,
@@ -102,7 +133,7 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
   if (kind === 'package') {
     const [pkg] = await db.select().from(packages).where(eq(packages.slug, slug)).limit(1);
     if (!pkg) throw new Error(`Package not found: ${slug}`);
-    title = pkg.i18n[lang].title;
+    title = pkg.i18n[bookingLang].title;
     packageId = pkg.id;
     couponTargetId = pkg.id;
     adultPrice = pkg.priceUsd;
@@ -171,11 +202,21 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
   const code = input.couponCode?.trim().toUpperCase() ?? '';
   if (!code) {
     const [booking] = await db.insert(bookings).values({...values, couponCode: null, discountUsd: null}).returning({id: bookings.id});
+    notifyBookingEmails({
+      id: booking.id,
+      email: user.email,
+      name: user.name,
+      lang: bookingLang,
+      title,
+      date,
+      guests: pax,
+      totalUsd
+    });
     return booking.id;
   }
   if (totalUsd == null || totalUsd <= 0) throw new Error('Coupon requires a known positive booking total');
 
-  const [booking] = await db.transaction(async (tx) => {
+  const booking = await db.transaction(async (tx) => {
     const [coupon] = await tx.select().from(coupons).where(eq(coupons.code, code)).for('update').limit(1);
     if (couponTargetId == null) throw new Error('Booking coupon target not found');
     const result = checkCoupon(coupon, {code, kind, id: couponTargetId, totalUsd}, code, lang);
@@ -186,10 +227,21 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
       couponCode: code,
       discountUsd: result.discountUsd
     }).returning({id: bookings.id});
+    if (!created) throw new Error('Failed to create booking');
     await tx.update(coupons).set({usedCount: sql`${coupons.usedCount} + 1`}).where(eq(coupons.id, result.couponId));
-    return [created];
+    return {id: created.id, totalUsd: totalUsd - result.discountUsd};
   });
 
+  notifyBookingEmails({
+    id: booking.id,
+    email: user.email,
+    name: user.name,
+    lang: bookingLang,
+    title,
+    date,
+    guests: pax,
+    totalUsd: booking.totalUsd
+  });
   return booking.id;
 }
 
@@ -217,16 +269,26 @@ export async function createBooking(input: {slug: string; date: string; pax: num
   const [pkg] = await db.select().from(packages).where(eq(packages.slug, input.slug)).limit(1);
   if (!pkg) return {ok: false, error: 'package'};
   const pax = Math.min(6, Math.max(1, Math.floor(input.pax) || 1));
-  const l = (await getLocale()) === 'ar' ? 'ar' : 'en';
+  const bookingLang = input.lang === 'ar' ? 'ar' : 'en';
   const [booking] = await db.insert(bookings).values({
     userId: user.id,
     packageId: pkg.id,
-    packageTitle: pkg.i18n[l].title,
+    packageTitle: pkg.i18n[bookingLang].title,
     travelDate: input.date,
     pax,
-    lang: input.lang === 'ar' ? 'ar' : 'en',
+    lang: bookingLang,
     totalUsd: pkg.priceUsd ? pkg.priceUsd * pax : null
   }).returning({id: bookings.id});
+  notifyBookingEmails({
+    id: booking.id,
+    email: user.email,
+    name: user.name,
+    lang: bookingLang,
+    title: pkg.i18n[bookingLang].title,
+    date: input.date,
+    guests: pax,
+    totalUsd: pkg.priceUsd ? pkg.priceUsd * pax : null
+  });
   return {ok: true, id: booking.id};
 }
 
@@ -250,6 +312,16 @@ export async function createActivityBooking(input: {slug: string; date: string; 
     lang: l,
     totalUsd: activity.priceUsd ? activity.priceUsd * pax : null
   }).returning({id: bookings.id});
+  notifyBookingEmails({
+    id: booking.id,
+    email: user.email,
+    name: user.name,
+    lang: l,
+    title: activity.i18n[l].title,
+    date: input.date,
+    guests: pax,
+    totalUsd: activity.priceUsd ? activity.priceUsd * pax : null
+  });
   return {ok: true, id: booking.id};
 }
 

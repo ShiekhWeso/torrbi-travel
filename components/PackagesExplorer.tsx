@@ -25,6 +25,11 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
   const w = useTranslations('wa');
   const sp = useSearchParams();
   const {money} = useCurrency();
+  const destinationOptions = Array.from(new Map(
+    items.flatMap((item) => item.destinationSlug && item.destinationName
+      ? [[item.destinationSlug, item.destinationName] as const]
+      : [])
+  ), ([slug, name]) => ({slug, name}));
   const carry = new URLSearchParams();
   ['date', 'pax'].forEach((k) => {
     const val = sp.get(k);
@@ -32,6 +37,10 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
   });
   const suffix = carry.toString() ? `?${carry}` : '';
   const [region, setRegion] = useState<(typeof regions)[number]>('all');
+  const initialDestination = sp.get('destination') ?? 'all';
+  const [destination, setDestination] = useState(
+    () => destinationOptions.some((option) => option.slug === initialDestination) ? initialDestination : 'all'
+  );
   const [sort, setSort] = useState('default');
   const [q, setQ] = useState(sp.get('q') ?? '');
   const initD = sp.get('duration') ?? '';
@@ -43,15 +52,16 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
     const hay = `${x.title} ${x.stops.join(' ')} ${x.id}`.toLowerCase();
     const okQ = hay.includes(q.trim().toLowerCase());
     const okR = region === 'all' || x.region === region;
+    const okDestination = destination === 'all' || x.destinationSlug === destination;
     const okD =
       duration === 'any' ||
       (duration === 'short' ? x.days <= 5 : duration === 'medium' ? x.days >= 6 && x.days <= 7 : x.days >= 8);
-    return okQ && okR && okD;
+    return okQ && okR && okDestination && okD;
   });
   if (sort === 'low') list.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
   if (sort === 'high') list.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
 
-  const reset = () => { setQ(''); setRegion('all'); setDuration('any'); setSort('default'); };
+  const reset = () => { setQ(''); setRegion('all'); setDestination('all'); setDuration('any'); setSort('default'); };
 
   return (
     <>
@@ -70,6 +80,20 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
           <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('region')}</span>
           {regions.map((k) => (
             <button key={k} onClick={() => setRegion(k)} className={chip(region === k)}>{t(`regions.${k}`)}</button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('destination')}</span>
+          <button onClick={() => setDestination('all')} className={chip(destination === 'all')}>{t('regions.all')}</button>
+          {destinationOptions.map((option) => (
+            <button
+              key={option.slug}
+              onClick={() => setDestination(option.slug)}
+              className={chip(destination === option.slug)}
+            >
+              {option.name}
+            </button>
           ))}
         </div>
 

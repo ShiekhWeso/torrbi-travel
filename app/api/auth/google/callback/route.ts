@@ -4,6 +4,8 @@ import {db} from '@/lib/db';
 import {users} from '@/lib/db/schema';
 import {createUserSession} from '@/lib/auth';
 import {safeActivityReturnTo} from '@/lib/activity-return-to';
+import {sendEmail} from '@/lib/email';
+import {welcome} from '@/lib/email-templates';
 
 export async function GET(req: NextRequest) {
   const origin = req.nextUrl.origin;
@@ -42,6 +44,7 @@ export async function GET(req: NextRequest) {
   let [u] = await db.select().from(users).where(eq(users.email, email)).limit(1);
   if (!u) {
     [u] = await db.insert(users).values({email, name: g.name || email.split('@')[0], googleId: g.sub}).returning();
+    void sendEmail({to: email, ...welcome(locale, {name: u.name})});
   } else if (!u.googleId) {
     await db.update(users).set({googleId: g.sub}).where(eq(users.id, u.id));
   }

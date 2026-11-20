@@ -1,7 +1,7 @@
 import {notFound} from 'next/navigation';
 import {asc, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays} from '@/lib/db/schema';
+import {packages, packageDays, destinations} from '@/lib/db/schema';
 import PackageForm from '@/components/admin/PackageForm';
 import DayForm from '@/components/admin/DayForm';
 import {getLocale} from 'next-intl/server';
@@ -13,12 +13,16 @@ export default async function Page({params}: {params: Promise<{id: string}>}) {
   const pid = Number(id);
   const [p] = await db.select().from(packages).where(eq(packages.id, pid)).limit(1);
   if (!p) notFound();
-  const days = await db.select().from(packageDays).where(eq(packageDays.packageId, pid)).orderBy(asc(packageDays.dayNo));
+  const [days, destinationRows] = await Promise.all([
+    db.select().from(packageDays).where(eq(packageDays.packageId, pid)).orderBy(asc(packageDays.dayNo)),
+    db.select({id: destinations.id, slug: destinations.slug, i18n: destinations.i18n})
+      .from(destinations).orderBy(asc(destinations.id))
+  ]);
   return (
     <div className="space-y-8">
       <div>
         <h1 className="mb-6 font-display text-3xl text-navy">{t.editPackage}</h1>
-        <PackageForm p={p} />
+        <PackageForm p={p} destinations={destinationRows} />
       </div>
       <div>
         <h2 className="mb-4 font-display text-2xl text-navy">{t.itinerary}</h2>

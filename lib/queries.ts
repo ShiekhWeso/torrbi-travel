@@ -12,15 +12,23 @@ export async function getRates(): Promise<Rates> {
 
 export async function getPackages(locale: string) {
   const l = lang(locale);
-  const rows = await db.select().from(packages).where(eq(packages.published, true)).orderBy(asc(packages.sort), asc(packages.id));
+  const rows = await db.select({package: packages, destination: destinations})
+    .from(packages)
+    .leftJoin(destinations, eq(packages.destinationId, destinations.id))
+    .where(eq(packages.published, true))
+    .orderBy(asc(packages.sort), asc(packages.id));
   const days = await db.select().from(packageDays).orderBy(asc(packageDays.dayNo));
   return rows.map((r) => {
-    const mine = days.filter((d) => d.packageId === r.id);
+    const pkg = r.package;
+    const mine = days.filter((d) => d.packageId === pkg.id);
     return {
-      id: r.slug, image: r.cover ?? '', days: r.days, nights: r.nights, price: r.priceUsd,
-      childPrice: r.childPriceUsd, infantPrice: r.infantPriceUsd,
-      region: r.region, featured: r.featured, gallery: r.gallery,
-      ...r.i18n[l],
+      id: pkg.slug, image: pkg.cover ?? '', days: pkg.days, nights: pkg.nights, price: pkg.priceUsd,
+      childPrice: pkg.childPriceUsd, infantPrice: pkg.infantPriceUsd,
+      region: pkg.region, featured: pkg.featured, gallery: pkg.gallery,
+      destinationId: pkg.destinationId,
+      destinationSlug: r.destination?.slug ?? null,
+      destinationName: r.destination?.i18n[l].name ?? null,
+      ...pkg.i18n[l],
       stops: [...new Set(mine.map((d) => d.i18n[l].stage ?? d.i18n[l].title))],
       steps: mine.map((d) => ({title: d.i18n[l].title, text: d.i18n[l].items.join(' · ')}))
     };

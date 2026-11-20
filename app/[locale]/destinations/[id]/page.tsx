@@ -136,6 +136,12 @@ export default async function DestinationPage({params}: {params: Promise<{locale
               >
                 {dd('chat')}
               </a>
+              <Link
+                href={`/${locale}/packages?destination=${encodeURIComponent(id)}`}
+                className="mt-3 flex w-full items-center justify-center rounded-full border-2 border-snow/40 py-3 font-bold transition-colors hover:bg-snow hover:text-navy"
+              >
+                {dd('browsePackages')}
+              </Link>
               {hasPackage && (
                 <Link
                   href={`/${locale}/packages/${id}`}

@@ -3,11 +3,14 @@
 import {redirect} from 'next/navigation';
 import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
-import {eq} from 'drizzle-orm';
+import {and, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, activityReviews, settings, coupons, contactLinks, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, activityReviews, settings, coupons, contactLinks, users, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
+import {bookingRef} from '@/lib/bookingRef';
+import {bookingCancelled, bookingConfirmed} from '@/lib/email-templates';
+import {sendEmail} from '@/lib/email';
 
 async function go(path: string): Promise<never> {
   redirect(`/${await getLocale()}${path}`);
@@ -338,6 +341,10 @@ const lines = (v: FormDataEntryValue | null) =>
 export async function savePackage(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   const id = num(formData.get('id'));
+  const destinationId = num(formData.get('destinationId'));
+  if (destinationId !== null && (!Number.isInteger(destinationId) || destinationId < 1)) {
+    throw new Error('Invalid package destination');
+  }
   const f = (k: string) => str(formData.get(k));
   const l = (k: string) => lines(formData.get(k));
   type FRow = {icon: string; title_en: string; text_en: string; title_ar: string; text_ar: string};
@@ -351,8 +358,9 @@ export async function savePackage(formData: FormData) {
   rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim());
   const data = {
     slug: f('slug'),
+    destinationId,
     region: f('region') || 'asia',
-    days: num(formData.get('days')) ?? 1,
+    days: num(formData.get('packageDaysCount')) ?? 1,
     nights: num(formData.get('nights')) ?? 0,
     priceUsd: num(formData.get('priceUsd')),
     childPriceUsd: num(formData.get('childPriceUsd')),
@@ -499,7 +507,40 @@ export async function setBookingStatus(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   const status = String(formData.get('status'));
   if (!['pending', 'confirmed', 'cancelled'].includes(status)) return;
-  await db.update(bookings).set({status}).where(eq(bookings.id, Number(formData.get('id'))));
+  const id = Number(formData.get('id'));
+  const [booking] = await db.select({
+    id: bookings.id,
+    status: bookings.status,
+    lang: bookings.lang,
+    title: bookings.packageTitle,
+    date: bookings.travelDate,
+    guests: bookings.pax,
+    totalUsd: bookings.totalUsd,
+    email: users.email,
+    name: users.name
+  }).from(bookings).innerJoin(users, eq(bookings.userId, users.id)).where(eq(bookings.id, id)).limit(1);
+  if (booking && booking.status !== status) {
+    const [updated] = await db.update(bookings).set({status}).where(and(
+      eq(bookings.id, id),
+      eq(bookings.status, booking.status)
+    )).returning({id: bookings.id});
+    if (updated && (status === 'confirmed' || status === 'cancelled')) {
+      const locale = booking.lang === 'ar' ? 'ar' : 'en';
+      const data = {
+        name: booking.name,
+        reference: bookingRef(booking.id),
+        title: booking.title,
+        date: booking.date,
+        guests: booking.guests,
+        totalUsd: booking.totalUsd
+      };
+      if (status === 'confirmed') {
+        void sendEmail({to: booking.email, ...bookingConfirmed(locale, data)});
+      } else {
+        void sendEmail({to: booking.email, ...bookingCancelled(locale, data)});
+      }
+    }
+  }
   revalidatePath('/', 'layout');
 }
 

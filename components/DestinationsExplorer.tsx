@@ -10,6 +10,7 @@ const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
 
 export default function DestinationsExplorer({items}: {items: Dest[]}) {
   const f = useTranslations('packagesPage');
+  const d = useTranslations('destinations');
   const locale = useLocale();
   const [q, setQ] = useState('');
   const [region, setRegion] = useState<(typeof regions)[number]>('all');
@@ -52,29 +53,36 @@ export default function DestinationsExplorer({items}: {items: Dest[]}) {
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
           {list.map((x) => (
-            <Link
-              key={x.id}
-              href={`/${locale}/destinations/${x.id}`}
-              className="group relative aspect-[3/4] overflow-hidden rounded-3xl bg-navy"
-            >
-              <Image
-                src={x.image}
-                alt={x.name}
-                fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/10 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 text-snow lg:p-5">
-                <div>
-                  <h3 className="font-display text-xl font-bold lg:text-2xl">{x.name}</h3>
-                  <p className="text-xs text-snow/70 lg:text-sm">{x.country}</p>
+            <div key={x.id} className="flex flex-col gap-3">
+              <Link
+                href={`/${locale}/destinations/${x.id}`}
+                className="group relative aspect-[3/4] overflow-hidden rounded-3xl bg-navy"
+              >
+                <Image
+                  src={x.image}
+                  alt={x.name}
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/10 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 text-snow lg:p-5">
+                  <div>
+                    <h3 className="font-display text-xl font-bold lg:text-2xl">{x.name}</h3>
+                    <p className="text-xs text-snow/70 lg:text-sm">{x.country}</p>
+                  </div>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-warm text-navy transition-transform duration-300 group-hover:-rotate-45 rtl:rotate-180 rtl:group-hover:rotate-[225deg]">
+                    <span className="material-symbols-outlined text-[20px] leading-none">arrow_forward</span>
+                  </span>
                 </div>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-warm text-navy transition-transform duration-300 group-hover:-rotate-45 rtl:rotate-180 rtl:group-hover:rotate-[225deg]">
-                  <span className="material-symbols-outlined text-[20px] leading-none">arrow_forward</span>
-                </span>
-              </div>
-            </Link>
+              </Link>
+              <Link
+                href={`/${locale}/packages?destination=${encodeURIComponent(x.id)}`}
+                className="inline-flex w-full items-center justify-center rounded-full border-2 border-navy px-4 py-2.5 text-sm font-bold text-navy transition-colors hover:bg-navy hover:text-snow"
+              >
+                {d('browsePackages')}
+              </Link>
+            </div>
           ))}
         </div>
       )}

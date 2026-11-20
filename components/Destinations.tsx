@@ -95,6 +95,12 @@ export default function Destinations({destinations}: {destinations: Dest[]}) {
                   {t('details')}
                   <span className="material-symbols-outlined text-[20px] leading-none rtl:rotate-180">arrow_forward</span>
                 </Link>
+                <Link
+                  href={`/${locale}/packages?destination=${encodeURIComponent(cur.id)}`}
+                  className="mt-3 inline-flex w-full items-center justify-center rounded-full border-2 border-snow/40 py-3 font-bold transition-colors hover:bg-snow hover:text-navy"
+                >
+                  {t('browsePackages')}
+                </Link>
               </div>
             )}
           </aside>

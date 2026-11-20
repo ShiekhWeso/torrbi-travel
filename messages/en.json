@@ -47,6 +47,7 @@
     "title": "Popular Destinations",
     "book": "Book on WhatsApp",
     "details": "More details",
+    "browsePackages": "Browse packages",
     "seeAll": "See all destinations",
     "tagline": "Beaches, culture and unforgettable food in {name}.",
     "bestTime": "Best time",
@@ -113,6 +114,7 @@
     "plan": "Plan your trip to {name}",
     "planText": "Tell us your dates and we will build the perfect trip.",
     "chat": "Chat on WhatsApp",
+    "browsePackages": "Browse packages",
     "viewPackage": "View the {name} package"
   },
   "destinationsPage": {
@@ -134,6 +136,7 @@
     "subtitle": "Browse every trip and filter by region, duration or price.",
     "search": "Search packages",
     "region": "Region",
+    "destination": "Destination",
     "regions": { "all": "All", "asia": "Asia", "turkey": "Türkiye", "caucasus": "Caucasus" },
     "duration": "Duration",
     "durations": { "any": "Any", "short": "Up to 5 days", "medium": "6–7 days", "long": "8+ days" },

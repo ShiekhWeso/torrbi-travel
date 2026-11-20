@@ -5,6 +5,7 @@ export type Lang = 'ar' | 'en';
 export const packages = pgTable('packages', {
   id: serial('id').primaryKey(),
   slug: text('slug').notNull().unique(),
+  destinationId: integer('destination_id').references(() => destinations.id, {onDelete: 'set null'}),
   days: integer('days').notNull(),
   nights: integer('nights').notNull(),
   priceUsd: integer('price_usd'),
