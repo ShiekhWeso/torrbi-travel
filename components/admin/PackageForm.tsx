@@ -1,5 +1,5 @@
 import {savePackage} from '@/app/[locale]/admin/actions';
-import type {destinations as destinationTable, packages} from '@/lib/db/schema';
+import type {destinations as destinationTable, packages, searchRegions} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import FeaturesEditor from '@/components/admin/FeaturesEditor';
@@ -9,6 +9,7 @@ import GalleryUpload from '@/components/admin/GalleryUpload';
 
 type P = typeof packages.$inferSelect;
 type D = Pick<typeof destinationTable.$inferSelect, 'id' | 'slug' | 'i18n'>;
+type R = Pick<typeof searchRegions.$inferSelect, 'slug' | 'i18n'>;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
 const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
   <label className="block text-sm font-bold text-navy">
@@ -18,9 +19,11 @@ const Field = ({label, children}: {label: string; children: React.ReactNode}) =>
 );
 const J = (a?: string[]) => (a ?? []).join('\n');
 
-export default async function PackageForm({p, destinations}: {p?: P; destinations: D[]}) {
+export default async function PackageForm({p, destinations, regions}: {p?: P; destinations: D[]; regions: R[]}) {
   const locale = await getLocale();
   const t = tr(locale);
+  const region = p?.region ?? regions[0]?.slug ?? 'asia';
+  const hasRegion = regions.some((item) => item.slug === region);
   const area = (name: string, label: string, en?: string[], ar?: string[]) => (
     <>
       <Field label={`${label} (EN) - ${t.perLine}`}><textarea name={`${name}_en`} rows={4} defaultValue={J(en)} className={inp} /></Field>
@@ -51,7 +54,16 @@ export default async function PackageForm({p, destinations}: {p?: P; destination
           ))}
         </select>
       </Field>
-      <Field label={t.region}><input name="region" defaultValue={p?.region ?? 'asia'} className={inp} /></Field>
+      <Field label={t.region}>
+        <select name="region" defaultValue={region} className={inp}>
+          {!hasRegion && <option value={region}>{region}</option>}
+          {regions.map((item) => (
+            <option key={item.slug} value={item.slug}>
+              {item.i18n[locale === 'ar' ? 'ar' : 'en'].name}
+            </option>
+          ))}
+        </select>
+      </Field>
       <Field label={t.days}><input name="packageDaysCount" type="number" defaultValue={p?.days ?? ''} required className={inp} /></Field>
       <Field label={t.nights}><input name="nights" type="number" defaultValue={p?.nights ?? ''} required className={inp} /></Field>
       <Field label="Adult price (USD) / سعر البالغ"><input name="priceUsd" type="number" defaultValue={p?.priceUsd ?? ''} className={inp} /></Field>

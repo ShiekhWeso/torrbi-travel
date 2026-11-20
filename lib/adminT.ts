@@ -1,5 +1,9 @@
 const en = {
   dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', reviews: 'Reviews', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ', contact: 'Contact / اتصل بنا',
+  searchOptions: 'Search options', searchRegions: 'Regions', searchDurations: 'Durations',
+  newSearchRegion: 'New search region', editSearchRegion: 'Edit search region',
+  newSearchDuration: 'New search duration', editSearchDuration: 'Edit search duration',
+  regionName: 'Region name', durationLabel: 'Duration label', minDays: 'Minimum days', maxDays: 'Maximum days',
   activityTitle: 'Activity', reviewer: 'Customer', reviewRating: 'Rating', reviewComment: 'Comment', reviewStatus: 'Status',
   visibleReview: 'Visible', hiddenReview: 'Hidden', hideReview: 'Hide', showReview: 'Show',
   customers: 'Customers', pendingBookings: 'Pending bookings', bookingsToday: 'Bookings today', totalBookings: 'Total bookings',
@@ -46,6 +50,10 @@ const en = {
 
 const ar: typeof en = {
   dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', reviews: 'المراجعات', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة', contact: 'اتصل بنا',
+  searchOptions: 'خيارات البحث', searchRegions: 'المناطق', searchDurations: 'المدد',
+  newSearchRegion: 'إضافة منطقة بحث', editSearchRegion: 'تعديل منطقة البحث',
+  newSearchDuration: 'إضافة مدة بحث', editSearchDuration: 'تعديل مدة البحث',
+  regionName: 'اسم المنطقة', durationLabel: 'اسم المدة', minDays: 'أقل عدد أيام', maxDays: 'أقصى عدد أيام',
   activityTitle: 'النشاط', reviewer: 'العميل', reviewRating: 'التقييم', reviewComment: 'التعليق', reviewStatus: 'الحالة',
   visibleReview: 'ظاهر', hiddenReview: 'مخفي', hideReview: 'إخفاء', showReview: 'إظهار',
   customers: 'العملاء', pendingBookings: 'الحجوزات المعلقة', bookingsToday: 'حجوزات اليوم', totalBookings: 'إجمالي الحجوزات',

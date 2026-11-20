@@ -9,7 +9,7 @@ import Contact from '@/components/Contact';
 import PlanWithUs from '@/components/PlanWithUs';
 import Footer from '@/components/Footer';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
-import {getDestinations} from '@/lib/queries';
+import {getDestinations, getSearchDurations} from '@/lib/queries';
 import Offers from '@/components/Offers';
 
 export const revalidate = 3600;
@@ -17,13 +17,16 @@ export const revalidate = 3600;
 export default async function HomePage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
-  const dests = await getDestinations(locale);
+  const [dests, durations] = await Promise.all([
+    getDestinations(locale),
+    getSearchDurations(locale)
+  ]);
 
   return (
     <>
       <Header />
       <main className="flex-1">
-        <Hero />
+        <Hero destinations={dests} durations={durations} />
         <Packages />
         <Offers />
         <Destinations destinations={dests} />

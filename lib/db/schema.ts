@@ -100,6 +100,23 @@ export const faqs = pgTable('faqs', {
   i18n: jsonb('i18n').$type<Record<Lang, {question: string; answer: string}>>().notNull()
 });
 
+export const searchRegions = pgTable('search_regions', {
+  id: serial('id').primaryKey(),
+  slug: text('slug').notNull().unique(),
+  sort: integer('sort').notNull().default(0),
+  published: boolean('published').notNull().default(true),
+  i18n: jsonb('i18n').$type<Record<Lang, {name: string}>>().notNull()
+});
+
+export const searchDurations = pgTable('search_durations', {
+  id: serial('id').primaryKey(),
+  sort: integer('sort').notNull().default(0),
+  published: boolean('published').notNull().default(true),
+  minDays: integer('min_days'),
+  maxDays: integer('max_days'),
+  i18n: jsonb('i18n').$type<Record<Lang, {label: string}>>().notNull()
+});
+
 export type ContactSection = 'social' | 'direct';
 export type ContactType = 'instagram' | 'facebook' | 'tiktok' | 'x' | 'snapchat' | 'youtube' | 'linkedin'
   | 'whatsapp' | 'phone' | 'email' | 'address' | 'hours';

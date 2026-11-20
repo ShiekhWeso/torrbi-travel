@@ -11,6 +11,7 @@
     "seed:car": "tsx scripts/seed-car-prices.ts",
     "seed:reviews": "tsx scripts/seed-reviews.ts",
     "seed:pkgdest": "tsx scripts/seed-package-destinations.ts",
+    "seed:search": "tsx scripts/seed-search-options.ts",
     "test:email": "tsx scripts/test-email.ts"
   },
   "dependencies": {

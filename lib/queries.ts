@@ -1,6 +1,6 @@
 import {asc, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays, destinations, activities, offers, faqs, settings, contactLinks} from '@/lib/db/schema';
+import {packages, packageDays, destinations, activities, offers, faqs, settings, contactLinks, searchRegions, searchDurations} from '@/lib/db/schema';
 import {DEFAULT_RATES, type Rates} from '@/lib/currency';
 
 const lang = (l: string) => (l === 'ar' ? 'ar' : 'en');
@@ -9,6 +9,29 @@ export async function getRates(): Promise<Rates> {
   const [row] = await db.select().from(settings).where(eq(settings.key, 'rates')).limit(1);
   return {...DEFAULT_RATES, ...(row?.value ?? {}), USD: 1} as Rates;
 }
+
+export async function getSearchRegions(locale: string) {
+  const l = lang(locale);
+  const rows = await db.select().from(searchRegions)
+    .where(eq(searchRegions.published, true))
+    .orderBy(asc(searchRegions.sort), asc(searchRegions.id));
+  return rows.map((row) => ({id: row.id, slug: row.slug, name: row.i18n[l].name}));
+}
+export type SearchRegion = Awaited<ReturnType<typeof getSearchRegions>>[number];
+
+export async function getSearchDurations(locale: string) {
+  const l = lang(locale);
+  const rows = await db.select().from(searchDurations)
+    .where(eq(searchDurations.published, true))
+    .orderBy(asc(searchDurations.sort), asc(searchDurations.id));
+  return rows.map((row) => ({
+    id: row.id,
+    minDays: row.minDays,
+    maxDays: row.maxDays,
+    label: row.i18n[l].label
+  }));
+}
+export type SearchDuration = Awaited<ReturnType<typeof getSearchDurations>>[number];
 
 export async function getPackages(locale: string) {
   const l = lang(locale);

@@ -3,34 +3,45 @@
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {useLocale, useTranslations} from 'next-intl';
+import type {Dest, SearchDuration} from '@/lib/queries';
 import HeroBackground from './HeroBackground';
 
 const trending = ['bali', 'istanbul', 'phuket'] as const;
-const durations = ['any', 'short', 'medium', 'long'] as const;
 
-export default function Hero() {
+export default function Hero({
+  destinations,
+  durations
+}: {
+  destinations: Pick<Dest, 'id' | 'name'>[];
+  durations: SearchDuration[];
+}) {
   const t = useTranslations('hero');
-  const d = useTranslations('destinations');
   const v = useTranslations('values');
   const locale = useLocale();
   const router = useRouter();
   const [type, setType] = useState<'packages' | 'activities'>('packages');
-  const [dest, setDest] = useState('');
+  const [destination, setDestination] = useState('');
+  const [activityQuery, setActivityQuery] = useState('');
   const [date, setDate] = useState('');
   const [pax, setPax] = useState(2);
-  const [duration, setDuration] = useState<(typeof durations)[number]>('any');
+  const [duration, setDuration] = useState('any');
+  const trendingDestinations = trending.flatMap((slug) => {
+    const option = destinations.find((item) => item.id === slug);
+    return option ? [option] : [];
+  });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (dest.trim()) params.set('q', dest.trim());
+    if (type === 'packages' && destination) params.set('destination', destination);
+    if (type === 'activities' && activityQuery.trim()) params.set('q', activityQuery.trim());
     if (type === 'packages' && duration !== 'any') params.set('duration', duration);
-    if (date) params.set('date', date);
+    if (type === 'activities' && date) params.set('date', date);
     params.set('pax', String(pax));
     router.push(`/${locale}/${type}?${params}`);
   };  
 
-  const field = 'flex flex-col justify-center rounded-xl bg-mist px-4 py-3 hover:bg-sky-light/25 transition-colors';
+  const field = 'flex flex-col justify-center rounded-xl bg-mist px-4 py-3 transition-colors hover:bg-sky-light/25 focus-within:ring-2 focus-within:ring-sky';
   const label = 'text-[11px] font-bold uppercase tracking-wider text-navy/60';
   const input = 'w-full bg-transparent font-bold text-navy placeholder:text-navy/40 focus:outline-none';
 
@@ -79,7 +90,7 @@ export default function Hero() {
                 type="button"
                 onClick={() => setType(k)}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  type === k ? 'bg-navy text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
+                  type === k ? 'bg-brand-sky text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
                 }`}
               >
                 {t(`types.${k}`)}
@@ -87,34 +98,50 @@ export default function Hero() {
             ))}
           </div>  
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_auto] gap-3">
             <label className={field}><span className={label}>{t('destination')}</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="material-symbols-outlined text-[20px] text-sky">flight_takeoff</span>
-                <input
-                  id="search-input"
-                  type="text"
-                  value={dest}
-                  onChange={(e) => setDest(e.target.value)}
-                  placeholder={t('destinationPlaceholder')}
-                  className={input}
-                />
+                {type === 'packages' ? (
+                  <select
+                    id="search-input"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    className={input}
+                  >
+                    <option value="">{t('destinationPlaceholder')}</option>
+                    {destinations.map((item) => (
+                      <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="search-input"
+                    type="text"
+                    value={activityQuery}
+                    onChange={(e) => setActivityQuery(e.target.value)}
+                    placeholder={t('destinationPlaceholder')}
+                    className={input}
+                  />
+                )}
               </div>
             </label>
 
-            <label className={field}>
-              <span className={label}>{t('date')}</span>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="material-symbols-outlined text-[20px] text-sky">calendar_today</span>
-                <input
-                  type="date"
-                  value={date}
-                  min={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => setDate(e.target.value)}
-                  className={input}
-                />
-              </div>
-            </label>
+            {type === 'activities' && (
+              <label className={field}>
+                <span className={label}>{t('date')}</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="material-symbols-outlined text-[20px] text-sky">calendar_today</span>
+                  <input
+                    type="date"
+                    value={date}
+                    min={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => setDate(e.target.value)}
+                    className={input}
+                  />
+                </div>
+              </label>
+            )}
 
             <label className={field}>
               <span className={label}>{t('travelers')}</span>
@@ -140,8 +167,9 @@ export default function Hero() {
                     onChange={(e) => setDuration(e.target.value as typeof duration)}
                     className={input}
                   >
-                    {durations.map((k) => (
-                      <option key={k} value={k}>{t(`durations.${k}`)}</option>
+                    <option value="any">{t('durations.any')}</option>
+                    {durations.map((item) => (
+                      <option key={item.id} value={item.id}>{item.label}</option>
                     ))}
                   </select>
                 </div>
@@ -162,17 +190,18 @@ export default function Hero() {
 
           <div className="flex flex-wrap items-center gap-2 mt-4 px-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-navy/50">{t('trending')}</span>
-            {trending.map((k) => (
+            {trendingDestinations.map((item) => (
               <button
-                key={k}
+                key={item.id}
                 type="button"
                 onClick={() => {
-                  setDest(d(`items.${k}.name`));
+                  setDestination(item.id);
+                  setActivityQuery(item.name);
                   document.getElementById('search-input')?.focus();
                 }}
                 className="px-3 py-1 rounded-full bg-mist text-navy text-xs font-bold hover:bg-sky-light/40 transition-colors"
               >
-                {d(`items.${k}.name`)}
+                {item.name}
               </button>
             ))}
           </div>

@@ -4,20 +4,31 @@ import {useState} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {useLocale, useTranslations} from 'next-intl';
-import type {Pkg} from '@/lib/queries';
+import type {Pkg, SearchDuration, SearchRegion} from '@/lib/queries';
 import { useSearchParams } from 'next/navigation';
 import { waLink } from '@/lib/whatsapp';
 import {useCurrency} from '@/components/CurrencyProvider';
 
-const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
-const durations = ['any', 'short', 'medium', 'long'] as const;
+const legacyDurationRanges: Record<string, {minDays: number | null; maxDays: number | null}> = {
+  short: {minDays: null, maxDays: 5},
+  medium: {minDays: 6, maxDays: 7},
+  long: {minDays: 8, maxDays: null}
+};
 
 const chip = (on: boolean) =>
   `rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-    on ? 'bg-navy text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
+    on ? 'bg-brand-sky text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
   }`;
 
-export default function PackagesExplorer({items}: {items: Pkg[]}) {
+export default function PackagesExplorer({
+  items,
+  regions,
+  durations
+}: {
+  items: Pkg[];
+  regions: SearchRegion[];
+  durations: SearchDuration[];
+}) {
   const t = useTranslations('packagesPage');
   const c = useTranslations('packageCards');
   const p = useTranslations('packages');
@@ -25,18 +36,29 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
   const w = useTranslations('wa');
   const sp = useSearchParams();
   const {money} = useCurrency();
-  const destinationOptions = Array.from(new Map(
-    items.flatMap((item) => item.destinationSlug && item.destinationName
-      ? [[item.destinationSlug, item.destinationName] as const]
-      : [])
-  ), ([slug, name]) => ({slug, name}));
+  const destinationOptions = Array.from(items.reduce((options, item) => {
+    if (item.destinationId != null && item.destinationSlug && item.destinationName) {
+      const option = options.get(item.destinationId);
+      if (option) {
+        option.count += 1;
+      } else {
+        options.set(item.destinationId, {
+          id: item.destinationId,
+          slug: item.destinationSlug,
+          name: item.destinationName,
+          count: 1
+        });
+      }
+    }
+    return options;
+  }, new Map<number, {id: number; slug: string; name: string; count: number}>()).values());
   const carry = new URLSearchParams();
   ['date', 'pax'].forEach((k) => {
     const val = sp.get(k);
     if (val) carry.set(k, val);
   });
   const suffix = carry.toString() ? `?${carry}` : '';
-  const [region, setRegion] = useState<(typeof regions)[number]>('all');
+  const [region, setRegion] = useState('all');
   const initialDestination = sp.get('destination') ?? 'all';
   const [destination, setDestination] = useState(
     () => destinationOptions.some((option) => option.slug === initialDestination) ? initialDestination : 'all'
@@ -44,18 +66,26 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
   const [sort, setSort] = useState('default');
   const [q, setQ] = useState(sp.get('q') ?? '');
   const initD = sp.get('duration') ?? '';
-  const [duration, setDuration] = useState<(typeof durations)[number]>(
-    (durations as readonly string[]).includes(initD) ? (initD as (typeof durations)[number]) : 'any'
-  );
+  const [duration, setDuration] = useState(() => {
+    const option = durations.find((item) => String(item.id) === initD);
+    if (option) return String(option.id);
+    const legacyRange = legacyDurationRanges[initD];
+    const legacyOption = legacyRange && durations.find((item) =>
+      item.minDays === legacyRange.minDays && item.maxDays === legacyRange.maxDays
+    );
+    return legacyOption ? String(legacyOption.id) : 'any';
+  });
+  const selectedDestinationId = destinationOptions.find((option) => option.slug === destination)?.id;
+  const selectedDuration = durations.find((item) => String(item.id) === duration);
 
   const list = items.filter((x) => {
     const hay = `${x.title} ${x.stops.join(' ')} ${x.id}`.toLowerCase();
     const okQ = hay.includes(q.trim().toLowerCase());
     const okR = region === 'all' || x.region === region;
-    const okDestination = destination === 'all' || x.destinationSlug === destination;
-    const okD =
-      duration === 'any' ||
-      (duration === 'short' ? x.days <= 5 : duration === 'medium' ? x.days >= 6 && x.days <= 7 : x.days >= 8);
+    const okDestination = destination === 'all' || x.destinationId === selectedDestinationId;
+    const okD = !selectedDuration ||
+      (selectedDuration.minDays == null || x.days >= selectedDuration.minDays) &&
+      (selectedDuration.maxDays == null || x.days <= selectedDuration.maxDays);
     return okQ && okR && okDestination && okD;
   });
   if (sort === 'low') list.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
@@ -66,7 +96,7 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
   return (
     <>
       <div className="space-y-5 rounded-3xl bg-snow p-5 shadow-[0_16px_40px_rgba(15,24,89,0.08)] lg:p-6">
-        <label className="flex items-center gap-3 rounded-xl bg-mist px-4 py-3">
+        <label className="flex items-center gap-3 rounded-xl bg-mist px-4 py-3 focus-within:ring-2 focus-within:ring-sky">
           <span className="material-symbols-outlined text-sky">search</span>
           <input
             value={q}
@@ -78,29 +108,33 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('region')}</span>
-          {regions.map((k) => (
-            <button key={k} onClick={() => setRegion(k)} className={chip(region === k)}>{t(`regions.${k}`)}</button>
+          <button onClick={() => setRegion('all')} className={chip(region === 'all')}>{t('regions.all')}</button>
+          {regions.map((item) => (
+            <button key={item.id} onClick={() => setRegion(item.slug)} className={chip(region === item.slug)}>{item.name}</button>
           ))}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('destination')}</span>
-          <button onClick={() => setDestination('all')} className={chip(destination === 'all')}>{t('regions.all')}</button>
+          <button onClick={() => setDestination('all')} className={chip(destination === 'all')}>
+            {t('regions.all')} ({items.length})
+          </button>
           {destinationOptions.map((option) => (
             <button
-              key={option.slug}
+              key={option.id}
               onClick={() => setDestination(option.slug)}
               className={chip(destination === option.slug)}
             >
-              {option.name}
+              {option.name} ({option.count})
             </button>
           ))}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('duration')}</span>
-          {durations.map((k) => (
-            <button key={k} onClick={() => setDuration(k)} className={chip(duration === k)}>{t(`durations.${k}`)}</button>
+          <button onClick={() => setDuration('any')} className={chip(duration === 'any')}>{t('durations.any')}</button>
+          {durations.map((item) => (
+            <button key={item.id} onClick={() => setDuration(String(item.id))} className={chip(duration === String(item.id))}>{item.label}</button>
           ))}
         </div>
 
@@ -110,7 +144,7 @@ export default function PackagesExplorer({items}: {items: Pkg[]}) {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="rounded-full bg-mist px-4 py-2 text-sm font-bold text-navy focus:outline-none"
+              className="rounded-full bg-mist px-4 py-2 text-sm font-bold text-navy focus:outline-none focus:ring-2 focus:ring-sky"
             >
               <option value="default">{t('sortDefault')}</option>
               <option value="low">{t('sortLow')}</option>

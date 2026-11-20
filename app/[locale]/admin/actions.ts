@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {and, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, activityReviews, settings, coupons, contactLinks, users, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, activityReviews, settings, coupons, contactLinks, users, searchRegions, searchDurations, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 import {bookingRef} from '@/lib/bookingRef';
@@ -145,6 +145,100 @@ export async function deleteFaq(formData: FormData) {
   await db.delete(faqs).where(eq(faqs.id, Number(formData.get('id'))));
   revalidatePath('/', 'layout');
   await go('/admin/faqs');
+}
+
+function validId(value: FormDataEntryValue | null, label: string) {
+  const id = num(value);
+  if (id === null || !Number.isSafeInteger(id) || id < 1) throw new Error(`Invalid ${label} id`);
+  return id;
+}
+
+function validSort(value: FormDataEntryValue | null) {
+  const sort = num(value);
+  if (sort === null || !Number.isSafeInteger(sort) || sort < 0) throw new Error('Invalid search option sort order');
+  return sort;
+}
+
+function optionalDayBound(value: FormDataEntryValue | null, label: string) {
+  const days = num(value);
+  if (days !== null && (!Number.isSafeInteger(days) || days < 1)) throw new Error(`Invalid ${label}`);
+  return days;
+}
+
+export async function saveSearchRegion(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const rawId = num(formData.get('id'));
+  if (rawId !== null && (!Number.isSafeInteger(rawId) || rawId < 1)) throw new Error('Invalid search region id');
+  const f = (key: string) => str(formData.get(key));
+  const slug = f('slug');
+  const nameEn = f('name_en');
+  const nameAr = f('name_ar');
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Invalid search region slug');
+  if (!nameEn || !nameAr) throw new Error('Search region names are required in English and Arabic');
+  const data = {
+    slug,
+    sort: validSort(formData.get('sort')),
+    published: formData.get('published') === 'on',
+    i18n: {en: {name: nameEn}, ar: {name: nameAr}}
+  };
+  if (rawId !== null) {
+    const updated = await db.update(searchRegions).set(data)
+      .where(eq(searchRegions.id, rawId)).returning({id: searchRegions.id});
+    if (updated.length === 0) throw new Error('Search region not found');
+  } else {
+    await db.insert(searchRegions).values(data);
+  }
+  revalidatePath('/', 'layout');
+  await go('/admin/search');
+}
+
+export async function deleteSearchRegion(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = validId(formData.get('id'), 'search region');
+  const deleted = await db.delete(searchRegions).where(eq(searchRegions.id, id)).returning({id: searchRegions.id});
+  if (deleted.length === 0) throw new Error('Search region not found');
+  revalidatePath('/', 'layout');
+  await go('/admin/search');
+}
+
+export async function saveSearchDuration(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const rawId = num(formData.get('id'));
+  if (rawId !== null && (!Number.isSafeInteger(rawId) || rawId < 1)) throw new Error('Invalid search duration id');
+  const f = (key: string) => str(formData.get(key));
+  const labelEn = f('label_en');
+  const labelAr = f('label_ar');
+  const minDays = optionalDayBound(formData.get('minDays'), 'minimum days');
+  const maxDays = optionalDayBound(formData.get('maxDays'), 'maximum days');
+  if (!labelEn || !labelAr) throw new Error('Search duration labels are required in English and Arabic');
+  if (minDays !== null && maxDays !== null && minDays > maxDays) {
+    throw new Error('Minimum days cannot exceed maximum days');
+  }
+  const data = {
+    sort: validSort(formData.get('sort')),
+    published: formData.get('published') === 'on',
+    minDays,
+    maxDays,
+    i18n: {en: {label: labelEn}, ar: {label: labelAr}}
+  };
+  if (rawId !== null) {
+    const updated = await db.update(searchDurations).set(data)
+      .where(eq(searchDurations.id, rawId)).returning({id: searchDurations.id});
+    if (updated.length === 0) throw new Error('Search duration not found');
+  } else {
+    await db.insert(searchDurations).values(data);
+  }
+  revalidatePath('/', 'layout');
+  await go('/admin/search');
+}
+
+export async function deleteSearchDuration(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = validId(formData.get('id'), 'search duration');
+  const deleted = await db.delete(searchDurations).where(eq(searchDurations.id, id)).returning({id: searchDurations.id});
+  if (deleted.length === 0) throw new Error('Search duration not found');
+  revalidatePath('/', 'layout');
+  await go('/admin/search');
 }
 
 function couponData(formData: FormData) {

@@ -29,6 +29,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
     [t.coupons, '/admin/coupons'],
     [t.faq, '/admin/faqs'],
     [t.contact, '/admin/contact'],
+    [t.searchOptions, '/admin/search'],
     ['Currency / العملة', '/admin/currency']
   ] as const;
 
