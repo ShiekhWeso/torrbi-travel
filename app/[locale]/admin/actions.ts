@@ -368,7 +368,57 @@ export async function savePackage(formData: FormData) {
     }
   };
   if (id) await db.update(packages).set(data).where(eq(packages.id, id));
-  else await db.insert(packages).values(data);
+  else {
+    const [createdPackage] = await db.insert(packages).values(data).returning({id: packages.id});
+    if (!createdPackage) throw new Error('Failed to create package');
+
+    let parsedDays: unknown;
+    try {
+      parsedDays = JSON.parse(str(formData.get('days')) || '[]');
+    } catch (error) {
+      console.error('Failed to parse package itinerary days', error);
+      throw error;
+    }
+    if (!Array.isArray(parsedDays)) throw new Error('Package itinerary days must be an array');
+
+    const daysToInsert = parsedDays.flatMap((value) => {
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        throw new Error('Invalid package itinerary day');
+      }
+      const day = value as Record<string, unknown>;
+      if (typeof day.title_en !== 'string' || typeof day.title_ar !== 'string') {
+        throw new Error('Package day titles must be strings');
+      }
+      const titleEn = day.title_en.trim();
+      const titleAr = day.title_ar.trim();
+      if (!titleEn && !titleAr) return [];
+
+      const dayNoValue = day.dayNo;
+      if ((typeof dayNoValue !== 'number' && typeof dayNoValue !== 'string') ||
+        (typeof dayNoValue === 'string' && !dayNoValue.trim())) {
+        throw new Error('Package day number must be an integer');
+      }
+      const dayNo = Number(dayNoValue);
+      if (!Number.isInteger(dayNo)) throw new Error('Package day number must be an integer');
+      if (day.stage !== null && typeof day.stage !== 'string') {
+        throw new Error('Package day stage must be a string or null');
+      }
+      if (typeof day.items_en !== 'string' || typeof day.items_ar !== 'string') {
+        throw new Error('Package day items must be strings');
+      }
+
+      return [{
+        packageId: createdPackage.id,
+        dayNo,
+        stage: typeof day.stage === 'string' ? day.stage.trim() || null : null,
+        i18n: {
+          en: {title: titleEn, items: lines(day.items_en)},
+          ar: {title: titleAr, items: lines(day.items_ar)}
+        }
+      }];
+    });
+    if (daysToInsert.length) await db.insert(packageDays).values(daysToInsert);
+  }
   revalidatePath('/', 'layout');
   await go('/admin/packages');
 }

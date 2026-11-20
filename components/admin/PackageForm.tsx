@@ -3,6 +3,7 @@ import type {packages} from '@/lib/db/schema';
 import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import FeaturesEditor from '@/components/admin/FeaturesEditor';
+import ItineraryDraftEditor from '@/components/admin/ItineraryDraftEditor';
 import ImageUpload from '@/components/admin/ImageUpload';
 import GalleryUpload from '@/components/admin/GalleryUpload';
 
@@ -53,6 +54,7 @@ export default async function PackageForm({p}: {p?: P}) {
       <label className="flex items-center gap-2 text-sm font-bold text-navy">
         <input type="checkbox" name="published" defaultChecked={p?.published ?? true} /> {t.published}
       </label>
+      {!p && <ItineraryDraftEditor />}
       <button className="rounded-full bg-navy px-6 py-2 font-bold text-snow md:col-span-2 md:w-fit">{t.save}</button>
     </form>
   );
