@@ -1,5 +1,7 @@
 const en = {
-  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ', contact: 'Contact / اتصل بنا',
+  dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', reviews: 'Reviews', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ', contact: 'Contact / اتصل بنا',
+  activityTitle: 'Activity', reviewer: 'Customer', reviewRating: 'Rating', reviewComment: 'Comment', reviewStatus: 'Status',
+  visibleReview: 'Visible', hiddenReview: 'Hidden', hideReview: 'Hide', showReview: 'Show',
   customers: 'Customers', pendingBookings: 'Pending bookings', bookingsToday: 'Bookings today', totalBookings: 'Total bookings',
   totalCustomers: 'Total customers', newCustomers: 'New customers (last 7 days)', latestBookings: 'Latest bookings',
   email: 'Email', phone: 'Phone', nationality: 'Nationality', joined: 'Joined', bookingsCount: 'Bookings',
@@ -43,7 +45,9 @@ const en = {
 };
 
 const ar: typeof en = {
-  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة', contact: 'اتصل بنا',
+  dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', reviews: 'المراجعات', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة', contact: 'اتصل بنا',
+  activityTitle: 'النشاط', reviewer: 'العميل', reviewRating: 'التقييم', reviewComment: 'التعليق', reviewStatus: 'الحالة',
+  visibleReview: 'ظاهر', hiddenReview: 'مخفي', hideReview: 'إخفاء', showReview: 'إظهار',
   customers: 'العملاء', pendingBookings: 'الحجوزات المعلقة', bookingsToday: 'حجوزات اليوم', totalBookings: 'إجمالي الحجوزات',
   totalCustomers: 'إجمالي العملاء', newCustomers: 'عملاء جدد (آخر 7 أيام)', latestBookings: 'أحدث الحجوزات',
   email: 'البريد الإلكتروني', phone: 'الهاتف', nationality: 'الجنسية', joined: 'تاريخ الانضمام', bookingsCount: 'الحجوزات',

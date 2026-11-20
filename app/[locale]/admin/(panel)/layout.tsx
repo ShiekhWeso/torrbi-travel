@@ -24,6 +24,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
     [t.customers, '/admin/customers'],
     [t.destinations, '/admin/destinations'],
     [t.activities, '/admin/activities'],
+    [t.reviews, '/admin/reviews'],
     [t.offers, '/admin/offers'],
     [t.coupons, '/admin/coupons'],
     [t.faq, '/admin/faqs'],

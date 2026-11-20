@@ -53,13 +53,13 @@ export default function UnsavedChangesGuard() {
     };
 
     document.addEventListener('input', onInput);
-    document.addEventListener('submit', onSubmit);
+    document.addEventListener('submit', onSubmit, true);
     document.addEventListener('click', onClick, true);
     window.addEventListener('popstate', onPop);
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => {
       document.removeEventListener('input', onInput);
-      document.removeEventListener('submit', onSubmit);
+      document.removeEventListener('submit', onSubmit, true);
       document.removeEventListener('click', onClick, true);
       window.removeEventListener('popstate', onPop);
       window.removeEventListener('beforeunload', onBeforeUnload);

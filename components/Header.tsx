@@ -3,6 +3,7 @@
 import {useEffect, useState} from 'react';
 import Image from 'next/image';
 import {useLocale, useTranslations} from 'next-intl';
+import {useSearchParams} from 'next/navigation';
 import {Link, usePathname} from '@/i18n/navigation';
 import {useCurrency} from '@/components/CurrencyProvider';
 import {CURRENCIES} from '@/lib/currency';
@@ -20,6 +21,9 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
   const locale = useLocale();
   const ar = locale === 'ar';
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const query = searchParams.toString();
+  const switchHref = query ? `${pathname}?${query}` : pathname;
   const [open, setOpen] = useState(false);
   const {cur, setCur} = useCurrency();
   const [curOpen, setCurOpen] = useState(false);
@@ -105,7 +109,7 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
             )}
           </div>
           <Link
-            href={pathname}
+            href={switchHref}
             locale={other}
             aria-label={h('switchLang')}
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mist text-navy text-sm font-bold hover:bg-sky-light/40 transition-colors"
@@ -184,7 +188,7 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               </Link>
             </>
           )}
-          <Link href={pathname} locale={other} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-sky">
+          <Link href={switchHref} locale={other} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-sky">
             {ar ? 'English' : 'العربية'}
           </Link>
         </nav>

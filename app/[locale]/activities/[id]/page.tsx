@@ -1,13 +1,16 @@
 import Image from 'next/image';
 import {notFound} from 'next/navigation';
-import {setRequestLocale} from 'next-intl/server';
-import {and, eq} from 'drizzle-orm';
+import {getTranslations, setRequestLocale} from 'next-intl/server';
+import {and, eq, ne} from 'drizzle-orm';
 import {getActivities, getActivity} from '@/lib/queries';
 import {db} from '@/lib/db';
-import {activities, favorites} from '@/lib/db/schema';
+import {activities, bookings, favorites} from '@/lib/db/schema';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ActivityBookingBox from '@/components/ActivityBookingBox';
+import ActivityReviewForm from '@/components/ActivityReviewForm';
+import {getActivityReviews} from '@/lib/review-actions';
+import {Link} from '@/i18n/navigation';
 import {Suspense} from 'react';
 import {getCurrentUser} from '@/lib/auth';
 import FavoriteButton from '@/components/FavoriteButton';
@@ -20,6 +23,7 @@ export async function generateStaticParams() {
 export default async function ActivityPage({params}: {params: Promise<{locale: string; id: string}>}) {
   const {locale, id} = await params;
   setRequestLocale(locale);
+  const reviewT = await getTranslations({locale, namespace: 'activityReviews'});
   const activity = await getActivity(locale, id);
   if (!activity) notFound();
   const user = await getCurrentUser();
@@ -37,9 +41,18 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
     .where(eq(activities.slug, id))
     .limit(1);
   if (!favoriteTarget) notFound();
+  const reviews = await getActivityReviews(favoriteTarget.itemId);
+  const [eligibleBooking] = user ? await db.select({id: bookings.id}).from(bookings).where(and(
+    eq(bookings.userId, user.id),
+    eq(bookings.activityId, favoriteTarget.itemId),
+    eq(bookings.kind, 'activity'),
+    ne(bookings.status, 'cancelled')
+  )).limit(1) : [];
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
   const gallery = activity.gallery.length ? activity.gallery : activity.image ? [activity.image] : [];
+  const reviewDate = new Intl.DateTimeFormat(locale, {dateStyle: 'medium'});
+  const averageRating = new Intl.NumberFormat(locale, {minimumFractionDigits: 1, maximumFractionDigits: 1}).format(reviews.averageRating);
 
   return (
     <>
@@ -90,6 +103,49 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               <ActivityBookingBox id={favoriteTarget.itemId} slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} carPrice1={activity.carPrice1} carPrice2={activity.carPrice2} carPrice3={activity.carPrice3} policies={activity.policies} user={user} />
             </Suspense>
           </div>
+          <section className="mt-10 rounded-3xl bg-mist p-6 lg:p-8" aria-labelledby="activity-reviews-title">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 id="activity-reviews-title" className="font-display text-2xl font-bold text-navy">
+                {reviewT('title')}
+              </h2>
+              <div className="flex items-center gap-2 text-sm font-bold text-navy" dir="ltr">
+                <span className="text-amber-500">★</span>
+                <span aria-label={reviewT('averageRating', {rating: averageRating})}>{averageRating}</span>
+                <span className="font-normal text-navy/60">{reviewT('reviewCount', {count: reviews.count})}</span>
+              </div>
+            </div>
+            {reviews.count === 0 ? (
+              <p className="mt-5 text-sm text-navy/60">{reviewT('noReviews')}</p>
+            ) : (
+              <ul className="mt-5 grid gap-4 md:grid-cols-2">
+                {reviews.reviews.map((review) => (
+                  <li key={review.id} className="rounded-2xl bg-snow p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-bold text-navy">{review.reviewerFirstName}</span>
+                      <time dateTime={review.createdAt.toISOString()} className="text-xs text-navy/60">
+                        {reviewDate.format(review.createdAt)}
+                      </time>
+                    </div>
+                    <div className="mt-2 text-lg text-amber-500" dir="ltr" aria-label={reviewT('starRating', {rating: review.rating})}>
+                      {'★'.repeat(review.rating)}<span className="text-navy/20">{'★'.repeat(5 - review.rating)}</span>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-navy/80">{review.comment}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {user ? eligibleBooking ? (
+              <ActivityReviewForm activityId={favoriteTarget.itemId} />
+            ) : (
+              <p className="mt-6 rounded-2xl bg-snow p-5 text-sm text-navy/70">
+                {reviewT('onlyBooked')}
+              </p>
+            ) : (
+              <Link href="/login" className="mt-6 inline-flex rounded-full bg-navy px-6 py-3 text-sm font-bold text-snow">
+                {reviewT('loginToReview')}
+              </Link>
+            )}
+          </section>
         </div>
       </main>
       <Footer />

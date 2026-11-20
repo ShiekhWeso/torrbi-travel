@@ -24,6 +24,7 @@ export default async function ActivityBookPage({
   const {locale, id} = await params;
   const search = await searchParams;
   setRequestLocale(locale);
+  const activityPath = `/${locale}/activities/${encodeURIComponent(id)}`;
   const t = await getTranslations({locale, namespace: 'activityBooking'});
   const rawSelection = new URLSearchParams();
   for (const key of ['date', 'adults', 'children', 'infants', 'car', 'tier', 'coupon']) {
@@ -40,10 +41,12 @@ export default async function ActivityBookPage({
   const date = first(search.date) ?? '';
   const dateValue = new Date(`${date}T00:00:00Z`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(dateValue.getTime()) || dateValue.toISOString().slice(0, 10) !== date || date < new Date().toISOString().slice(0, 10)) {
-    notFound();
+    redirect(activityPath);
   }
 
-  const carMode = first(search.car) === '1';
+  const carValue = first(search.car);
+  if (carValue != null && carValue !== '1') redirect(activityPath);
+  const carMode = carValue === '1';
   const tierValue = Number(first(search.tier));
   const carTier = carMode && (tierValue === 1 || tierValue === 2 || tierValue === 3) ? tierValue : null;
   const parseCount = (value: string | undefined, min: number) => {
@@ -53,12 +56,12 @@ export default async function ActivityBookPage({
   const adults = carMode ? 0 : parseCount(first(search.adults), 1);
   const children = carMode ? 0 : parseCount(first(search.children), 0);
   const infants = carMode ? 0 : parseCount(first(search.infants), 0);
-  if (carMode ? carTier == null : adults == null || children == null || infants == null) notFound();
+  if (carMode ? carTier == null : adults == null || children == null || infants == null) redirect(activityPath);
 
   let baseUsd: number | null;
   if (carMode && carTier != null) {
     baseUsd = [activity.carPrice1Usd, activity.carPrice2Usd, activity.carPrice3Usd][carTier - 1];
-    if (baseUsd == null) notFound();
+    if (baseUsd == null) redirect(activityPath);
   } else {
     const counts = [adults!, children!, infants!];
     const prices = [activity.priceUsd, activity.childPriceUsd, activity.infantPriceUsd];

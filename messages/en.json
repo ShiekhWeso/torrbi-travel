@@ -224,6 +224,24 @@
     "myBookings": "My bookings",
     "backHome": "Back home"
   },
+  "activityReviews": {
+    "title": "Reviews",
+    "reviewCount": "{count} reviews",
+    "averageRating": "Average rating: {rating} out of 5",
+    "starRating": "{rating} out of 5 stars",
+    "noReviews": "No reviews yet.",
+    "writeReview": "Write your review",
+    "rating": "Your rating",
+    "chooseRating": "{rating} stars",
+    "comment": "Comment",
+    "commentPlaceholder": "Share your experience",
+    "submit": "Submit review",
+    "saving": "Saving…",
+    "saved": "Your review has been saved.",
+    "saveError": "Unable to save your review. Please try again.",
+    "loginToReview": "Log in to write a review",
+    "onlyBooked": "Only customers who booked this activity can review it."
+  },
   "packageDetail": { 
     "topRated": "Top rated",
     "reviews": "reviews",

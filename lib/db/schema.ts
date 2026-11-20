@@ -200,6 +200,18 @@ export const bookings = pgTable('bookings', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
+export const activityReviews = pgTable('activity_reviews', {
+  id: serial('id').primaryKey(),
+  activityId: integer('activity_id').notNull().references(() => activities.id, {onDelete: 'cascade'}),
+  userId: integer('user_id').notNull().references(() => users.id, {onDelete: 'cascade'}),
+  rating: integer('rating').notNull(),
+  comment: text('comment').notNull(),
+  hidden: boolean('hidden').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => [
+  uniqueIndex('activity_reviews_activity_user_unique').on(table.activityId, table.userId)
+]);
+
 export const settings = pgTable('settings', {
   key: text('key').primaryKey(),
   value: jsonb('value').$type<Record<string, number>>().notNull()

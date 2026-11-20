@@ -23,7 +23,7 @@ export default async function ActivityPayPage({
   const t = await getTranslations({locale, namespace: 'activityBooking'});
   const rawId = Array.isArray(search.booking) ? search.booking[0] : search.booking;
   const bookingId = Number(rawId);
-  if (!Number.isInteger(bookingId) || bookingId < 1) notFound();
+  if (!Number.isInteger(bookingId) || bookingId < 1) redirect(`/${locale}/activities/${encodeURIComponent(id)}`);
 
   const returnTo = `/${locale}/activities/${encodeURIComponent(id)}/pay?booking=${bookingId}`;
   const user = await getCurrentUser();

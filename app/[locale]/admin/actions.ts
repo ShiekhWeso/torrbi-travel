@@ -5,7 +5,7 @@ import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, settings, coupons, contactLinks, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, activityReviews, settings, coupons, contactLinks, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 
@@ -207,9 +207,9 @@ export async function createCoupon(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   const data = couponData(formData);
   await ensureCouponCodeAvailable(data.code);
-  const [{id}] = await db.insert(coupons).values(data).returning({id: coupons.id});
+  await db.insert(coupons).values(data);
   revalidatePath('/', 'layout');
-  await go(`/admin/coupons/${id}`);
+  await go('/admin/coupons');
 }
 
 export async function updateCoupon(formData: FormData) {
@@ -220,7 +220,7 @@ export async function updateCoupon(formData: FormData) {
   await ensureCouponCodeAvailable(data.code, id);
   await db.update(coupons).set(data).where(eq(coupons.id, id));
   revalidatePath('/', 'layout');
-  await go(`/admin/coupons/${id}`);
+  await go('/admin/coupons');
 }
 
 export async function deleteCoupon(formData: FormData) {
@@ -313,6 +313,25 @@ export async function toggleContactLink(formData: FormData) {
   revalidatePath('/', 'layout');
 }
 
+export async function setActivityReviewHidden(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = Number(formData.get('id'));
+  const hidden = str(formData.get('hidden'));
+  if (!Number.isInteger(id) || id < 1 || !['true', 'false'].includes(hidden)) {
+    throw new Error('Invalid activity review status');
+  }
+  await db.update(activityReviews).set({hidden: hidden === 'true'}).where(eq(activityReviews.id, id));
+  revalidatePath('/', 'layout');
+}
+
+export async function deleteActivityReview(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const id = Number(formData.get('id'));
+  if (!Number.isInteger(id) || id < 1) throw new Error('Invalid activity review id');
+  await db.delete(activityReviews).where(eq(activityReviews.id, id));
+  revalidatePath('/', 'layout');
+}
+
 const lines = (v: FormDataEntryValue | null) =>
   str(v).split('\n').map((s) => s.trim()).filter(Boolean);
 
@@ -348,11 +367,10 @@ export async function savePackage(formData: FormData) {
       ar: {title: f('title_ar'), intro: f('intro_ar'), stay: l('stay_ar'), includes: l('includes_ar'), excludes: l('excludes_ar'), highlights: l('highlights_ar'), policies: l('policies_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_ar.trim(), text: r.text_ar.trim()}))}
     }
   };
-  let pid = id;
   if (id) await db.update(packages).set(data).where(eq(packages.id, id));
-  else [{id: pid}] = await db.insert(packages).values(data).returning({id: packages.id});
+  else await db.insert(packages).values(data);
   revalidatePath('/', 'layout');
-  await go(`/admin/packages/${pid}`);
+  await go('/admin/packages');
 }
 
 export async function saveActivity(formData: FormData) {
@@ -380,11 +398,10 @@ export async function saveActivity(formData: FormData) {
       ar: {title: f('title_ar'), description: f('description_ar'), includes: l('includes_ar'), highlights: l('highlights_ar'), policies: l('policies_ar')}
     }
   };
-  let aid = id;
   if (id) await db.update(activities).set(data).where(eq(activities.id, id));
-  else [{id: aid}] = await db.insert(activities).values(data).returning({id: activities.id});
+  else await db.insert(activities).values(data);
   revalidatePath('/', 'layout');
-  await go(`/admin/activities/${aid}`);
+  await go('/admin/activities');
 }
 
 export async function deleteActivity(formData: FormData) {

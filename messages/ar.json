@@ -224,6 +224,24 @@
     "myBookings": "حجوزاتي",
     "backHome": "العودة للرئيسية"
   },
+  "activityReviews": {
+    "title": "التقييمات والمراجعات",
+    "reviewCount": "{count} مراجعة",
+    "averageRating": "متوسط التقييم: {rating} من 5",
+    "starRating": "{rating} من 5 نجوم",
+    "noReviews": "لا توجد مراجعات بعد.",
+    "writeReview": "اكتب مراجعتك",
+    "rating": "تقييمك",
+    "chooseRating": "{rating} نجوم",
+    "comment": "التعليق",
+    "commentPlaceholder": "شاركنا تجربتك",
+    "submit": "إرسال المراجعة",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم حفظ مراجعتك.",
+    "saveError": "تعذر حفظ مراجعتك. حاول مرة أخرى.",
+    "loginToReview": "سجّل الدخول لكتابة مراجعة",
+    "onlyBooked": "يمكن للعملاء الذين حجزوا هذا النشاط فقط كتابة مراجعة."
+  },
   "packageDetail": { 
     "topRated": "الأعلى تقييماً",
     "reviews": "تقييم",
