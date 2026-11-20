@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {Suspense, useEffect, useState} from 'react';
 import Image from 'next/image';
 import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
@@ -15,15 +15,42 @@ const items = [
   {id: 'contact', key: 'contact'}
 ] as const;
 
+function LocaleSwitchLink({
+  pathname,
+  locale,
+  className,
+  ariaLabel,
+  onClick,
+  children
+}: {
+  pathname: string;
+  locale: string;
+  className: string;
+  ariaLabel?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  const searchParams = useSearchParams();
+  const query = searchParams.toString();
+  return (
+    <Link
+      href={query ? `${pathname}?${query}` : pathname}
+      locale={locale}
+      aria-label={ariaLabel}
+      onClick={onClick}
+      className={className}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
   const t = useTranslations('nav');
   const h = useTranslations('header');
   const locale = useLocale();
   const ar = locale === 'ar';
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const query = searchParams.toString();
-  const switchHref = query ? `${pathname}?${query}` : pathname;
   const [open, setOpen] = useState(false);
   const {cur, setCur} = useCurrency();
   const [curOpen, setCurOpen] = useState(false);
@@ -108,15 +135,17 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               </div>
             )}
           </div>
-          <Link
-            href={switchHref}
-            locale={other}
-            aria-label={h('switchLang')}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mist text-navy text-sm font-bold hover:bg-sky-light/40 transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px] text-sky">language</span>
-            <span>{ar ? 'EN' : 'عربي'}</span>
-          </Link>
+          <Suspense fallback={null}>
+            <LocaleSwitchLink
+              pathname={pathname}
+              locale={other}
+              ariaLabel={h('switchLang')}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mist text-navy text-sm font-bold hover:bg-sky-light/40 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px] text-sky">language</span>
+              <span>{ar ? 'EN' : 'عربي'}</span>
+            </LocaleSwitchLink>
+          </Suspense>
 
           {!hideAuth && user && (
             <Link
@@ -188,9 +217,16 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               </Link>
             </>
           )}
-          <Link href={switchHref} locale={other} onClick={() => setOpen(false)} className="py-3 text-sm font-bold text-sky">
-            {ar ? 'English' : 'العربية'}
-          </Link>
+          <Suspense fallback={null}>
+            <LocaleSwitchLink
+              pathname={pathname}
+              locale={other}
+              onClick={() => setOpen(false)}
+              className="py-3 text-sm font-bold text-sky"
+            >
+              {ar ? 'English' : 'العربية'}
+            </LocaleSwitchLink>
+          </Suspense>
         </nav>
       )}
     </header>
