@@ -13,7 +13,8 @@
     "seed:pkgdest": "tsx scripts/seed-package-destinations.ts",
     "seed:search": "tsx scripts/seed-search-options.ts",
     "test:email": "tsx scripts/test-email.ts",
-    "backfill:coupons": "tsx scripts/backfill-coupon-redemptions.ts"
+    "backfill:coupons": "tsx scripts/backfill-coupon-redemptions.ts",
+    "clean:data": "tsx scripts/clean-test-data.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

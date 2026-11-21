@@ -46,9 +46,10 @@ export async function login(_prev: string | null | undefined, formData: FormData
   if (!admin || !ok) {
     return ar ? 'البريد أو كلمة المرور غير صحيحة' : 'Wrong email or password';
   }
+  await db.update(admins).set({lastLoginAt: new Date()}).where(eq(admins.id, admin.id));
   await recordLoginSuccess('admin', email, ip);
-  await createSession(email);
-  await go('/admin');
+  await createSession({id: admin.id, sessionVersion: admin.sessionVersion});
+  await go(admin.mustChangePassword ? '/admin/account' : '/admin');
 }
 
 export async function logout() {

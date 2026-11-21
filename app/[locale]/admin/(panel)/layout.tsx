@@ -13,6 +13,7 @@ import {logout} from '../actions';
 export default async function PanelLayout({children}: {children: React.ReactNode}) {
   const [locale, session] = await Promise.all([getLocale(), getSession()]);
   if (!session) redirect(`/${locale}/admin/login`);
+  if (session.mustChangePassword) redirect(`/${locale}/admin/account`);
   const t = tr(locale);
   const [[pendingRow], [feedbackRow]] = await Promise.all([
     db.select({value: count()}).from(bookings).where(eq(bookings.status, 'pending')),
@@ -34,7 +35,9 @@ export default async function PanelLayout({children}: {children: React.ReactNode
     [t.faq, '/admin/faqs'],
     [t.contact, '/admin/contact'],
     [t.searchOptions, '/admin/search'],
-    ['Currency / العملة', '/admin/currency']
+    ['Currency / العملة', '/admin/currency'],
+    ...(session.role === 'owner' ? [[t.admins, '/admin/admins'] as const] : []),
+    [t.myAccount, '/admin/account']
   ] as const;
 
   return (

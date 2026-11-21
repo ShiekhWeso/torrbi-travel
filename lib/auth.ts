@@ -1,4 +1,5 @@
 import {cookies} from 'next/headers';
+import {cache} from 'react';
 import {SignJWT, jwtVerify} from 'jose';
 import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
@@ -6,6 +7,16 @@ import {admins, users} from '@/lib/db/schema';
 
 const COOKIE = 'torrbi_admin';
 const UCOOKIE = 'torrbi_user';
+
+export type AdminSession = {
+  id: number;
+  email: string;
+  role: 'owner' | 'staff';
+  sessionVersion: number;
+  mustChangePassword: boolean;
+  lastLoginAt: Date | null;
+  expiresAt: number;
+};
 
 export function assertAuthSecret() {
   const secret = process.env.AUTH_SECRET;
@@ -19,33 +30,54 @@ const key = () => {
   return new TextEncoder().encode(process.env.AUTH_SECRET);
 };
 
-export async function createSession(email: string) {
-  const token = await new SignJWT({email})
+export async function createSession(admin: Pick<AdminSession, 'id' | 'sessionVersion'>, expiresAt?: number) {
+  const expiration = expiresAt ?? Math.floor(Date.now() / 1000) + 60 * 60 * 8;
+  const token = await new SignJWT({adminId: admin.id, sessionVersion: admin.sessionVersion})
     .setProtectedHeader({alg: 'HS256'})
-    .setExpirationTime('8h')
+    .setExpirationTime(expiration)
     .sign(key());
   (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 8
+    maxAge: Math.max(0, expiration - Math.floor(Date.now() / 1000))
   });
 }
 
-export async function getSession() {
+export const getSession = cache(async (): Promise<AdminSession | null> => {
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
-  let email: unknown;
+  let adminId: unknown;
+  let sessionVersion: unknown;
+  let expiresAt: unknown;
   try {
     const {payload} = await jwtVerify(token, key());
-    email = payload.email;
+    adminId = payload.adminId;
+    sessionVersion = payload.sessionVersion;
+    expiresAt = payload.exp;
   } catch {
     return null;
   }
-  if (typeof email !== 'string') return null;
-  const [admin] = await db.select({email: admins.email}).from(admins).where(eq(admins.email, email)).limit(1);
-  return admin ?? null;
+  if (
+    typeof adminId !== 'number' || !Number.isSafeInteger(adminId) || adminId < 1 ||
+    typeof sessionVersion !== 'number' || !Number.isSafeInteger(sessionVersion) ||
+    typeof expiresAt !== 'number'
+  ) return null;
+  const [admin] = await db.select({
+    id: admins.id,
+    email: admins.email,
+    role: admins.role,
+    sessionVersion: admins.sessionVersion,
+    mustChangePassword: admins.mustChangePassword,
+    lastLoginAt: admins.lastLoginAt
+  }).from(admins).where(eq(admins.id, adminId)).limit(1);
+  if (!admin || admin.sessionVersion !== sessionVersion) return null;
+  return {...admin, expiresAt};
+});
+
+export function isOwner(admin: Pick<AdminSession, 'role'> | null | undefined): boolean {
+  return admin?.role === 'owner';
 }
 
 export async function destroySession() {

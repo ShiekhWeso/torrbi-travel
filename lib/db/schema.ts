@@ -166,6 +166,10 @@ export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
+  role: text('role').$type<'owner' | 'staff'>().notNull().default('owner'),
+  sessionVersion: integer('session_version').notNull().default(0),
+  mustChangePassword: boolean('must_change_password').notNull().default(false),
+  lastLoginAt: timestamp('last_login_at'),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
