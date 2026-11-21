@@ -223,32 +223,37 @@ export const getActivity = cache(readActivity);
 
 const readOffers = unstable_cache(async (locale: string) => {
   const l = lang(locale);
-  const now = Date.now();
   const rows = await db
     .select({offer: offers, slug: packages.slug, price: packages.priceUsd})
     .from(offers)
     .leftJoin(packages, eq(offers.packageId, packages.id))
     .where(eq(offers.published, true))
     .orderBy(asc(offers.sort), asc(offers.id));
-  return rows
-    .filter(({offer}) =>
-      (!offer.validFrom || offer.validFrom.getTime() <= now) &&
-      (!offer.validUntil || offer.validUntil.getTime() + 86400000 >= now)
-    )
-    .map(({offer, slug, price}) => ({
-      id: offer.id,
-      image: offer.image ?? '',
-      slug,
-      until: offer.validUntil,
-      price: price ?? null,
-      discountPercent: offer.discountPercent,
-      salePrice: price != null && offer.discountPercent != null
-        ? Math.round(price * (100 - offer.discountPercent) / 100)
-        : null,
-      ...offer.i18n[l]
-    }));
+  return rows.map(({offer, slug, price}) => ({
+    id: offer.id,
+    image: offer.image ?? '',
+    slug,
+    validFrom: offer.validFrom?.toISOString() ?? null,
+    until: offer.validUntil?.toISOString() ?? null,
+    price: price ?? null,
+    discountPercent: offer.discountPercent,
+    salePrice: price != null && offer.discountPercent != null
+      ? Math.round(price * (100 - offer.discountPercent) / 100)
+      : null,
+    ...offer.i18n[l]
+  }));
 }, ['public-offers'], {tags: [PUBLIC_CACHE_TAGS.offers, PUBLIC_CACHE_TAGS.packages], revalidate: 60});
-export const getOffers = cache(readOffers);
+export const getOffers = cache(async (locale: string) => {
+  const now = Date.now();
+  return (await readOffers(locale))
+    .filter(({validFrom, until}) => {
+      const start = validFrom === null ? null : new Date(validFrom);
+      const end = until === null ? null : new Date(until);
+      return (!start || (!Number.isNaN(start.getTime()) && start.getTime() <= now)) &&
+        (!end || (!Number.isNaN(end.getTime()) && end.getTime() + 86400000 >= now));
+    })
+    .map(({validFrom: _validFrom, ...offer}) => offer);
+});
 
 const readFaqs = unstable_cache(async (locale: string) => {
   const l = lang(locale);

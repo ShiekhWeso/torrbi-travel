@@ -67,6 +67,7 @@ export async function getActivityReviews(activityId: number) {
   return {
     reviews: reviews.map(({reviewerFirstName, ...review}) => ({
       ...review,
+      createdAt: Number.isNaN(review.createdAt.getTime()) ? null : review.createdAt.toISOString(),
       reviewerFirstName: reviewerFirstName?.trim() || 'Traveler'
     })),
     averageRating,

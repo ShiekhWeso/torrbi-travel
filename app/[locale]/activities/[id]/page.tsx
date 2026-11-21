@@ -124,20 +124,26 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               <p className="mt-5 text-sm text-navy/60">{reviewT('noReviews')}</p>
             ) : (
               <ul className="mt-5 grid gap-4 md:grid-cols-2">
-                {reviews.reviews.map((review) => (
-                  <li key={review.id} className="rounded-2xl bg-snow p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-bold text-navy">{review.reviewerFirstName}</span>
-                      <time dateTime={review.createdAt.toISOString()} className="text-xs text-navy/60">
-                        {reviewDate.format(review.createdAt)}
-                      </time>
-                    </div>
-                    <div className="mt-2 text-lg text-amber-500" dir="ltr" aria-label={reviewT('starRating', {rating: review.rating})}>
-                      {'★'.repeat(review.rating)}<span className="text-navy/20">{'★'.repeat(5 - review.rating)}</span>
-                    </div>
-                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-navy/80">{review.comment}</p>
-                  </li>
-                ))}
+                {reviews.reviews.map((review) => {
+                  const createdAt = review.createdAt ? new Date(review.createdAt) : null;
+                  const validCreatedAt = createdAt && !Number.isNaN(createdAt.getTime()) ? createdAt : null;
+                  return (
+                    <li key={review.id} className="rounded-2xl bg-snow p-5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-bold text-navy">{review.reviewerFirstName}</span>
+                        {validCreatedAt && (
+                          <time dateTime={validCreatedAt.toISOString()} className="text-xs text-navy/60">
+                            {reviewDate.format(validCreatedAt)}
+                          </time>
+                        )}
+                      </div>
+                      <div className="mt-2 text-lg text-amber-500" dir="ltr" aria-label={reviewT('starRating', {rating: review.rating})}>
+                        {'★'.repeat(review.rating)}<span className="text-navy/20">{'★'.repeat(5 - review.rating)}</span>
+                      </div>
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-navy/80">{review.comment}</p>
+                    </li>
+                  );
+                })}
               </ul>
             )}
             {user ? eligibleBooking ? (
