@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import localFont from 'next/font/local';
+import {Cairo} from 'next/font/google';
 import {notFound} from 'next/navigation';
 import {hasLocale, NextIntlClientProvider} from 'next-intl';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
@@ -9,21 +9,10 @@ import CurrencyProvider from '@/components/CurrencyProvider';
 import Tracker from '@/components/Tracker';
 import '../globals.css';
 
-// Brand fonts live in app/fonts
-const aref = localFont({
-  src: [
-    {path: '../fonts/arefruqaa-regular.ttf', weight: '400', style: 'normal'},
-    {path: '../fonts/arefruqaa-bold.ttf', weight: '700', style: 'normal'}
-  ],
-  variable: '--f-aref',
-  display: 'swap'
-});
-const pnu = localFont({
-  src: [
-    {path: '../fonts/PNU-Regular.ttf', weight: '400', style: 'normal'},
-    {path: '../fonts/PNU-Bold.ttf', weight: '700', style: 'normal'}
-  ],
-  variable: '--f-pnu',
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-cairo',
   display: 'swap'
 });
 
@@ -50,7 +39,7 @@ export default async function LocaleLayout({
   const rates = await getRates();
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`${aref.variable} ${pnu.variable}`}>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className={cairo.variable}>
       <head>
         <link
           rel="stylesheet"

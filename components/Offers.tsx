@@ -16,9 +16,13 @@ export default async function Offers() {
     'inline-flex items-center gap-2 rounded-full border-2 border-navy px-5 py-2.5 text-sm font-bold text-navy transition-colors duration-300 hover:bg-navy hover:text-snow';
 
   return (
-    <section id="offers" className="w-full bg-mist py-16 lg:py-24">
+    <section id="offers" className="w-full bg-mist py-20 lg:py-28">
       <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-        <h2 className="mb-10 text-center font-display text-3xl font-bold text-navy lg:mb-14 lg:text-5xl">{t('title')}</h2>
+        <div className="mb-12 text-center lg:mb-16">
+          <h2 className="font-display text-4xl font-bold text-navy lg:text-5xl xl:text-6xl">{t('title')}</h2>
+          <span className="mx-auto mt-4 block h-1.5 w-16 rounded-full bg-gradient-to-r from-brand-warm to-sun" />
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-navy/70">{t('subtitle')}</p>
+        </div>
         <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {items.map((o) => (
             <article

@@ -20,34 +20,42 @@ export default function Destinations({destinations}: {destinations: Dest[]}) {
     new Intl.DateTimeFormat(locale, {month: 'short'}).format(new Date(2026, m - 1, 1));
 
   return (
-    <section id="destinations" className="w-full bg-snow py-16 lg:py-24">
+    <section id="destinations" className="w-full bg-snow py-20 lg:py-28">
       <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-        <h2 className="mb-10 font-display text-3xl font-bold text-navy lg:mb-14 lg:text-5xl">{t('title')}</h2>
+        <div className="mb-12 lg:mb-16">
+          <h2 className="font-display text-4xl font-bold text-navy lg:text-5xl xl:text-6xl">{t('title')}</h2>
+          <span className="mt-4 block h-1.5 w-16 rounded-full bg-gradient-to-r from-brand-warm to-sun" />
+          <p className="mt-4 max-w-2xl text-lg text-navy/70">{t('subtitle')}</p>
+        </div>
 
         <div
           className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16"
           onMouseLeave={() => setActive(null)}
         >
-          <ul className="border-t border-navy/15">
+          <ul className="flex flex-col gap-3">
             {list.map((x, i) => (
-              <li key={x.id} onMouseEnter={() => setActive(x.id)}>
+              <li key={x.id} onMouseEnter={() => setActive(x.id)} onFocus={() => setActive(x.id)}>
                 <Link
                   href={href(x.id)}
-                  className="group flex items-center gap-4 border-b border-navy/15 py-5 transition-all duration-300 hover:ps-4 lg:py-7"
+                  className={`group flex items-center gap-4 rounded-full px-4 py-3 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy lg:px-5 lg:py-4 ${
+                    active === x.id
+                      ? 'bg-navy text-snow shadow-[0_12px_28px_rgba(15,24,89,0.2)]'
+                      : 'bg-mist text-navy hover:bg-navy hover:text-snow'
+                  }`}
                 >
-                  <span className="w-8 font-display text-sm text-navy/40 transition-colors group-hover:text-brand-warm">
+                  <span className={`w-8 font-display text-sm transition-colors ${active === x.id ? 'text-brand-warm' : 'text-navy/40 group-hover:text-brand-warm'}`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full lg:hidden">
                     <Image src={x.image} alt="" fill sizes="48px" className="object-cover" />
                   </span>
                   <div className="flex-1">
-                    <h3 className={`font-display text-2xl font-bold transition-colors lg:text-4xl ${active === x.id ? 'text-sky' : 'text-navy'}`}>
+                    <h3 className={`font-display text-2xl font-bold transition-colors lg:text-3xl ${active === x.id ? 'text-snow' : 'text-navy group-hover:text-snow'}`}>
                       {x.name}
                     </h3>
-                    <p className="text-sm text-navy/60">{x.country}</p>
+                    <p className={`text-sm ${active === x.id ? 'text-snow/70' : 'text-navy/60 group-hover:text-snow/70'}`}>{x.country}</p>
                   </div>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-navy/20 text-navy transition-colors group-hover:border-brand-warm group-hover:bg-brand-warm">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-navy/20 text-navy transition-colors group-hover:border-brand-warm group-hover:bg-brand-warm group-hover:text-navy">
                     <span className="material-symbols-outlined text-[22px] leading-none rtl:rotate-180">arrow_forward</span>
                   </span>
                 </Link>

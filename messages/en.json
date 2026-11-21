@@ -45,6 +45,7 @@
   },
   "destinations": {
     "title": "Popular Destinations",
+    "subtitle": "Find your next favorite place, from vibrant cities to relaxing escapes.",
     "book": "Book on WhatsApp",
     "details": "More details",
     "browsePackages": "Browse packages",
@@ -128,8 +129,14 @@
   },
   "offers": {
     "title": "Special Offers",
+    "subtitle": "Explore limited-time deals and make your next trip even better.",
     "view": "View offer",
     "until": "Valid until {date}"
+  },
+  "homeFaq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Quick answers to common questions about planning your trip.",
+    "seeAll": "See all questions"
   },
   "packagesPage": {
     "title": "All Packages",

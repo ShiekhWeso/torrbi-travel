@@ -64,8 +64,8 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
       <Header />
       <main className="bg-snow pt-32 pb-20">
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{pkg.title}</h1>
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <h1 className="font-display text-4xl font-bold leading-tight text-navy sm:text-5xl xl:text-6xl">{pkg.title}</h1>
             <FavoriteButton kind="package" id={favoriteTarget.itemId} active={favoriteTarget.favoriteId != null} loggedIn={Boolean(user)} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-navy/70">

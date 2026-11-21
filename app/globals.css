@@ -22,16 +22,15 @@
   background-image: linear-gradient(to right, #eef3f5, #fefefe);
 }
 
-/* ───────── Fonts ─────────
-   Aref Ruqaa = headings, PNU = body text (both support Arabic + Latin) */
+/* ───────── Fonts ───────── */
 :root {
-  --ff-display: var(--f-aref), Georgia, serif;
-  --ff-body: var(--f-pnu), var(--f-aref), system-ui, sans-serif;
+  --ff-cairo: var(--font-cairo), sans-serif;
 }
 
 @theme inline {
-  --font-display: var(--ff-display);
-  --font-body: var(--ff-body);
+  --font-display: var(--ff-cairo);
+  --font-body: var(--ff-cairo);
+  --font-sans: var(--ff-cairo);
 }
 
 html {
@@ -40,7 +39,15 @@ html {
 body {
   background: var(--color-snow);
   color: var(--color-navy);
-  font-family: var(--ff-body);
+  font-family: var(--ff-cairo);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
 }
 section[id] {
   scroll-margin-top: 5rem;

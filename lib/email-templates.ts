@@ -43,7 +43,7 @@ function layout(locale: EmailLocale, heading: string, content: string) {
   return `<!doctype html>
 <html lang="${locale}" dir="${rtl ? 'rtl' : 'ltr'}">
   <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-  <body style="margin:0;padding:24px 12px;background:#f3f4f8;font-family:Arial,Helvetica,sans-serif;color:#172044;">
+  <body style="margin:0;padding:24px 12px;background:#f3f4f8;font-family:'Cairo',Arial,Helvetica,sans-serif;color:#172044;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
       <tr><td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;border-collapse:separate;border-spacing:0;background:#ffffff;border-radius:16px;overflow:hidden;">
