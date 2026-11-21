@@ -6,16 +6,21 @@ import Link from 'next/link';
 import {useLocale, useTranslations} from 'next-intl';
 import type {Dest} from '@/lib/queries';
 
-const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
-
 type DestinationCard = Pick<Dest, 'id' | 'image' | 'region' | 'name' | 'country'>;
+type RegionOption = {slug: string; name: string};
 
-export default function DestinationsExplorer({items}: {items: DestinationCard[]}) {
+export default function DestinationsExplorer({
+  items,
+  regions
+}: {
+  items: DestinationCard[];
+  regions: RegionOption[];
+}) {
   const f = useTranslations('packagesPage');
   const d = useTranslations('destinations');
   const locale = useLocale();
   const [q, setQ] = useState('');
-  const [region, setRegion] = useState<(typeof regions)[number]>('all');
+  const [region, setRegion] = useState('all');
 
   const list = items.filter(
     (x) =>
@@ -36,15 +41,23 @@ export default function DestinationsExplorer({items}: {items: DestinationCard[]}
           />
         </label>
         <div className="flex flex-wrap gap-2">
-          {regions.map((k) => (
+          <button
+            onClick={() => setRegion('all')}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              region === 'all' ? 'bg-navy text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
+            }`}
+          >
+            {f('regions.all')}
+          </button>
+          {regions.map(({slug, name}) => (
             <button
-              key={k}
-              onClick={() => setRegion(k)}
+              key={slug}
+              onClick={() => setRegion(slug)}
               className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                region === k ? 'bg-navy text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
+                region === slug ? 'bg-navy text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
               }`}
             >
-              {f(`regions.${k}`)}
+              {name}
             </button>
           ))}
         </div>
