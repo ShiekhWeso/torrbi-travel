@@ -7,6 +7,8 @@ import {routing} from '@/i18n/routing';
 import {getRates} from '@/lib/queries';
 import CurrencyProvider from '@/components/CurrencyProvider';
 import Tracker from '@/components/Tracker';
+import FeedbackFloat from '@/components/FeedbackFloat';
+import {getCurrentUser} from '@/lib/auth';
 import '../globals.css';
 
 const cairo = Cairo({
@@ -37,6 +39,7 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const rates = await getRates();
+  const currentUser = await getCurrentUser();
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className={cairo.variable}>
@@ -53,6 +56,7 @@ export default async function LocaleLayout({
           <CurrencyProvider rates={rates}>
             <Tracker />
             {children}
+            <FeedbackFloat userEmail={currentUser?.email} />
           </CurrencyProvider>
         </NextIntlClientProvider>
       </body>

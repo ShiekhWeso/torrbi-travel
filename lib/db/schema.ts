@@ -173,6 +173,26 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
+export type FeedbackType = 'bug' | 'complaint' | 'suggestion';
+export type FeedbackStatus = 'new' | 'in_progress' | 'done';
+
+export const feedback = pgTable('feedback', {
+  id: serial('id').primaryKey(),
+  type: text('type').$type<FeedbackType>().notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  imageUrl: text('image_url'),
+  userId: integer('user_id').references(() => users.id, {onDelete: 'set null'}),
+  email: text('email'),
+  pageUrl: text('page_url'),
+  status: text('status').$type<FeedbackStatus>().notNull().default('new'),
+  adminNote: text('admin_note'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => [
+  index('feedback_status_created_at_idx').on(table.status, table.createdAt),
+  index('feedback_created_at_idx').on(table.createdAt)
+]);
+
 export const pageViews = pgTable('page_views', {
   id: serial('id').primaryKey(),
   visitorId: text('visitor_id').notNull(),
@@ -238,6 +258,18 @@ export const activityReviews = pgTable('activity_reviews', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 }, (table) => [
   uniqueIndex('activity_reviews_activity_user_unique').on(table.activityId, table.userId)
+]);
+
+export const loginAttempts = pgTable('login_attempts', {
+  id: serial('id').primaryKey(),
+  scope: text('scope').$type<'admin' | 'user'>().notNull(),
+  identifier: text('identifier').notNull(),
+  ip: text('ip').notNull(),
+  success: boolean('success').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => [
+  index('login_attempts_scope_identifier_created_at_idx').on(table.scope, table.identifier, table.createdAt),
+  index('login_attempts_ip_created_at_idx').on(table.ip, table.createdAt)
 ]);
 
 export const settings = pgTable('settings', {

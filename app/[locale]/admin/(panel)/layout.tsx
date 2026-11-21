@@ -3,7 +3,7 @@ import {getLocale} from 'next-intl/server';
 import {count, eq} from 'drizzle-orm';
 import {getSession} from '@/lib/auth';
 import {db} from '@/lib/db';
-import {bookings} from '@/lib/db/schema';
+import {bookings, feedback} from '@/lib/db/schema';
 import {tr} from '@/lib/adminT';
 import AdminNav from '@/components/admin/AdminNav';
 import LangSwitch from '@/components/admin/LangSwitch';
@@ -17,10 +17,13 @@ export default async function PanelLayout({children}: {children: React.ReactNode
   const t = tr(locale);
   const [pendingRow] = await db.select({value: count()}).from(bookings).where(eq(bookings.status, 'pending'));
   const pendingCount = pendingRow?.value ?? 0;
+  const [feedbackRow] = await db.select({value: count()}).from(feedback).where(eq(feedback.status, 'new'));
+  const feedbackCount = feedbackRow?.value ?? 0;
   const nav = [
     [t.dashboard, '/admin'],
     [t.packages, '/admin/packages'],
     [t.bookings, '/admin/bookings'],
+    [t.feedback, '/admin/feedback'],
     [t.customers, '/admin/customers'],
     [t.destinations, '/admin/destinations'],
     [t.activities, '/admin/activities'],
@@ -38,7 +41,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
       <UnsavedChangesGuard />
       <header className="border-b border-navy/10 bg-snow">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <AdminNav items={nav} pendingCount={pendingCount} />
+          <AdminNav items={nav} pendingCount={pendingCount} feedbackCount={feedbackCount} />
           <div className="flex items-center gap-3 text-sm text-navy/70">
             <LangSwitch />
             <form action={logout} className="flex items-center gap-3">

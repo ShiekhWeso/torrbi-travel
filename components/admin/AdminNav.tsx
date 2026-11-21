@@ -5,9 +5,10 @@ import {Link, usePathname} from '@/i18n/navigation';
 type AdminNavProps = {
   items: readonly (readonly [label: string, href: string])[];
   pendingCount: number;
+  feedbackCount?: number;
 };
 
-export default function AdminNav({items, pendingCount}: AdminNavProps) {
+export default function AdminNav({items, pendingCount, feedbackCount = 0}: AdminNavProps) {
   const pathname = usePathname();
 
   return (
@@ -23,6 +24,9 @@ export default function AdminNav({items, pendingCount}: AdminNavProps) {
             {label}
             {href === '/admin/bookings' && pendingCount > 0 && (
               <span className="ms-2 rounded-full bg-red-600 px-2 py-0.5 text-xs text-white">{pendingCount}</span>
+            )}
+            {href === '/admin/feedback' && feedbackCount > 0 && (
+              <span className="ms-2 rounded-full bg-red-600 px-2 py-0.5 text-xs text-white">{feedbackCount}</span>
             )}
           </Link>
         );

@@ -12,12 +12,16 @@ type SaveReviewInput = {
   comment: string;
 };
 
-export async function saveReview({activityId, rating, comment}: SaveReviewInput) {
+export async function saveReview(input: SaveReviewInput) {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) throw new Error('Invalid review');
+  const {activityId, rating, comment} = input;
   const user = await getCurrentUser();
   if (!user) throw new Error('You must be logged in to submit a review');
-  if (!Number.isInteger(activityId) || activityId < 1) throw new Error('Invalid activity');
+  if (!Number.isSafeInteger(activityId) || activityId < 1) throw new Error('Invalid activity');
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error('Rating must be an integer from 1 to 5');
-  if (typeof comment !== 'string' || comment.length > 1000) throw new Error('Review comment must be 1000 characters or fewer');
+  if (typeof comment !== 'string' || !comment.trim() || comment.trim().length > 1000 || comment.includes('\0')) {
+    throw new Error('Review comment must be between 1 and 1000 characters');
+  }
 
   const [activity] = await db.select({id: activities.id}).from(activities)
     .where(eq(activities.id, activityId)).limit(1);
@@ -44,7 +48,7 @@ export async function saveReview({activityId, rating, comment}: SaveReviewInput)
 }
 
 export async function getActivityReviews(activityId: number) {
-  if (!Number.isInteger(activityId) || activityId < 1) throw new Error('Invalid activity');
+  if (!Number.isSafeInteger(activityId) || activityId < 1) throw new Error('Invalid activity');
   const reviews = await db.select({
     id: activityReviews.id,
     rating: activityReviews.rating,

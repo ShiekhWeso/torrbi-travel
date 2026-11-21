@@ -1,4 +1,8 @@
 const en = {
+  feedback: 'Feedback', feedbackTitle: 'Feedback / Suggestions', feedbackNew: 'New', feedbackInProgress: 'In progress', feedbackDone: 'Done', feedbackAll: 'All',
+  feedbackGuest: 'Guest', feedbackType: 'Type', feedbackSender: 'Sender', feedbackPage: 'Page', feedbackAdminNote: 'Internal admin note', feedbackReply: 'Reply by email',
+  feedbackDeleteConfirm: 'Are you sure you want to delete this feedback?',
+  feedbackBug: 'Bug', feedbackComplaint: 'Complaint', feedbackSuggestion: 'Suggestion',
   dashboard: 'Dashboard', packages: 'Packages', destinations: 'Destinations', activities: 'Activities', reviews: 'Reviews', offers: 'Offers', coupons: 'Coupons', faq: 'FAQ', contact: 'Contact / اتصل بنا',
   searchOptions: 'Search options', searchRegions: 'Regions', searchDurations: 'Durations',
   newSearchRegion: 'New search region', editSearchRegion: 'Edit search region',
@@ -68,6 +72,10 @@ const en = {
 };
 
 const ar: typeof en = {
+  feedback: 'الملاحظات والاقتراحات', feedbackTitle: 'الملاحظات والاقتراحات', feedbackNew: 'جديد', feedbackInProgress: 'قيد المعالجة', feedbackDone: 'تم', feedbackAll: 'الكل',
+  feedbackGuest: 'ضيف', feedbackType: 'النوع', feedbackSender: 'المرسل', feedbackPage: 'الصفحة', feedbackAdminNote: 'ملاحظة داخلية للمشرف', feedbackReply: 'الرد بالبريد الإلكتروني',
+  feedbackDeleteConfirm: 'هل أنت متأكد من حذف هذه الملاحظة؟',
+  feedbackBug: 'مشكلة تقنية', feedbackComplaint: 'شكوى', feedbackSuggestion: 'اقتراح',
   dashboard: 'لوحة التحكم', packages: 'الباقات', destinations: 'الوجهات', activities: 'الأنشطة', reviews: 'المراجعات', offers: 'العروض', coupons: 'الكوبونات', faq: 'الأسئلة الشائعة', contact: 'اتصل بنا',
   searchOptions: 'خيارات البحث', searchRegions: 'المناطق', searchDurations: 'المدد',
   newSearchRegion: 'إضافة منطقة بحث', editSearchRegion: 'تعديل منطقة البحث',
