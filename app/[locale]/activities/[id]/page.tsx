@@ -4,7 +4,7 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {and, eq, ne} from 'drizzle-orm';
 import {getActivities, getActivity} from '@/lib/queries';
 import {db} from '@/lib/db';
-import {activities, bookings, favorites} from '@/lib/db/schema';
+import {bookings, favorites} from '@/lib/db/schema';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ActivityBookingBox from '@/components/ActivityBookingBox';
@@ -23,31 +23,28 @@ export async function generateStaticParams() {
 export default async function ActivityPage({params}: {params: Promise<{locale: string; id: string}>}) {
   const {locale, id} = await params;
   setRequestLocale(locale);
-  const reviewT = await getTranslations({locale, namespace: 'activityReviews'});
-  const activity = await getActivity(locale, id);
+  const [reviewT, activity, user] = await Promise.all([
+    getTranslations({locale, namespace: 'activityReviews'}),
+    getActivity(locale, id),
+    getCurrentUser()
+  ]);
   if (!activity) notFound();
-  const user = await getCurrentUser();
-  const [favoriteTarget] = await db
-    .select({itemId: activities.id, favoriteId: favorites.id})
-    .from(activities)
-    .leftJoin(
-      favorites,
-      and(
-        eq(favorites.activityId, activities.id),
-        eq(favorites.userId, user?.id ?? -1),
-        eq(favorites.kind, 'activity')
-      )
-    )
-    .where(eq(activities.slug, id))
-    .limit(1);
-  if (!favoriteTarget) notFound();
-  const reviews = await getActivityReviews(favoriteTarget.itemId);
-  const [eligibleBooking] = user ? await db.select({id: bookings.id}).from(bookings).where(and(
+  const [favorite] = user ? await db.select({id: favorites.id}).from(favorites).where(and(
+    eq(favorites.activityId, activity.databaseId),
+    eq(favorites.userId, user.id),
+    eq(favorites.kind, 'activity')
+  )).limit(1) : [];
+  const eligibleBookingsQuery = user ? db.select({id: bookings.id}).from(bookings).where(and(
     eq(bookings.userId, user.id),
-    eq(bookings.activityId, favoriteTarget.itemId),
+    eq(bookings.activityId, activity.databaseId),
     eq(bookings.kind, 'activity'),
     ne(bookings.status, 'cancelled')
-  )).limit(1) : [];
+  )).limit(1) : Promise.resolve([]);
+  const [reviews, eligibleBookings] = await Promise.all([
+    getActivityReviews(activity.databaseId),
+    eligibleBookingsQuery
+  ]);
+  const eligibleBooking = eligibleBookings[0];
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
   const gallery = activity.gallery.length ? activity.gallery : activity.image ? [activity.image] : [];
@@ -61,7 +58,7 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
           <div className="flex items-center justify-between gap-4">
             <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{activity.title}</h1>
-            <FavoriteButton kind="activity" id={favoriteTarget.itemId} active={favoriteTarget.favoriteId != null} loggedIn={Boolean(user)} />
+            <FavoriteButton kind="activity" id={activity.databaseId} active={favorite != null} loggedIn={Boolean(user)} />
           </div>
           <p className="mt-3 text-sm text-navy/70">{activity.city} · {activity.durationHours ?? '—'} {t('hours', 'ساعات')}</p>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
@@ -70,7 +67,16 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
                 <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-3xl lg:grid-cols-4">
                   {gallery.map((src, i) => (
                     <div key={src + i} className={`relative ${i === 0 ? 'col-span-2 row-span-2 min-h-[240px]' : 'aspect-[4/3]'}`}>
-                      <Image src={src} alt="" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
+                      <Image
+                        src={src}
+                        alt=""
+                        fill
+                        sizes={i === 0
+                          ? '(min-width: 1440px) 466px, (min-width: 1024px) calc((100vw - 508px) / 2), calc(100vw - 32px)'
+                          : '(min-width: 1440px) 227px, (min-width: 1024px) calc((100vw - 532px) / 4), calc((100vw - 40px) / 2)'}
+                        priority={i === 0}
+                        className="object-cover"
+                      />
                     </div>
                   ))}
                 </div>
@@ -100,7 +106,7 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               </section>
             </div>
             <Suspense fallback={null}>
-              <ActivityBookingBox id={favoriteTarget.itemId} slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} carPrice1={activity.carPrice1} carPrice2={activity.carPrice2} carPrice3={activity.carPrice3} policies={activity.policies} user={user} />
+              <ActivityBookingBox id={activity.databaseId} slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} carPrice1={activity.carPrice1} carPrice2={activity.carPrice2} carPrice3={activity.carPrice3} policies={activity.policies} user={user} />
             </Suspense>
           </div>
           <section className="mt-10 rounded-3xl bg-mist p-6 lg:p-8" aria-labelledby="activity-reviews-title">
@@ -135,7 +141,7 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               </ul>
             )}
             {user ? eligibleBooking ? (
-              <ActivityReviewForm activityId={favoriteTarget.itemId} />
+              <ActivityReviewForm activityId={activity.databaseId} />
             ) : (
               <p className="mt-6 rounded-2xl bg-snow p-5 text-sm text-navy/70">
                 {reviewT('onlyBooked')}

@@ -5,8 +5,7 @@ import AccountNav from '@/components/AccountNav';
 import {getCurrentUser} from '@/lib/auth';
 
 export default async function AccountLayout({children}: {children: React.ReactNode}) {
-  const locale = await getLocale();
-  const user = await getCurrentUser();
+  const [locale, user] = await Promise.all([getLocale(), getCurrentUser()]);
   if (!user) redirect(`/${locale}/login`);
   return (
     <>

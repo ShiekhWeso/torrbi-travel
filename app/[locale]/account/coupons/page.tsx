@@ -18,10 +18,10 @@ export default async function CouponsPage() {
   const locale = await getLocale();
   const user = await getCurrentUser();
   if (!user) redirect(`/${locale}/login`);
-  const couponT = await getTranslations({locale, namespace: 'accountCouponUsage'});
   const ar = locale === 'ar';
   const now = new Date();
-  const [rows, redemptions] = await Promise.all([
+  const [couponT, rows, redemptions] = await Promise.all([
+    getTranslations({locale, namespace: 'accountCouponUsage'}),
     db.select().from(coupons).where(and(
       eq(coupons.active, true),
       eq(coupons.isPublic, true),

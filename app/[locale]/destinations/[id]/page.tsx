@@ -15,16 +15,19 @@ export async function generateStaticParams() {
 export default async function DestinationPage({params}: {params: Promise<{locale: string; id: string}>}) {
   const {locale, id} = await params;
   setRequestLocale(locale);
-  const dest = await getDestination(locale, id);
+  const [dest, matchingPackage, t, dd, w] = await Promise.all([
+    getDestination(locale, id),
+    getPackage(locale, id),
+    getTranslations('destinations'),
+    getTranslations('destinationDetail'),
+    getTranslations('wa')
+  ]);
   if (!dest) notFound();
   const info = dest;
 
-  const t = await getTranslations('destinations');
-  const dd = await getTranslations('destinationDetail');
-  const w = await getTranslations('wa');
   const name = dest.name;
   const country = dest.country;
-  const hasPackage = !!(await getPackage(locale, id));
+  const hasPackage = matchingPackage !== null;
   const month = (m: number) =>
     new Intl.DateTimeFormat(locale, {month: 'long'}).format(new Date(2026, m - 1, 1));
 
@@ -53,7 +56,7 @@ export default async function DestinationPage({params}: {params: Promise<{locale
       <main className="bg-snow pb-20 pt-32">
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
           <div className="relative h-[320px] overflow-hidden rounded-3xl lg:h-[480px]">
-            <Image src={dest.image} alt={name} fill priority sizes="100vw" className="object-cover" />
+            <Image src={dest.image} alt={name} fill priority sizes="(min-width: 1440px) 1344px, (min-width: 1024px) calc(100vw - 96px), calc(100vw - 32px)" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/10 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 text-snow lg:p-10">
               <div>
@@ -103,7 +106,15 @@ export default async function DestinationPage({params}: {params: Promise<{locale
                   <div className="mt-5 grid auto-rows-[180px] gap-3 sm:grid-cols-3 sm:auto-rows-[220px]">
                     {info.gallery.map((src, index) => (
                       <div key={`${src}-${index}`} className={`relative overflow-hidden rounded-2xl ${index === 0 ? 'sm:col-span-2 sm:row-span-2' : ''}`}>
-                        <Image src={src} alt={`${name} ${index + 1}`} fill sizes={index === 0 ? '(max-width: 640px) 100vw, 66vw' : '(max-width: 640px) 100vw, 33vw'} className="object-cover transition-transform duration-300 hover:scale-105" unoptimized />
+                        <Image
+                          src={src}
+                          alt={`${name} ${index + 1}`}
+                          fill
+                          sizes={index === 0
+                            ? '(min-width: 1440px) 896px, (min-width: 640px) 66vw, calc(100vw - 32px)'
+                            : '(min-width: 1440px) 440px, (min-width: 640px) calc((100vw - 48px) / 3), calc(100vw - 32px)'}
+                          className="object-cover transition-transform duration-300 hover:scale-105"
+                        />
                       </div>
                     ))}
                   </div>

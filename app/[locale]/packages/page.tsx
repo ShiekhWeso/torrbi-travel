@@ -12,12 +12,37 @@ export function generateStaticParams() {
 export default async function AllPackagesPage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
-  const [items, regions, durations] = await Promise.all([
+  const [items, regions, durations, t] = await Promise.all([
     getPackages(locale),
     getSearchRegions(locale),
-    getSearchDurations(locale)
+    getSearchDurations(locale),
+    getTranslations('packagesPage')
   ]);
-  const t = await getTranslations('packagesPage');
+  const explorerItems = items.map(({
+    id,
+    image,
+    days,
+    price,
+    region,
+    destinationId,
+    destinationSlug,
+    destinationName,
+    title,
+    stops,
+    includes
+  }) => ({
+    id,
+    image,
+    days,
+    price,
+    region,
+    destinationId,
+    destinationSlug,
+    destinationName,
+    title,
+    stops,
+    includes
+  }));
 
   return (
     <>
@@ -27,7 +52,7 @@ export default async function AllPackagesPage({params}: {params: Promise<{locale
           <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{t('title')}</h1>
           <p className="mb-8 mt-3 max-w-2xl text-lg text-navy/70">{t('subtitle')}</p>
           <Suspense fallback={null}>
-            <PackagesExplorer items={items} regions={regions} durations={durations} />
+            <PackagesExplorer items={explorerItems} regions={regions} durations={durations} />
           </Suspense>
         </div>
       </main>

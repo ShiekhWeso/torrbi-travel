@@ -1,7 +1,7 @@
 'use server';
 
 import {redirect} from 'next/navigation';
-import {revalidatePath} from 'next/cache';
+import {revalidatePath, updateTag} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {and, desc, eq, inArray, ne, sql} from 'drizzle-orm';
 import {db} from '@/lib/db';
@@ -13,11 +13,17 @@ import {bookingRef} from '@/lib/bookingRef';
 import {bookingCancelled, bookingConfirmed, couponOffer} from '@/lib/email-templates';
 import {sendEmail} from '@/lib/email';
 import {checkLoginRateLimit, getClientIp, recordLoginSuccess} from '@/lib/rate-limit';
+import {PUBLIC_CACHE_TAGS} from '@/lib/public-cache';
 
 const DUMMY_ADMIN_HASH = bcrypt.hashSync('not-a-real-password', 12);
 
 async function go(path: string): Promise<never> {
   redirect(`/${await getLocale()}${path}`);
+}
+
+function revalidatePublicData(...tags: Array<(typeof PUBLIC_CACHE_TAGS)[keyof typeof PUBLIC_CACHE_TAGS]>) {
+  for (const tag of new Set(tags)) updateTag(tag);
+  revalidatePath('/', 'layout');
 }
 
 export async function login(_prev: string | null | undefined, formData: FormData) {
@@ -56,7 +62,7 @@ export async function saveRates(formData: FormData) {
   if (!Number.isFinite(myr) || myr <= 0 || myr > 1000) throw new Error('Invalid MYR exchange rate');
   await db.insert(settings).values({key: 'rates', value: {MYR: myr}})
     .onConflictDoUpdate({target: settings.key, set: {value: {MYR: myr}}});
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.rates);
   await go('/admin/currency');
 }
 
@@ -224,14 +230,14 @@ export async function saveDestination(formData: FormData) {
   };
   if (id) await db.update(destinations).set(data).where(eq(destinations.id, id));
   else await db.insert(destinations).values(data);
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.destinations, PUBLIC_CACHE_TAGS.packages);
   await go('/admin/destinations');
 }
 
 export async function deleteDestination(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(destinations).where(eq(destinations.id, validId(formData.get('id'), 'destination')));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.destinations, PUBLIC_CACHE_TAGS.packages);
   await go('/admin/destinations');
 }
 
@@ -265,14 +271,14 @@ export async function saveOffer(formData: FormData) {
   };
   if (id) await db.update(offers).set(data).where(eq(offers.id, id));
   else await db.insert(offers).values(data);
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.offers);
   await go('/admin/offers');
 }
 
 export async function deleteOffer(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(offers).where(eq(offers.id, validId(formData.get('id'), 'offer')));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.offers);
   await go('/admin/offers');
 }
 
@@ -296,14 +302,14 @@ export async function saveFaq(formData: FormData) {
   };
   if (id) await db.update(faqs).set(data).where(eq(faqs.id, id));
   else await db.insert(faqs).values(data);
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.faqs);
   await go('/admin/faqs');
 }
 
 export async function deleteFaq(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(faqs).where(eq(faqs.id, validId(formData.get('id'), 'FAQ')));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.faqs);
   await go('/admin/faqs');
 }
 
@@ -348,7 +354,7 @@ export async function saveSearchRegion(formData: FormData) {
   } else {
     await db.insert(searchRegions).values(data);
   }
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.searchRegions);
   await go('/admin/search');
 }
 
@@ -357,7 +363,7 @@ export async function deleteSearchRegion(formData: FormData) {
   const id = validId(formData.get('id'), 'search region');
   const deleted = await db.delete(searchRegions).where(eq(searchRegions.id, id)).returning({id: searchRegions.id});
   if (deleted.length === 0) throw new Error('Search region not found');
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.searchRegions);
   await go('/admin/search');
 }
 
@@ -388,7 +394,7 @@ export async function saveSearchDuration(formData: FormData) {
   } else {
     await db.insert(searchDurations).values(data);
   }
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.searchDurations);
   await go('/admin/search');
 }
 
@@ -397,7 +403,7 @@ export async function deleteSearchDuration(formData: FormData) {
   const id = validId(formData.get('id'), 'search duration');
   const deleted = await db.delete(searchDurations).where(eq(searchDurations.id, id)).returning({id: searchDurations.id});
   if (deleted.length === 0) throw new Error('Search duration not found');
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.searchDurations);
   await go('/admin/search');
 }
 
@@ -678,7 +684,7 @@ export async function saveContactLink(formData: FormData) {
   } else {
     await db.insert(contactLinks).values(data);
   }
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.contactLinks);
   await go('/admin/contact');
 }
 
@@ -686,7 +692,7 @@ export async function deleteContactLink(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   const id = validId(formData.get('id'), 'contact link');
   await db.delete(contactLinks).where(eq(contactLinks.id, id));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.contactLinks);
   await go('/admin/contact');
 }
 
@@ -698,7 +704,7 @@ export async function toggleContactLink(formData: FormData) {
     throw new Error('Invalid contact link status');
   }
   await db.update(contactLinks).set({published: published === 'true'}).where(eq(contactLinks.id, id));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.contactLinks);
 }
 
 export async function setActivityReviewHidden(formData: FormData) {
@@ -807,7 +813,7 @@ export async function savePackage(formData: FormData) {
       }
     });
   }
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.packages);
   await go('/admin/packages');
 }
 
@@ -851,21 +857,21 @@ export async function saveActivity(formData: FormData) {
   };
   if (id) await db.update(activities).set(data).where(eq(activities.id, id));
   else await db.insert(activities).values(data);
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.activities);
   await go('/admin/activities');
 }
 
 export async function deleteActivity(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(activities).where(eq(activities.id, validId(formData.get('id'), 'activity')));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.activities);
   await go('/admin/activities');
 }
 
 export async function deletePackage(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(packages).where(eq(packages.id, validId(formData.get('id'), 'package')));
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.packages);
   await go('/admin/packages');
 }
 
@@ -891,7 +897,7 @@ export async function saveDay(formData: FormData) {
   };
   if (id) await db.update(packageDays).set(data).where(eq(packageDays.id, id));
   else await db.insert(packageDays).values(data);
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.packages);
   await go(`/admin/packages/${packageId}`);
 }
 
@@ -899,7 +905,7 @@ export async function deleteDay(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   await db.delete(packageDays).where(eq(packageDays.id, validId(formData.get('id'), 'package day')));
   const packageId = validId(formData.get('packageId'), 'package');
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.packages);
   await go(`/admin/packages/${packageId}`);
 }
 
@@ -985,6 +991,6 @@ export async function saveOfferFromPackage(formData: FormData) {
   };
   if (id) await db.update(offers).set(data).where(eq(offers.id, id));
   else await db.insert(offers).values(data);
-  revalidatePath('/', 'layout');
+  revalidatePublicData(PUBLIC_CACHE_TAGS.offers);
   await go('/admin/offers');
 }

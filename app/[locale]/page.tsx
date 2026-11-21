@@ -24,16 +24,27 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
     getFaqs(locale),
     getTranslations('homeFaq')
   ]);
+  const heroDestinations = dests.map(({id, name}) => ({id, name}));
+  const homeDestinations = dests.slice(0, 5).map(({id, image, name, country, rating, best, flight, temp}) => ({
+    id,
+    image,
+    name,
+    country,
+    rating,
+    best,
+    flight,
+    temp
+  }));
 
   return (
     <>
       <Header />
       <main className="flex-1">
-        <Hero destinations={dests} durations={durations} />
+        <Hero destinations={heroDestinations} durations={durations} />
         <Packages />
         <PlanWithUs />
         <Offers />
-        <Destinations destinations={dests} />
+        <Destinations destinations={homeDestinations} />
         <ValueProps />
         <About />
         {faqs.length > 0 && (

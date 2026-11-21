@@ -4,10 +4,8 @@ import {getCurrentUser} from '@/lib/auth';
 import {updateProfile} from '@/lib/user-actions';
 
 export default async function Profile({searchParams}: {searchParams: Promise<{saved?: string}>}) {
-  const locale = await getLocale();
-  const user = await getCurrentUser();
+  const [locale, user, {saved}] = await Promise.all([getLocale(), getCurrentUser(), searchParams]);
   if (!user) redirect(`/${locale}/login`);
-  const {saved} = await searchParams;
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
   const input = 'w-full rounded-xl bg-mist px-4 py-3 font-bold text-navy focus:outline-none';

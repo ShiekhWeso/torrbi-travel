@@ -89,7 +89,7 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
       <div className="h-20 max-w-[1440px] mx-auto px-4 lg:px-12 flex items-center justify-between gap-6">
         <div className="flex items-center gap-8">
           <Link href={{pathname: '/', hash: 'top'}} className="flex items-center gap-3">
-            <Image src="/logo.webp" alt="" width={44} height={44} priority className="rounded-full" />
+            <Image src="/logo.webp" alt="" width={44} height={44} sizes="44px" className="rounded-full" />
             <span className="font-display font-bold text-xl text-navy tracking-wide">TORRBI TRAVEL</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-1">

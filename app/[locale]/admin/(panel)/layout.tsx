@@ -11,13 +11,14 @@ import UnsavedChangesGuard from '@/components/admin/UnsavedChangesGuard';
 import {logout} from '../actions';
 
 export default async function PanelLayout({children}: {children: React.ReactNode}) {
-  const locale = await getLocale();
-  const session = await getSession();
+  const [locale, session] = await Promise.all([getLocale(), getSession()]);
   if (!session) redirect(`/${locale}/admin/login`);
   const t = tr(locale);
-  const [pendingRow] = await db.select({value: count()}).from(bookings).where(eq(bookings.status, 'pending'));
+  const [[pendingRow], [feedbackRow]] = await Promise.all([
+    db.select({value: count()}).from(bookings).where(eq(bookings.status, 'pending')),
+    db.select({value: count()}).from(feedback).where(eq(feedback.status, 'new'))
+  ]);
   const pendingCount = pendingRow?.value ?? 0;
-  const [feedbackRow] = await db.select({value: count()}).from(feedback).where(eq(feedback.status, 'new'));
   const feedbackCount = feedbackRow?.value ?? 0;
   const nav = [
     [t.dashboard, '/admin'],

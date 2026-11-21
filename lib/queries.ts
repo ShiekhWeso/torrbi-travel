@@ -1,25 +1,42 @@
-import {asc, eq} from 'drizzle-orm';
+import {cache} from 'react';
+import {unstable_cache} from 'next/cache';
+import {and, asc, eq, inArray} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {packages, packageDays, destinations, activities, offers, faqs, settings, contactLinks, searchRegions, searchDurations} from '@/lib/db/schema';
+import {
+  packages,
+  packageDays,
+  destinations,
+  activities,
+  offers,
+  faqs,
+  settings,
+  contactLinks,
+  searchRegions,
+  searchDurations,
+  type Lang
+} from '@/lib/db/schema';
 import {DEFAULT_RATES, type Rates} from '@/lib/currency';
+import {PUBLIC_CACHE_TAGS} from '@/lib/public-cache';
 
-const lang = (l: string) => (l === 'ar' ? 'ar' : 'en');
+const lang = (locale: string): Lang => (locale === 'ar' ? 'ar' : 'en');
 
-export async function getRates(): Promise<Rates> {
+const readRates = unstable_cache(async (): Promise<Rates> => {
   const [row] = await db.select().from(settings).where(eq(settings.key, 'rates')).limit(1);
   return {...DEFAULT_RATES, ...(row?.value ?? {}), USD: 1} as Rates;
-}
+}, ['public-rates'], {tags: [PUBLIC_CACHE_TAGS.rates], revalidate: 3600});
+export const getRates = cache(readRates);
 
-export async function getSearchRegions(locale: string) {
+const readSearchRegions = unstable_cache(async (locale: string) => {
   const l = lang(locale);
   const rows = await db.select().from(searchRegions)
     .where(eq(searchRegions.published, true))
     .orderBy(asc(searchRegions.sort), asc(searchRegions.id));
   return rows.map((row) => ({id: row.id, slug: row.slug, name: row.i18n[l].name}));
-}
+}, ['public-search-regions'], {tags: [PUBLIC_CACHE_TAGS.searchRegions], revalidate: 3600});
+export const getSearchRegions = cache(readSearchRegions);
 export type SearchRegion = Awaited<ReturnType<typeof getSearchRegions>>[number];
 
-export async function getSearchDurations(locale: string) {
+const readSearchDurations = unstable_cache(async (locale: string) => {
   const l = lang(locale);
   const rows = await db.select().from(searchDurations)
     .where(eq(searchDurations.published, true))
@@ -30,107 +47,225 @@ export async function getSearchDurations(locale: string) {
     maxDays: row.maxDays,
     label: row.i18n[l].label
   }));
-}
+}, ['public-search-durations'], {tags: [PUBLIC_CACHE_TAGS.searchDurations], revalidate: 3600});
+export const getSearchDurations = cache(readSearchDurations);
 export type SearchDuration = Awaited<ReturnType<typeof getSearchDurations>>[number];
 
-export async function getPackages(locale: string) {
-  const l = lang(locale);
-  const rows = await db.select({package: packages, destination: destinations})
+type PackageRow = typeof packages.$inferSelect;
+type DestinationRow = typeof destinations.$inferSelect;
+type PackageDayRow = typeof packageDays.$inferSelect;
+type PackageWithDestination = {package: PackageRow; destination: DestinationRow | null};
+
+function packageView(
+  pkg: PackageRow,
+  destination: DestinationRow | null,
+  days: PackageDayRow[],
+  locale: Lang
+) {
+  return {
+    id: pkg.slug,
+    databaseId: pkg.id,
+    image: pkg.cover ?? '',
+    days: pkg.days,
+    nights: pkg.nights,
+    price: pkg.priceUsd,
+    childPrice: pkg.childPriceUsd,
+    infantPrice: pkg.infantPriceUsd,
+    region: pkg.region,
+    featured: pkg.featured,
+    gallery: pkg.gallery,
+    destinationId: pkg.destinationId,
+    destinationSlug: destination?.slug ?? null,
+    destinationName: destination?.i18n[locale].name ?? null,
+    ...pkg.i18n[locale],
+    stops: [...new Set(days.map((day) => day.i18n[locale].stage ?? day.i18n[locale].title))],
+    steps: days.map((day) => ({
+      title: day.i18n[locale].title,
+      text: day.i18n[locale].items.join(' · ')
+    }))
+  };
+}
+
+async function packageViews(rows: PackageWithDestination[], locale: Lang) {
+  const packageIds = rows.map(({package: pkg}) => pkg.id);
+  const days = packageIds.length
+    ? await db.select().from(packageDays)
+        .where(inArray(packageDays.packageId, packageIds))
+        .orderBy(asc(packageDays.dayNo))
+    : [];
+  const daysByPackage = new Map<number, PackageDayRow[]>();
+  for (const day of days) {
+    const packageDaysList = daysByPackage.get(day.packageId) ?? [];
+    packageDaysList.push(day);
+    daysByPackage.set(day.packageId, packageDaysList);
+  }
+  return rows.map(({package: pkg, destination}) =>
+    packageView(pkg, destination, daysByPackage.get(pkg.id) ?? [], locale)
+  );
+}
+
+function packageRows() {
+  return db.select({package: packages, destination: destinations})
     .from(packages)
-    .leftJoin(destinations, eq(packages.destinationId, destinations.id))
+    .leftJoin(destinations, eq(packages.destinationId, destinations.id));
+}
+
+const readPackages = unstable_cache(async (locale: string) => {
+  const rows = await packageRows()
     .where(eq(packages.published, true))
     .orderBy(asc(packages.sort), asc(packages.id));
-  const days = await db.select().from(packageDays).orderBy(asc(packageDays.dayNo));
-  return rows.map((r) => {
-    const pkg = r.package;
-    const mine = days.filter((d) => d.packageId === pkg.id);
-    return {
-      id: pkg.slug, image: pkg.cover ?? '', days: pkg.days, nights: pkg.nights, price: pkg.priceUsd,
-      childPrice: pkg.childPriceUsd, infantPrice: pkg.infantPriceUsd,
-      region: pkg.region, featured: pkg.featured, gallery: pkg.gallery,
-      destinationId: pkg.destinationId,
-      destinationSlug: r.destination?.slug ?? null,
-      destinationName: r.destination?.i18n[l].name ?? null,
-      ...pkg.i18n[l],
-      stops: [...new Set(mine.map((d) => d.i18n[l].stage ?? d.i18n[l].title))],
-      steps: mine.map((d) => ({title: d.i18n[l].title, text: d.i18n[l].items.join(' · ')}))
-    };
-  });
-}
+  return packageViews(rows, lang(locale));
+}, ['public-packages'], {tags: [PUBLIC_CACHE_TAGS.packages], revalidate: 3600});
+export const getPackages = cache(readPackages);
 export type Pkg = Awaited<ReturnType<typeof getPackages>>[number];
-export const getPackage = async (locale: string, slug: string) =>
-  (await getPackages(locale)).find((p) => p.id === slug) ?? null;
 
-export async function getDestinations(locale: string) {
+const readHomePackages = unstable_cache(async (locale: string) => {
+  const featured = await packageRows()
+    .where(and(eq(packages.published, true), eq(packages.featured, true)))
+    .orderBy(asc(packages.sort), asc(packages.id))
+    .limit(3);
+  const rows = featured.length ? featured : await packageRows()
+    .where(eq(packages.published, true))
+    .orderBy(asc(packages.sort), asc(packages.id))
+    .limit(3);
+  return packageViews(rows, lang(locale));
+}, ['public-home-packages'], {tags: [PUBLIC_CACHE_TAGS.packages], revalidate: 3600});
+export const getHomePackages = cache(readHomePackages);
+
+const readPackage = unstable_cache(async (locale: string, slug: string): Promise<Pkg | null> => {
   const l = lang(locale);
-  const rows = await db.select().from(destinations).where(eq(destinations.published, true)).orderBy(asc(destinations.sort), asc(destinations.id));
-  return rows.map((r) => ({
-    id: r.slug, image: r.image ?? '', region: r.region, rating: r.rating ?? 0,
-    gallery: r.gallery, currency: r.currency, timezone: r.timezone,
-    flight: r.flightHours ?? 0, temp: r.temp ?? '',
-    best: [r.bestFrom ?? 1, r.bestTo ?? 12] as [number, number],
-    ...r.i18n[l]
-  }));
+  const [row] = await db.select({package: packages, destination: destinations})
+    .from(packages)
+    .leftJoin(destinations, eq(packages.destinationId, destinations.id))
+    .where(and(eq(packages.published, true), eq(packages.slug, slug)))
+    .limit(1);
+  if (!row) return null;
+  const days = await db.select().from(packageDays)
+    .where(eq(packageDays.packageId, row.package.id))
+    .orderBy(asc(packageDays.dayNo));
+  return packageView(row.package, row.destination, days, l);
+}, ['public-package'], {tags: [PUBLIC_CACHE_TAGS.packages], revalidate: 3600});
+export const getPackage = cache(readPackage);
+
+type DestinationViewRow = typeof destinations.$inferSelect;
+
+function destinationView(row: DestinationViewRow, locale: Lang) {
+  return {
+    id: row.slug,
+    image: row.image ?? '',
+    region: row.region,
+    rating: row.rating ?? 0,
+    gallery: row.gallery,
+    currency: row.currency,
+    timezone: row.timezone,
+    flight: row.flightHours ?? 0,
+    temp: row.temp ?? '',
+    best: [row.bestFrom ?? 1, row.bestTo ?? 12] as [number, number],
+    ...row.i18n[locale]
+  };
 }
+
+const readDestinations = unstable_cache(async (locale: string) => {
+  const l = lang(locale);
+  const rows = await db.select().from(destinations)
+    .where(eq(destinations.published, true))
+    .orderBy(asc(destinations.sort), asc(destinations.id));
+  return rows.map((row) => destinationView(row, l));
+}, ['public-destinations'], {tags: [PUBLIC_CACHE_TAGS.destinations], revalidate: 3600});
+export const getDestinations = cache(readDestinations);
 export type Dest = Awaited<ReturnType<typeof getDestinations>>[number];
-export const getDestination = async (locale: string, slug: string) =>
-  (await getDestinations(locale)).find((d) => d.id === slug) ?? null;
 
-export async function getActivities(locale: string) {
-  const l = lang(locale);
-  const rows = await db.select().from(activities).where(eq(activities.published, true)).orderBy(asc(activities.sort), asc(activities.id));
-  return rows.map((r) => ({
-    id: r.slug, city: r.city, image: r.image ?? '', gallery: r.gallery,
-    price: r.priceUsd, childPrice: r.childPriceUsd, infantPrice: r.infantPriceUsd,
-    carPrice1: r.carPrice1Usd, carPrice2: r.carPrice2Usd, carPrice3: r.carPrice3Usd,
-    durationHours: r.durationHours, featured: r.featured,
-    ...r.i18n[l]
-  }));
+const readDestination = unstable_cache(async (locale: string, slug: string): Promise<Dest | null> => {
+  const [row] = await db.select().from(destinations)
+    .where(and(eq(destinations.published, true), eq(destinations.slug, slug)))
+    .limit(1);
+  return row ? destinationView(row, lang(locale)) : null;
+}, ['public-destination'], {tags: [PUBLIC_CACHE_TAGS.destinations], revalidate: 3600});
+export const getDestination = cache(readDestination);
+
+type ActivityRow = typeof activities.$inferSelect;
+
+function activityView(row: ActivityRow, locale: Lang) {
+  return {
+    id: row.slug,
+    databaseId: row.id,
+    city: row.city,
+    image: row.image ?? '',
+    gallery: row.gallery,
+    price: row.priceUsd,
+    childPrice: row.childPriceUsd,
+    infantPrice: row.infantPriceUsd,
+    carPrice1: row.carPrice1Usd,
+    carPrice2: row.carPrice2Usd,
+    carPrice3: row.carPrice3Usd,
+    durationHours: row.durationHours,
+    featured: row.featured,
+    ...row.i18n[locale]
+  };
 }
-export type Activity = Awaited<ReturnType<typeof getActivities>>[number];
-export const getActivity = async (locale: string, slug: string) =>
-  (await getActivities(locale)).find((activity) => activity.id === slug) ?? null;
 
-export async function getOffers(locale: string) {
+const readActivities = unstable_cache(async (locale: string) => {
+  const rows = await db.select().from(activities)
+    .where(eq(activities.published, true))
+    .orderBy(asc(activities.sort), asc(activities.id));
+  return rows.map((row) => activityView(row, lang(locale)));
+}, ['public-activities'], {tags: [PUBLIC_CACHE_TAGS.activities], revalidate: 3600});
+export const getActivities = cache(readActivities);
+export type Activity = Awaited<ReturnType<typeof getActivities>>[number];
+
+const readActivity = unstable_cache(async (locale: string, slug: string): Promise<Activity | null> => {
+  const [row] = await db.select().from(activities)
+    .where(and(eq(activities.published, true), eq(activities.slug, slug)))
+    .limit(1);
+  return row ? activityView(row, lang(locale)) : null;
+}, ['public-activity'], {tags: [PUBLIC_CACHE_TAGS.activities], revalidate: 3600});
+export const getActivity = cache(readActivity);
+
+const readOffers = unstable_cache(async (locale: string) => {
   const l = lang(locale);
   const now = Date.now();
   const rows = await db
-    .select({o: offers, slug: packages.slug, price: packages.priceUsd})
+    .select({offer: offers, slug: packages.slug, price: packages.priceUsd})
     .from(offers)
     .leftJoin(packages, eq(offers.packageId, packages.id))
     .where(eq(offers.published, true))
     .orderBy(asc(offers.sort), asc(offers.id));
   return rows
-    .filter(({o}) =>
-      (!o.validFrom || o.validFrom.getTime() <= now) &&
-      (!o.validUntil || o.validUntil.getTime() + 86400000 >= now)
+    .filter(({offer}) =>
+      (!offer.validFrom || offer.validFrom.getTime() <= now) &&
+      (!offer.validUntil || offer.validUntil.getTime() + 86400000 >= now)
     )
-    .map(({o, slug, price}) => ({
-      id: o.id,
-      image: o.image ?? '',
+    .map(({offer, slug, price}) => ({
+      id: offer.id,
+      image: offer.image ?? '',
       slug,
-      until: o.validUntil,
+      until: offer.validUntil,
       price: price ?? null,
-      discountPercent: o.discountPercent,
-      salePrice: price != null && o.discountPercent != null
-        ? Math.round(price * (100 - o.discountPercent) / 100)
+      discountPercent: offer.discountPercent,
+      salePrice: price != null && offer.discountPercent != null
+        ? Math.round(price * (100 - offer.discountPercent) / 100)
         : null,
-      ...o.i18n[l]
+      ...offer.i18n[l]
     }));
-}
+}, ['public-offers'], {tags: [PUBLIC_CACHE_TAGS.offers, PUBLIC_CACHE_TAGS.packages], revalidate: 60});
+export const getOffers = cache(readOffers);
 
-export async function getFaqs(locale: string) {
+const readFaqs = unstable_cache(async (locale: string) => {
   const l = lang(locale);
-  const rows = await db.select().from(faqs).where(eq(faqs.published, true)).orderBy(asc(faqs.sort), asc(faqs.id));
+  const rows = await db.select().from(faqs)
+    .where(eq(faqs.published, true))
+    .orderBy(asc(faqs.sort), asc(faqs.id));
   return rows.map((row) => ({
     id: row.id,
     question: row.i18n[l].question,
     answer: row.i18n[l].answer
   }));
-}
+}, ['public-faqs'], {tags: [PUBLIC_CACHE_TAGS.faqs], revalidate: 3600});
+export const getFaqs = cache(readFaqs);
 
-export async function getContactLinks() {
-  return db.select().from(contactLinks)
+const readContactLinks = unstable_cache(async () =>
+  db.select().from(contactLinks)
     .where(eq(contactLinks.published, true))
-    .orderBy(asc(contactLinks.sort), asc(contactLinks.id));
-}
+    .orderBy(asc(contactLinks.sort), asc(contactLinks.id)),
+['public-contact-links'], {tags: [PUBLIC_CACHE_TAGS.contactLinks], revalidate: 3600});
+export const getContactLinks = cache(readContactLinks);

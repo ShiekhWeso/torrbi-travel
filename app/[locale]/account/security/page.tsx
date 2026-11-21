@@ -7,11 +7,12 @@ import {getCurrentUser} from '@/lib/auth';
 import PasswordForm from '@/components/PasswordForm';
 
 export default async function Security({searchParams}: {searchParams: Promise<{saved?: string}>}) {
-  const locale = await getLocale();
-  const user = await getCurrentUser();
+  const [locale, user] = await Promise.all([getLocale(), getCurrentUser()]);
   if (!user) redirect(`/${locale}/login`);
-  const [row] = await db.select({hash: users.passwordHash, google: users.googleId}).from(users).where(eq(users.id, user.id)).limit(1);
-  const {saved} = await searchParams;
+  const [[row], {saved}] = await Promise.all([
+    db.select({hash: users.passwordHash, google: users.googleId}).from(users).where(eq(users.id, user.id)).limit(1),
+    searchParams
+  ]);
   const ar = locale === 'ar';
   const t = (en: string, a: string) => (ar ? a : en);
 

@@ -31,7 +31,7 @@ export default function PlanWithUs() {
             </div>
 
             <div className="hidden lg:flex lg:col-span-4 justify-center">
-              <Image src="/logo.webp" alt="TORRBI TRAVEL" width={256} height={256} className="w-56 h-56 rounded-full" />
+              <Image src="/logo.webp" alt="TORRBI TRAVEL" width={256} height={256} sizes="224px" className="w-56 h-56 rounded-full" />
             </div>
           </div>
         </div>

@@ -9,8 +9,7 @@ import {db} from '@/lib/db';
 import {activities, favorites, packages} from '@/lib/db/schema';
 
 export default async function FavoritesPage() {
-  const locale = await getLocale();
-  const user = await getCurrentUser();
+  const [locale, user] = await Promise.all([getLocale(), getCurrentUser()]);
   if (!user) redirect(`/${locale}/login`);
   const rows = await Promise.all([
     db.select({
@@ -72,7 +71,7 @@ export default async function FavoritesPage() {
             <Link key={item.key} href={item.href} className="overflow-hidden rounded-2xl bg-mist transition-transform hover:-translate-y-1">
               {item.image && (
                 <div className="relative aspect-[4/3]">
-                  <Image src={item.image} alt={item.title} fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
+                  <Image src={item.image} alt={item.title} fill sizes="(min-width: 640px) calc(50vw - 48px), calc(100vw - 80px)" className="object-cover" />
                 </div>
               )}
               <div className="p-4">

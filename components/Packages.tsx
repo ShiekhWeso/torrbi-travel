@@ -1,15 +1,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {getTranslations, getLocale} from 'next-intl/server';
-import {getPackages} from '@/lib/queries';
+import {getHomePackages} from '@/lib/queries';
 import Price from '@/components/Price';
 
 export default async function Packages() {
   const locale = await getLocale();
-  const t = await getTranslations('packageCards');
-  const p = await getTranslations('packages');
-  const all = await getPackages(locale);
-  const items = (all.some((x) => x.featured) ? all.filter((x) => x.featured) : all).slice(0, 3);
+  const [t, p, items] = await Promise.all([
+    getTranslations('packageCards'),
+    getTranslations('packages'),
+    getHomePackages(locale)
+  ]);
 
   return (
     <section id="packages" className="w-full bg-snow py-16 lg:py-24">
@@ -19,6 +20,7 @@ export default async function Packages() {
           alt=""
           width={80}
           height={80}
+          sizes="80px"
           className="mx-auto mb-4 h-16 w-16 lg:h-20 lg:w-20"
         />
         <h2 className="font-display font-bold text-3xl lg:text-5xl text-navy text-center mb-10 lg:mb-14">
@@ -26,7 +28,7 @@ export default async function Packages() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
-          {items.map((item) => (
+          {items.map((item, index) => (
               <article
                 key={item.id}
                 className="group flex flex-col rounded-3xl bg-mist p-4 lg:p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(15,24,89,0.14)]"
@@ -37,7 +39,8 @@ export default async function Packages() {
                     src={item.image}
                     alt={item.title}
                     fill
-                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    sizes="(min-width: 1280px) 406px, (min-width: 1024px) 29vw, (min-width: 768px) 50vw, calc(100vw - 32px)"
+                    priority={index === 0}
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>

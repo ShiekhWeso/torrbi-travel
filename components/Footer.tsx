@@ -20,7 +20,7 @@ export default async function Footer() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 pb-8">
           <div className="space-y-3 max-w-sm">
             <div className="flex items-center gap-3">
-              <Image src="/logo.webp" alt="" width={40} height={40} className="rounded-full" />
+              <Image src="/logo.webp" alt="" width={40} height={40} sizes="40px" className="rounded-full" />
               <span className="font-display font-bold text-xl text-navy tracking-wide">TORRBI TRAVEL</span>
             </div>
             <p className="text-sm">{t('about')}</p>

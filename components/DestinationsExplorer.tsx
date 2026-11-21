@@ -8,7 +8,9 @@ import type {Dest} from '@/lib/queries';
 
 const regions = ['all', 'asia', 'turkey', 'caucasus'] as const;
 
-export default function DestinationsExplorer({items}: {items: Dest[]}) {
+type DestinationCard = Pick<Dest, 'id' | 'image' | 'region' | 'name' | 'country'>;
+
+export default function DestinationsExplorer({items}: {items: DestinationCard[]}) {
   const f = useTranslations('packagesPage');
   const d = useTranslations('destinations');
   const locale = useLocale();
@@ -52,7 +54,7 @@ export default function DestinationsExplorer({items}: {items: Dest[]}) {
         <p className="mt-16 text-center text-lg text-navy/60">{f('empty')}</p>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
-          {list.map((x) => (
+          {list.map((x, index) => (
             <div key={x.id} className="flex flex-col gap-3">
               <Link
                 href={`/${locale}/destinations/${x.id}`}
@@ -62,7 +64,8 @@ export default function DestinationsExplorer({items}: {items: Dest[]}) {
                   src={x.image}
                   alt={x.name}
                   fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                  sizes="(min-width: 1440px) 318px, (min-width: 1024px) calc((100vw - 168px) / 4), (min-width: 768px) calc((100vw - 64px) / 3), calc((100vw - 48px) / 2)"
+                  priority={index === 0}
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy/85 via-navy/10 to-transparent" />

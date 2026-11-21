@@ -11,8 +11,17 @@ export function generateStaticParams() {
 export default async function AllDestinationsPage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
-  const items = await getDestinations(locale);
-  const t = await getTranslations('destinationsPage');
+  const [items, t] = await Promise.all([
+    getDestinations(locale),
+    getTranslations('destinationsPage')
+  ]);
+  const destinationCards = items.map(({id, image, region, name, country}) => ({
+    id,
+    image,
+    region,
+    name,
+    country
+  }));
 
   return (
     <>
@@ -21,7 +30,7 @@ export default async function AllDestinationsPage({params}: {params: Promise<{lo
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
           <h1 className="font-display text-3xl font-bold text-navy lg:text-5xl">{t('title')}</h1>
           <p className="mb-8 mt-3 max-w-2xl text-lg text-navy/70">{t('subtitle')}</p>
-          <DestinationsExplorer items={items} />
+          <DestinationsExplorer items={destinationCards} />
         </div>
       </main>
       <Footer />

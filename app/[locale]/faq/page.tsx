@@ -10,8 +10,10 @@ export function generateStaticParams() {
 export default async function FaqPage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('faqPage');
-  const faqs = await getFaqs(locale);
+  const [t, faqs] = await Promise.all([
+    getTranslations('faqPage'),
+    getFaqs(locale)
+  ]);
 
   return (
     <>

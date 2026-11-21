@@ -35,7 +35,7 @@ export default function GalleryUpload({name, defaultValue, label}: {name: string
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {images.map((url, index) => (
             <div key={`${url}-${index}`} className="space-y-1">
-              <Image src={url} alt={`${label} ${index + 1}`} width={240} height={160} unoptimized className="h-28 w-full rounded-xl object-cover" />
+              <Image src={url} alt={`${label} ${index + 1}`} width={240} height={160} sizes="(min-width: 768px) 240px, 50vw" className="h-28 w-full rounded-xl object-cover" />
               <button
                 type="button"
                 disabled={loading}

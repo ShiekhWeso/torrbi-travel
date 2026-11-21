@@ -7,9 +7,11 @@ import Price from '@/components/Price';
 
 export default async function Offers() {
   const locale = await getLocale();
-  const t = await getTranslations('offers');
-  const w = await getTranslations('wa');
-  const items = await getOffers(locale);
+  const [t, w, items] = await Promise.all([
+    getTranslations('offers'),
+    getTranslations('wa'),
+    getOffers(locale)
+  ]);
   if (items.length === 0) return null;
   const fmt = new Intl.DateTimeFormat(locale, {day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'});
   const btn =
@@ -31,7 +33,7 @@ export default async function Offers() {
             >
               <div className="relative aspect-[16/10] w-full bg-navy">
                 {o.image && (
-                  <Image src={o.image} alt={o.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover" />
+                  <Image src={o.image} alt={o.title} fill sizes="(min-width: 1280px) 405px, (min-width: 768px) 50vw, calc(100vw - 32px)" className="object-cover" />
                 )}
                 {o.badge && (
                   <span className="absolute start-4 top-4 rounded-full bg-brand-warm px-4 py-1.5 text-sm font-bold text-navy">{o.badge}</span>

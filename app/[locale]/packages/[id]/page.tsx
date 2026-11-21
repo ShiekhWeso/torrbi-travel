@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import {getPackages, getPackage} from '@/lib/queries';
 import {and, eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {favorites, packages} from '@/lib/db/schema';
+import {favorites} from '@/lib/db/schema';
 import {packageDetails, reviews} from '@/lib/packageDetails';
 import BookingBox from '@/components/BookingBox';
 import FavoriteButton from '@/components/FavoriteButton';
@@ -23,27 +23,20 @@ export async function generateStaticParams() {
 export default async function PackagePage({params}: {params: Promise<{locale: string; id: string}>}) {
   const {locale, id} = await params;
   setRequestLocale(locale);
-  const pkg = await getPackage(locale, id);
+  const [pkg, user, t, p] = await Promise.all([
+    getPackage(locale, id),
+    getCurrentUser(),
+    getTranslations('packageDetail'),
+    getTranslations('packages')
+  ]);
   if (!pkg) notFound();
-  const user = await getCurrentUser();
-  const [favoriteTarget] = await db
-    .select({itemId: packages.id, favoriteId: favorites.id})
-    .from(packages)
-    .leftJoin(
-      favorites,
-      and(
-        eq(favorites.packageId, packages.id),
-        eq(favorites.userId, user?.id ?? -1),
-        eq(favorites.kind, 'package')
-      )
-    )
-    .where(eq(packages.slug, id))
-    .limit(1);
-  if (!favoriteTarget) notFound();
+  const [favorite] = user ? await db.select({id: favorites.id}).from(favorites).where(and(
+    eq(favorites.packageId, pkg.databaseId),
+    eq(favorites.userId, user.id),
+    eq(favorites.kind, 'package')
+  )).limit(1) : [];
   const det = Object.assign({rating: 4.8, reviews: 100}, packageDetails[id]);
 
-  const t = await getTranslations('packageDetail');
-  const p = await getTranslations('packages');
   const gallery = pkg.gallery.length ? pkg.gallery : [pkg.image];
   const defaults = [
     {icon: 'event_available', title: t('freeCancel'), text: t('freeCancelText')},
@@ -66,7 +59,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
         <div className="mx-auto max-w-[1440px] px-4 lg:px-12">
           <div className="mb-5 flex items-start justify-between gap-4">
             <h1 className="font-display text-4xl font-bold leading-tight text-navy sm:text-5xl xl:text-6xl">{pkg.title}</h1>
-            <FavoriteButton kind="package" id={favoriteTarget.itemId} active={favoriteTarget.favoriteId != null} loggedIn={Boolean(user)} />
+            <FavoriteButton kind="package" id={pkg.databaseId} active={favorite != null} loggedIn={Boolean(user)} />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-navy/70">
             <span className="rounded-md bg-navy px-2 py-1 text-xs font-bold text-snow">{t('topRated')}</span>
@@ -85,7 +78,16 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                     key={src + i}
                     className={`relative ${i === 0 ? 'col-span-2 row-span-2 min-h-[240px]' : 'aspect-[4/3]'}`}
                   >
-                    <Image src={src} alt="" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      sizes={i === 0
+                        ? '(min-width: 1440px) 466px, (min-width: 1024px) calc((100vw - 508px) / 2), calc(100vw - 32px)'
+                        : '(min-width: 1440px) 227px, (min-width: 1024px) calc((100vw - 532px) / 4), calc((100vw - 40px) / 2)'}
+                      priority={i === 0}
+                      className="object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -198,7 +200,7 @@ export default async function PackagePage({params}: {params: Promise<{locale: st
                 </section>
             </div>
             <Suspense fallback={null}>
-              <BookingBox id={favoriteTarget.itemId} slug={pkg.id} title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} user={user} />
+              <BookingBox id={pkg.databaseId} slug={pkg.id} title={pkg.title} days={pkg.days} adult={pkg.price} child={pkg.childPrice} infant={pkg.infantPrice} policies={pkg.policies} user={user} />
             </Suspense>
           </div>
         </div>

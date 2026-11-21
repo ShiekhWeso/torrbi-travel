@@ -13,7 +13,7 @@ import '../globals.css';
 
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '600', '700'],
   variable: '--font-cairo',
   display: 'swap'
 });
@@ -38,8 +38,7 @@ export default async function LocaleLayout({
   const {locale} = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  const rates = await getRates();
-  const currentUser = await getCurrentUser();
+  const [rates, currentUser] = await Promise.all([getRates(), getCurrentUser()]);
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className={cairo.variable}>

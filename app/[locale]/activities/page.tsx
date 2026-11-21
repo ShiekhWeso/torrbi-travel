@@ -13,6 +13,14 @@ export default async function ActivitiesPage({params}: {params: Promise<{locale:
   const {locale} = await params;
   setRequestLocale(locale);
   const items = await getActivities(locale);
+  const explorerItems = items.map(({id, city, image, price, durationHours, title}) => ({
+    id,
+    city,
+    image,
+    price,
+    durationHours,
+    title
+  }));
   const ar = locale === 'ar';
 
   return (
@@ -27,7 +35,7 @@ export default async function ActivitiesPage({params}: {params: Promise<{locale:
             {ar ? 'تصفح جميع الأنشطة والجولات المتوفرة.' : 'Browse all available activities and tours.'}
           </p>
           <Suspense fallback={null}>
-            <ActivitiesExplorer items={items} />
+            <ActivitiesExplorer items={explorerItems} />
           </Suspense>
         </div>
       </main>

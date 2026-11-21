@@ -21,7 +21,10 @@ export const packages = pgTable('packages', {
     .$type<Record<Lang, {title: string; intro: string; stay: string[]; includes: string[]; excludes: string[]; highlights: string[]; policies?: string[]; features?: {icon: string; title: string; text: string}[]}>>()
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull()
-});
+}, (table) => [
+  index('packages_published_sort_idx').on(table.published, table.sort),
+  index('packages_destination_id_idx').on(table.destinationId)
+]);
 
 export const packageDays = pgTable('package_days', {
   id: serial('id').primaryKey(),
@@ -29,7 +32,9 @@ export const packageDays = pgTable('package_days', {
   dayNo: integer('day_no').notNull(),
   stage: text('stage'),
   i18n: jsonb('i18n').$type<Record<Lang, {title: string; items: string[]; stage?: string}>>().notNull()
-});
+}, (table) => [
+  index('package_days_package_id_idx').on(table.packageId)
+]);
 
 export const destinations = pgTable('destinations', {
   id: serial('id').primaryKey(),
@@ -79,7 +84,9 @@ export const activities = pgTable('activities', {
     .$type<Record<Lang, {title: string; description: string; includes: string[]; highlights: string[]; policies?: string[]}>>()
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull()
-});
+}, (table) => [
+  index('activities_published_sort_idx').on(table.published, table.sort)
+]);
 
 export const offers = pgTable('offers', {
   id: serial('id').primaryKey(),
@@ -91,7 +98,9 @@ export const offers = pgTable('offers', {
   published: boolean('published').notNull().default(true),
   sort: integer('sort').notNull().default(0),
   i18n: jsonb('i18n').$type<Record<Lang, {title: string; text: string; badge: string}>>().notNull()
-});
+}, (table) => [
+  index('offers_published_idx').on(table.published)
+]);
 
 export const faqs = pgTable('faqs', {
   id: serial('id').primaryKey(),
@@ -236,7 +245,12 @@ export const bookings = pgTable('bookings', {
   discountUsd: integer('discount_usd'),
   status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull()
-});
+}, (table) => [
+  index('bookings_user_id_idx').on(table.userId),
+  index('bookings_status_idx').on(table.status),
+  index('bookings_created_at_idx').on(table.createdAt),
+  index('bookings_travel_date_idx').on(table.travelDate)
+]);
 
 export const couponRedemptions = pgTable('coupon_redemptions', {
   id: serial('id').primaryKey(),
@@ -245,7 +259,8 @@ export const couponRedemptions = pgTable('coupon_redemptions', {
   bookingId: integer('booking_id').references(() => bookings.id, {onDelete: 'set null'}),
   createdAt: timestamp('created_at').defaultNow().notNull()
 }, (table) => [
-  uniqueIndex('coupon_redemptions_coupon_user_unique').on(table.couponId, table.userId)
+  uniqueIndex('coupon_redemptions_coupon_user_unique').on(table.couponId, table.userId),
+  index('coupon_redemptions_user_id_idx').on(table.userId)
 ]);
 
 export const activityReviews = pgTable('activity_reviews', {

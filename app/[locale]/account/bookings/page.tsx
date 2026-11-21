@@ -18,10 +18,12 @@ const STATUS: Record<string, {en: string; ar: string; cls: string}> = {
 };
 
 export default async function MyBookings({searchParams}: {searchParams: Promise<{new?: string}>}) {
-  const {new: newBooking} = await searchParams;
   const locale = await getLocale();
-  const couponT = await getTranslations({locale, namespace: 'accountCouponUsage'});
-  const user = await getCurrentUser();
+  const [{new: newBooking}, couponT, user] = await Promise.all([
+    searchParams,
+    getTranslations({locale, namespace: 'accountCouponUsage'}),
+    getCurrentUser()
+  ]);
   if (!user) redirect(`/${locale}/login`);
   const rows = await db
     .select({b: bookings, cover: packages.cover, slug: packages.slug, activityImage: activities.image, activitySlug: activities.slug})
@@ -61,7 +63,7 @@ export default async function MyBookings({searchParams}: {searchParams: Promise<
             <article key={b.id} className={`flex flex-col gap-4 rounded-2xl border p-4 sm:flex-row ${receivedBooking?.b.id === b.id ? 'border-brand-warm' : 'border-navy/10'}`}>
               {image && (
                 <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-40">
-                  <Image src={image} alt="" fill sizes="160px" className="object-cover" />
+                  <Image src={image} alt="" fill sizes="(min-width: 640px) 160px, calc(100vw - 112px)" className="object-cover" />
                 </div>
               )}
               <div className="flex-1">

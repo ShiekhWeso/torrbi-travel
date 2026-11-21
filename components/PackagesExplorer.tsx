@@ -20,12 +20,17 @@ const chip = (on: boolean) =>
     on ? 'bg-brand-sky text-snow' : 'bg-mist text-navy hover:bg-sky-light/40'
   }`;
 
+type PackageCard = Pick<
+  Pkg,
+  'id' | 'image' | 'days' | 'price' | 'region' | 'destinationId' | 'destinationSlug' | 'destinationName' | 'title' | 'stops' | 'includes'
+>;
+
 export default function PackagesExplorer({
   items,
   regions,
   durations
 }: {
-  items: Pkg[];
+  items: PackageCard[];
   regions: SearchRegion[];
   durations: SearchDuration[];
 }) {
@@ -170,7 +175,7 @@ export default function PackagesExplorer({
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-          {list.map((x) => (
+          {list.map((x, index) => (
             <article
               key={x.id}
               className="flex flex-col rounded-3xl bg-mist p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(15,24,89,0.14)] lg:p-5"
@@ -180,7 +185,8 @@ export default function PackagesExplorer({
                   src={x.image}
                   alt={x.title}
                   fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                  sizes="(min-width: 1440px) 427px, (min-width: 1024px) 29vw, (min-width: 768px) 50vw, calc(100vw - 32px)"
+                  priority={index === 0}
                   className="object-cover"
                 />
               </div>

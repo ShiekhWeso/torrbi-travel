@@ -27,7 +27,7 @@ export default function ImageUpload({name, defaultValue, label}: {name: string; 
     <div className="space-y-2">
       <p className="text-sm font-bold text-navy">{label}</p>
       {value && (
-        <Image src={value} alt={label} width={320} height={200} unoptimized className="max-h-48 w-auto max-w-full rounded-xl object-cover" />
+        <Image src={value} alt={label} width={320} height={200} sizes="320px" className="max-h-48 w-auto max-w-full rounded-xl object-cover" />
       )}
       <input type="hidden" name={name} value={value} />
       <input

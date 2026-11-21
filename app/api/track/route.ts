@@ -1,3 +1,4 @@
+import {after} from 'next/server';
 import {db} from '@/lib/db';
 import {pageViews} from '@/lib/db/schema';
 import {getCurrentUser} from '@/lib/auth';
@@ -5,9 +6,6 @@ import {checkIpRateLimit, getClientIp} from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   const ip = getClientIp(request.headers);
-  if (await checkIpRateLimit('track', ip, 120, 60 * 1000) !== null) {
-    return new Response(null, {status: 429});
-  }
   const userAgent = request.headers.get('user-agent') ?? '';
   if (/bot|crawl|spider|preview/i.test(userAgent)) return new Response(null, {status: 204});
   const contentType = request.headers.get('content-type') ?? '';
@@ -56,11 +54,10 @@ export async function POST(request: Request) {
     return Response.json({error: 'Invalid tracking data'}, {status: 400});
   }
   if (/^\/(?:[a-z]{2}\/)?(?:admin|api)(?:\/|$)/i.test(path)) return new Response(null, {status: 204});
-  const user = await getCurrentUser();
-  await db.insert(pageViews).values({
-    visitorId,
-    userId: user?.id ?? null,
-    path
+  after(async () => {
+    if (await checkIpRateLimit('track', ip, 120, 60 * 1000) !== null) return;
+    const user = await getCurrentUser();
+    await db.insert(pageViews).values({visitorId, userId: user?.id ?? null, path});
   });
   return new Response(null, {status: 204});
 }

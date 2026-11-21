@@ -7,8 +7,9 @@ import {useLocale, useTranslations} from 'next-intl';
 import type {Dest} from '@/lib/queries';
 
 const SHOWN = 5; // rows on the home page, change as needed
+type HomeDestination = Pick<Dest, 'id' | 'image' | 'name' | 'country' | 'rating' | 'best' | 'flight' | 'temp'>;
 
-export default function Destinations({destinations}: {destinations: Dest[]}) {
+export default function Destinations({destinations}: {destinations: HomeDestination[]}) {
   const t = useTranslations('destinations');
   const locale = useLocale();
   const list = destinations.slice(0, SHOWN);
@@ -70,7 +71,7 @@ export default function Destinations({destinations}: {destinations: Dest[]}) {
                 className="dest-in sticky top-28 rounded-3xl bg-navy p-6 text-snow shadow-[0_24px_56px_rgba(15,24,89,0.3)]"
               >
                 <div className="relative mx-auto aspect-[4/4.4] w-4/5 overflow-hidden rounded-t-full rounded-b-3xl">
-                  <Image src={cur.image} alt="" fill sizes="30vw" className="object-cover" />
+                  <Image src={cur.image} alt="" fill sizes="(min-width: 1440px) 500px, (min-width: 1024px) 40vw, 48px" className="object-cover" />
                 </div>
                 <div className="mt-5 flex items-center justify-between">
                   <h3 className="font-display text-3xl font-bold">{cur.name}</h3>
