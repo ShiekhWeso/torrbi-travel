@@ -68,12 +68,13 @@ export default function ActivityBookingBox({id, slug, adult, child, infant, carP
     ? selectedCar ? `${money(payableKnown)}` : c('selectCarTier')
     : unknown && known === 0 ? p('onRequest') : `${money(payableKnown)}${unknown ? ` + ${p('onRequest')}` : ''}`;
 
-  const couponErrorText = (reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope') => ({
+  const couponErrorText = (reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope' | 'already_used') => ({
     invalid: L('Invalid coupon code', 'كود الخصم غير صالح'),
     expired: L('This coupon has expired', 'انتهت صلاحية هذا الكوبون'),
     min: L('Minimum order total not met', 'لم يتم استيفاء الحد الأدنى للطلب'),
     used_up: L('Coupon has reached its usage limit', 'تم بلوغ الحد الأقصى لاستخدام الكوبون'),
-    scope: L('Coupon is not valid for this item', 'الكوبون غير صالح لهذا المنتج')
+    scope: L('Coupon is not valid for this item', 'الكوبون غير صالح لهذا المنتج'),
+    already_used: L('You have already used this coupon', 'لقد استخدمت هذا الكوبون من قبل')
   })[reason];
 
   const applyCoupon = async () => {

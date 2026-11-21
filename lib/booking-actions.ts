@@ -4,7 +4,7 @@ import {and, eq, sql} from 'drizzle-orm';
 import {revalidatePath} from 'next/cache';
 import {getLocale} from 'next-intl/server';
 import {db} from '@/lib/db';
-import {activities, bookings, coupons, packages} from '@/lib/db/schema';
+import {activities, bookings, couponRedemptions, coupons, packages} from '@/lib/db/schema';
 import {getCurrentUser} from '@/lib/auth';
 import {bookingRef} from '@/lib/bookingRef';
 import {bookingReceived, newBookingAdmin, type BookingEmailData, type EmailLocale} from '@/lib/email-templates';
@@ -32,7 +32,7 @@ type BookingBoxInput = {
 type CouponInput = {code: string; kind: 'package' | 'activity'; id: number; totalUsd: number};
 type CouponCheck =
   | {ok: true; couponId: number; code: string; discountUsd: number; title: string}
-  | {ok: false; reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope'};
+  | {ok: false; reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope' | 'already_used'};
 
 function notifyBookingEmails(input: {
   id: number;
@@ -100,6 +100,14 @@ export async function validateCoupon(input: CouponInput) {
     return {ok: false as const, reason: 'invalid' as const};
   }
   const [coupon] = await db.select().from(coupons).where(eq(coupons.code, code)).limit(1);
+  const user = await getCurrentUser();
+  if (user && coupon) {
+    const [redemption] = await db.select({id: couponRedemptions.id}).from(couponRedemptions).where(and(
+      eq(couponRedemptions.couponId, coupon.id),
+      eq(couponRedemptions.userId, user.id)
+    )).limit(1);
+    if (redemption) return {ok: false as const, reason: 'already_used' as const};
+  }
   const locale = (await getLocale()) === 'ar' ? 'ar' : 'en';
   const result = checkCoupon(coupon, input, code, locale);
   return result.ok
@@ -219,6 +227,13 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
   const booking = await db.transaction(async (tx) => {
     const [coupon] = await tx.select().from(coupons).where(eq(coupons.code, code)).for('update').limit(1);
     if (couponTargetId == null) throw new Error('Booking coupon target not found');
+    const [redemption] = coupon
+      ? await tx.select({id: couponRedemptions.id}).from(couponRedemptions).where(and(
+          eq(couponRedemptions.couponId, coupon.id),
+          eq(couponRedemptions.userId, user.id)
+        )).limit(1)
+      : [];
+    if (redemption) throw new Error('Coupon is no longer valid: already_used');
     const result = checkCoupon(coupon, {code, kind, id: couponTargetId, totalUsd}, code, lang);
     if (!result.ok) throw new Error(`Coupon is no longer valid: ${result.reason}`);
     const [created] = await tx.insert(bookings).values({
@@ -228,6 +243,11 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
       discountUsd: result.discountUsd
     }).returning({id: bookings.id});
     if (!created) throw new Error('Failed to create booking');
+    await tx.insert(couponRedemptions).values({
+      couponId: result.couponId,
+      userId: user.id,
+      bookingId: created.id
+    });
     await tx.update(coupons).set({usedCount: sql`${coupons.usedCount} + 1`}).where(eq(coupons.id, result.couponId));
     return {id: created.id, totalUsd: totalUsd - result.discountUsd};
   });
@@ -328,9 +348,24 @@ export async function createActivityBooking(input: {slug: string; date: string; 
 export async function cancelBooking(fd: FormData) {
   const user = await getCurrentUser();
   if (!user) return;
-  await db
-    .update(bookings)
-    .set({status: 'cancelled'})
-    .where(and(eq(bookings.id, Number(fd.get('id'))), eq(bookings.userId, user.id), eq(bookings.status, 'pending')));
+  const bookingId = Number(fd.get('id'));
+  await db.transaction(async (tx) => {
+    const [booking] = await tx.select({
+      id: bookings.id,
+      couponCode: bookings.couponCode
+    }).from(bookings).where(and(
+      eq(bookings.id, bookingId),
+      eq(bookings.userId, user.id),
+      eq(bookings.status, 'pending')
+    )).for('update').limit(1);
+    if (!booking) return;
+    await tx.update(bookings).set({status: 'cancelled'}).where(eq(bookings.id, booking.id));
+    if (booking.couponCode) {
+      await tx.delete(couponRedemptions).where(eq(couponRedemptions.bookingId, booking.id));
+      await tx.update(coupons)
+        .set({usedCount: sql`greatest(${coupons.usedCount} - 1, 0)`})
+        .where(eq(coupons.code, booking.couponCode));
+    }
+  });
   revalidatePath('/', 'layout');
 }

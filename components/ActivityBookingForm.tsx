@@ -75,7 +75,9 @@ export default function ActivityBookingForm(props: Props) {
       router.push(`/activities/${encodeURIComponent(props.slug)}/pay?booking=${bookingId}`);
     } catch (e) {
       console.error('Failed to create activity booking', e);
-      setError(t('bookingError'));
+      setError(e instanceof Error && e.message.includes('already_used')
+        ? t('alreadyUsedCoupon')
+        : t('bookingError'));
     } finally {
       setSaving(false);
     }

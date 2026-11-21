@@ -3,13 +3,13 @@
 import {redirect} from 'next/navigation';
 import {revalidatePath} from 'next/cache';
 import bcrypt from 'bcryptjs';
-import {and, eq} from 'drizzle-orm';
+import {and, desc, eq, inArray, ne, sql} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, activityReviews, settings, coupons, contactLinks, users, searchRegions, searchDurations, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, couponRedemptions, activityReviews, settings, coupons, contactLinks, users, searchRegions, searchDurations, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 import {bookingRef} from '@/lib/bookingRef';
-import {bookingCancelled, bookingConfirmed} from '@/lib/email-templates';
+import {bookingCancelled, bookingConfirmed, couponOffer} from '@/lib/email-templates';
 import {sendEmail} from '@/lib/email';
 
 async function go(path: string): Promise<never> {
@@ -338,6 +338,113 @@ export async function toggleCoupon(formData: FormData) {
   revalidatePath('/', 'layout');
 }
 
+export type CouponEmailResult = {sent: number; failed: number; skipped: number; error?: boolean};
+
+export async function sendCouponEmails(_previous: CouponEmailResult, formData: FormData): Promise<CouponEmailResult> {
+  let sent = 0;
+  let failed = 0;
+  let skipped = 0;
+  try {
+    if (!(await getSession())) return {sent, failed, skipped, error: true};
+    const couponId = Number(formData.get('couponId'));
+    if (!Number.isInteger(couponId) || couponId < 1) return {sent, failed, skipped, error: true};
+    const [coupon] = await db.select().from(coupons).where(eq(coupons.id, couponId)).limit(1);
+    if (!coupon) return {sent, failed, skipped, error: true};
+
+    const allCustomers = formData.get('deliveryMode') === 'all';
+    const submittedIds = allCustomers
+      ? (await db.select({id: users.id}).from(users).orderBy(users.id)).map(({id}) => id)
+      : [...new Set(formData.getAll('recipientIds')
+          .map((value) => Number(value))
+          .filter((id) => Number.isSafeInteger(id) && id > 0))];
+    if (submittedIds.length === 0) return {sent, failed, skipped};
+
+    const recipientIds = submittedIds.slice(0, 100);
+    skipped += submittedIds.length - recipientIds.length;
+    const recipientRows = await db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email
+    }).from(users).where(inArray(users.id, recipientIds));
+    skipped += recipientIds.length - recipientRows.length;
+
+    const [redemptions, bookingUsers] = await Promise.all([
+      db.select({userId: couponRedemptions.userId})
+        .from(couponRedemptions)
+        .where(eq(couponRedemptions.couponId, coupon.id)),
+      db.select({userId: bookings.userId})
+        .from(bookings)
+        .where(and(eq(bookings.couponCode, coupon.code), ne(bookings.status, 'cancelled')))
+    ]);
+    const usedUserIds = new Set([...redemptions, ...bookingUsers].map(({userId}) => userId));
+    const eligible = recipientRows.filter((recipient) => {
+      if (usedUserIds.has(recipient.id)) {
+        skipped += 1;
+        return false;
+      }
+      return true;
+    });
+
+    const latestBookings = eligible.length
+      ? await db.select({userId: bookings.userId, lang: bookings.lang})
+          .from(bookings)
+          .where(inArray(bookings.userId, eligible.map(({id}) => id)))
+          .orderBy(desc(bookings.createdAt))
+      : [];
+    const latestLanguage = new Map<number, string>();
+    for (const booking of latestBookings) {
+      if (!latestLanguage.has(booking.userId)) latestLanguage.set(booking.userId, booking.lang);
+    }
+
+    let target: string | null = null;
+    if (coupon.scope === 'package' && coupon.packageId) {
+      const [pkg] = await db.select({title: packages.i18n}).from(packages).where(eq(packages.id, coupon.packageId)).limit(1);
+      target = pkg?.title.en.title ?? null;
+    } else if (coupon.scope === 'activity' && coupon.activityId) {
+      const [activity] = await db.select({title: activities.i18n}).from(activities).where(eq(activities.id, coupon.activityId)).limit(1);
+      target = activity?.title.en.title ?? null;
+    }
+    const formatDate = (date: Date | null) => date
+      ? new Intl.DateTimeFormat('en-US', {dateStyle: 'medium', timeZone: 'UTC'}).format(date)
+      : null;
+    const discount = coupon.discountType === 'percent'
+      ? `${coupon.discountValue}%`
+      : `$${coupon.discountValue} USD`;
+
+    for (const [index, recipient] of eligible.entries()) {
+      const locale = latestLanguage.get(recipient.id) === 'en' ? 'en' : 'ar';
+      try {
+        const result = await sendEmail({
+          to: recipient.email,
+          ...couponOffer(locale, {
+            name: recipient.name,
+            code: coupon.code,
+            discount,
+            scope: coupon.scope,
+            target,
+            validFrom: formatDate(coupon.validFrom),
+            validUntil: formatDate(coupon.validUntil),
+            terms: coupon.i18n[locale].terms
+          })
+        });
+        if (result.ok) sent += 1;
+        else {
+          failed += 1;
+          console.error(`Failed to send coupon ${coupon.id} to customer ${recipient.id}`);
+        }
+      } catch (error) {
+        failed += 1;
+        console.error(`Failed to send coupon ${coupon.id} to customer ${recipient.id}`, error);
+      }
+      if (index < eligible.length - 1) await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    return {sent, failed, skipped};
+  } catch (error) {
+    console.error('Coupon email campaign failed', error);
+    return {sent, failed, skipped, error: true};
+  }
+}
+
 const contactTypes: Record<ContactSection, ContactType[]> = {
   social: ['instagram', 'facebook', 'tiktok', 'x', 'snapchat', 'youtube', 'linkedin'],
   direct: ['whatsapp', 'phone', 'email', 'address', 'hours']
@@ -602,36 +709,45 @@ export async function setBookingStatus(formData: FormData) {
   const status = String(formData.get('status'));
   if (!['pending', 'confirmed', 'cancelled'].includes(status)) return;
   const id = Number(formData.get('id'));
-  const [booking] = await db.select({
-    id: bookings.id,
-    status: bookings.status,
-    lang: bookings.lang,
-    title: bookings.packageTitle,
-    date: bookings.travelDate,
-    guests: bookings.pax,
-    totalUsd: bookings.totalUsd,
-    email: users.email,
-    name: users.name
-  }).from(bookings).innerJoin(users, eq(bookings.userId, users.id)).where(eq(bookings.id, id)).limit(1);
-  if (booking && booking.status !== status) {
-    const [updated] = await db.update(bookings).set({status}).where(and(
-      eq(bookings.id, id),
-      eq(bookings.status, booking.status)
-    )).returning({id: bookings.id});
-    if (updated && (status === 'confirmed' || status === 'cancelled')) {
-      const locale = booking.lang === 'ar' ? 'ar' : 'en';
+  const updatedBooking = await db.transaction(async (tx) => {
+    const [booking] = await tx.select({
+      id: bookings.id,
+      userId: bookings.userId,
+      status: bookings.status,
+      couponCode: bookings.couponCode,
+      lang: bookings.lang,
+      title: bookings.packageTitle,
+      date: bookings.travelDate,
+      guests: bookings.pax,
+      totalUsd: bookings.totalUsd
+    }).from(bookings).where(eq(bookings.id, id)).for('update').limit(1);
+    if (!booking || booking.status === status) return null;
+    await tx.update(bookings).set({status}).where(eq(bookings.id, booking.id));
+    if (status === 'cancelled' && booking.couponCode) {
+      await tx.delete(couponRedemptions).where(eq(couponRedemptions.bookingId, booking.id));
+      await tx.update(coupons)
+        .set({usedCount: sql`greatest(${coupons.usedCount} - 1, 0)`})
+        .where(eq(coupons.code, booking.couponCode));
+    }
+    return booking;
+  });
+  if (updatedBooking && (status === 'confirmed' || status === 'cancelled')) {
+    const [customer] = await db.select({email: users.email, name: users.name}).from(users)
+      .where(eq(users.id, updatedBooking.userId)).limit(1);
+    if (customer) {
+      const locale = updatedBooking.lang === 'ar' ? 'ar' : 'en';
       const data = {
-        name: booking.name,
-        reference: bookingRef(booking.id),
-        title: booking.title,
-        date: booking.date,
-        guests: booking.guests,
-        totalUsd: booking.totalUsd
+        name: customer.name,
+        reference: bookingRef(updatedBooking.id),
+        title: updatedBooking.title,
+        date: updatedBooking.date,
+        guests: updatedBooking.guests,
+        totalUsd: updatedBooking.totalUsd
       };
       if (status === 'confirmed') {
-        void sendEmail({to: booking.email, ...bookingConfirmed(locale, data)});
+        void sendEmail({to: customer.email, ...bookingConfirmed(locale, data)});
       } else {
-        void sendEmail({to: booking.email, ...bookingCancelled(locale, data)});
+        void sendEmail({to: customer.email, ...bookingCancelled(locale, data)});
       }
     }
   }

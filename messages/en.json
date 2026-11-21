@@ -210,6 +210,7 @@
     "price": "Price",
     "couponDiscount": "Coupon discount",
     "invalidCoupon": "This coupon is no longer valid. You can continue without it.",
+    "alreadyUsedCoupon": "You have already used this coupon.",
     "total": "Total",
     "onRequest": "Price on request",
     "detailsTitle": "Your booking details",
@@ -233,6 +234,10 @@
     "pendingConfirmation": "Pending confirmation",
     "myBookings": "My bookings",
     "backHome": "Back home"
+  },
+  "accountCouponUsage": {
+    "coupon": "Coupon",
+    "alreadyUsed": "Already used"
   },
   "activityReviews": {
     "title": "Reviews",

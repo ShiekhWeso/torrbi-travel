@@ -9,7 +9,7 @@ import {Link} from '@/i18n/navigation';
 import {getCurrentUser} from '@/lib/auth';
 import {safeActivityReturnTo} from '@/lib/activity-return-to';
 import {db} from '@/lib/db';
-import {activities, coupons} from '@/lib/db/schema';
+import {activities, couponRedemptions, coupons} from '@/lib/db/schema';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
@@ -74,12 +74,20 @@ export default async function ActivityBookPage({
   let couponCode: string | null = null;
   let discountUsd = 0;
   let couponInvalid = Boolean(requestedCoupon);
+  let couponError: 'invalid' | 'alreadyUsed' = 'invalid';
   if (requestedCoupon && baseUsd != null && baseUsd > 0) {
     const [coupon] = await db.select().from(coupons).where(eq(coupons.code, requestedCoupon)).limit(1);
+    if (coupon) {
+      const [redemption] = await db.select({id: couponRedemptions.id}).from(couponRedemptions).where(and(
+        eq(couponRedemptions.couponId, coupon.id),
+        eq(couponRedemptions.userId, user.id)
+      )).limit(1);
+      if (redemption) couponError = 'alreadyUsed';
+    }
     const now = new Date();
     const scopeMatches = coupon?.scope === 'all' ||
       (coupon?.scope === 'activity' && (coupon.activityId == null || coupon.activityId === activity.id));
-    const valid = coupon?.active &&
+    const valid = couponError !== 'alreadyUsed' && coupon?.active &&
       (!coupon.validFrom || coupon.validFrom <= now) &&
       (!coupon.validUntil || coupon.validUntil >= now) &&
       (coupon.maxUses == null || coupon.usedCount < coupon.maxUses) &&
@@ -127,7 +135,9 @@ export default async function ActivityBookPage({
                   <div className="flex justify-between gap-4"><dt className="text-navy/60">{t('couponDiscount')} ({couponCode})</dt><dd className="text-end font-bold text-[#15803d]">−<Price usd={discountUsd} /></dd></div>
                 )}
               </dl>
-              {couponInvalid && <p role="status" className="mt-4 rounded-xl bg-[#ef4444]/10 p-3 text-sm font-bold text-[#b91c1c]">{t('invalidCoupon')}</p>}
+              {couponInvalid && <p role="status" className="mt-4 rounded-xl bg-[#ef4444]/10 p-3 text-sm font-bold text-[#b91c1c]">
+                {t(couponError === 'alreadyUsed' ? 'alreadyUsedCoupon' : 'invalidCoupon')}
+              </p>}
               <div className="mt-6 flex items-center justify-between border-t border-navy/10 pt-5">
                 <span className="font-bold text-navy">{t('total')}</span>
                 <span className="font-display text-2xl font-bold text-navy">{totalUsd == null ? t('onRequest') : <Price usd={totalUsd} />}</span>

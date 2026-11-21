@@ -62,12 +62,13 @@ export default function BookingBox({id, slug, title, days, adult, child, infant,
   const total =
     unknown && known === 0 ? p('onRequest') : `${money(payableKnown)}${unknown ? ` + ${p('onRequest')}` : ''}`;
 
-  const couponErrorText = (reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope') => ({
+  const couponErrorText = (reason: 'invalid' | 'expired' | 'min' | 'used_up' | 'scope' | 'already_used') => ({
     invalid: L('Invalid coupon code', 'كود الخصم غير صالح'),
     expired: L('This coupon has expired', 'انتهت صلاحية هذا الكوبون'),
     min: L('Minimum order total not met', 'لم يتم استيفاء الحد الأدنى للطلب'),
     used_up: L('Coupon has reached its usage limit', 'تم بلوغ الحد الأقصى لاستخدام الكوبون'),
-    scope: L('Coupon is not valid for this item', 'الكوبون غير صالح لهذا المنتج')
+    scope: L('Coupon is not valid for this item', 'الكوبون غير صالح لهذا المنتج'),
+    already_used: L('You have already used this coupon', 'لقد استخدمت هذا الكوبون من قبل')
   })[reason];
 
   const applyCoupon = async () => {
@@ -105,7 +106,12 @@ export default function BookingBox({id, slug, title, days, adult, child, infant,
         notes,
         phone,
         couponCode: currentCoupon?.code
-      }).catch((error) => console.error('Failed to save package booking', error));
+      }).catch((error) => {
+        console.error('Failed to save package booking', error);
+        if (error instanceof Error && error.message.includes('already_used')) {
+          setCouponError(L('You have already used this coupon', 'لقد استخدمت هذا الكوبون من قبل'));
+        }
+      });
     }
     const langName = lang === 'ar' ? L('Arabic', 'العربية') : L('English', 'الإنجليزية');
     const text = ar

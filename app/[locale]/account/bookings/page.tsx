@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import {redirect} from 'next/navigation';
 import {desc, eq} from 'drizzle-orm';
-import {getLocale} from 'next-intl/server';
+import {getLocale, getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {db} from '@/lib/db';
 import {activities, bookings, packages} from '@/lib/db/schema';
@@ -9,6 +9,7 @@ import {getCurrentUser} from '@/lib/auth';
 import {cancelBooking} from '@/lib/booking-actions';
 import {bookingRef} from '@/lib/bookingRef';
 import ConfirmButton from '@/components/admin/ConfirmButton';
+import Price from '@/components/Price';
 
 const STATUS: Record<string, {en: string; ar: string; cls: string}> = {
   pending: {en: 'Pending', ar: 'قيد الانتظار', cls: 'bg-[#F2C14E]/25 text-[#8a6410]'},
@@ -19,6 +20,7 @@ const STATUS: Record<string, {en: string; ar: string; cls: string}> = {
 export default async function MyBookings({searchParams}: {searchParams: Promise<{new?: string}>}) {
   const {new: newBooking} = await searchParams;
   const locale = await getLocale();
+  const couponT = await getTranslations({locale, namespace: 'accountCouponUsage'});
   const user = await getCurrentUser();
   if (!user) redirect(`/${locale}/login`);
   const rows = await db
@@ -71,6 +73,11 @@ export default async function MyBookings({searchParams}: {searchParams: Promise<
                 <p className="mt-1 text-sm text-navy/70">
                   {b.travelDate} · {t('Adults', 'بالغين')}: {b.pax}
                 </p>
+                {b.couponCode && (
+                  <p className="mt-2 text-sm font-bold text-[#b45309]">
+                    {couponT('coupon')} {b.couponCode} (-{b.discountUsd != null ? <Price usd={b.discountUsd} /> : '—'})
+                  </p>
+                )}
                 <div className="mt-3 flex items-center justify-between">
                   {b.totalUsd != null ? <p className="font-bold text-navy">${b.totalUsd}</p> : <span />}
                   {viewSlug && (

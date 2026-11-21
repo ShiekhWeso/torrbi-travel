@@ -20,6 +20,14 @@ export default async function CustomerDetails({params}: {params: Promise<{id: st
     db.select().from(bookings).where(eq(bookings.userId, userId)).orderBy(desc(bookings.createdAt)),
     db.select().from(pageViews).where(eq(pageViews.userId, userId)).orderBy(desc(pageViews.createdAt)).limit(50)
   ]);
+  const couponUsage = new Map<string, {bookings: number; discount: number}>();
+  for (const booking of customerBookings) {
+    if (!booking.couponCode || booking.status === 'cancelled') continue;
+    const usage = couponUsage.get(booking.couponCode) ?? {bookings: 0, discount: 0};
+    usage.bookings += 1;
+    usage.discount += booking.discountUsd ?? 0;
+    couponUsage.set(booking.couponCode, usage);
+  }
   const dateTime = new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', {
     dateStyle: 'medium',
     timeStyle: 'short'
@@ -47,6 +55,21 @@ export default async function CustomerDetails({params}: {params: Promise<{id: st
 
       <section className="mt-8">
         <h2 className="mb-4 font-display text-2xl font-bold text-navy">{t.bookings}</h2>
+        {couponUsage.size > 0 && (
+          <aside className="mb-4 rounded-2xl bg-brand-warm/15 p-4">
+            <h3 className="mb-3 text-sm font-bold text-navy">{t.couponsUsed}</h3>
+            <ul className="space-y-2 text-sm text-navy">
+              {[...couponUsage.entries()].map(([code, usage]) => (
+                <li key={code} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                  <span className="font-bold">{code}</span>
+                  <span className="text-navy/70">
+                    {t.couponBookingCount.replace('{count}', String(usage.bookings))} · {t.couponDiscountTotal.replace('{amount}', String(usage.discount))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
         <div className="divide-y divide-navy/10 rounded-2xl bg-snow">
           {customerBookings.length === 0 && <p className="p-6 text-navy/60">{t.noItems}</p>}
           {customerBookings.map((booking) => (
@@ -61,6 +84,11 @@ export default async function CustomerDetails({params}: {params: Promise<{id: st
               <p className="text-sm text-navy/70">
                 {t.adults}: {booking.adults ?? '—'} · {t.children}: {booking.children ?? '—'} · {t.infants}: {booking.infants ?? '—'}
               </p>
+              {booking.couponCode && (
+                <p className="text-sm font-bold text-[#b45309]">
+                  {t.coupon} {booking.couponCode} (-${booking.discountUsd ?? 0})
+                </p>
+              )}
               {booking.notes && <p className="text-sm text-navy/70">{t.notes}: {booking.notes}</p>}
               <p className="text-sm font-bold text-navy">{t.total}: {booking.totalUsd == null ? '—' : `$${booking.totalUsd} USD`}</p>
             </article>

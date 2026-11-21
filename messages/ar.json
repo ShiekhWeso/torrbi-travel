@@ -210,6 +210,7 @@
     "price": "السعر",
     "couponDiscount": "خصم الكوبون",
     "invalidCoupon": "لم يعد هذا الكوبون صالحاً. يمكنك المتابعة بدونه.",
+    "alreadyUsedCoupon": "لقد استخدمت هذا الكوبون من قبل.",
     "total": "الإجمالي",
     "onRequest": "السعر عند الطلب",
     "detailsTitle": "بيانات الحجز",
@@ -233,6 +234,10 @@
     "pendingConfirmation": "بانتظار التأكيد",
     "myBookings": "حجوزاتي",
     "backHome": "العودة للرئيسية"
+  },
+  "accountCouponUsage": {
+    "coupon": "الكوبون",
+    "alreadyUsed": "تم استخدامه"
   },
   "activityReviews": {
     "title": "التقييمات والمراجعات",

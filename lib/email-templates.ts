@@ -9,6 +9,17 @@ export type BookingEmailData = {
   totalUsd: number | null;
 };
 
+export type CouponOfferData = {
+  name: string;
+  code: string;
+  discount: string;
+  scope: string;
+  target: string | null;
+  validFrom: string | null;
+  validUntil: string | null;
+  terms: string;
+};
+
 type EmailContent = {subject: string; html: string};
 
 function escapeHtml(value: string) {
@@ -169,4 +180,47 @@ export function newBookingAdmin(data: BookingEmailData & {email: string}): Email
     subject: `New booking ${escapeHtml(data.reference)}`,
     html: layout('en', 'New booking', `${paragraph('A new booking request was submitted.')}${detailRows('en', data)}${paragraph(`Customer email: ${escapeHtml(data.email)}`)}`)
   };
+}
+
+export function couponOffer(locale: EmailLocale, data: CouponOfferData): EmailContent {
+  const {origin} = siteUrls();
+  const link = new URL(`/${locale}`, origin).toString();
+  const rtl = locale === 'ar';
+  const scope = data.scope === 'package'
+    ? (rtl ? 'الباقات' : 'Packages')
+    : data.scope === 'activity'
+      ? (rtl ? 'الأنشطة' : 'Activities')
+      : data.scope === 'hotel'
+        ? (rtl ? 'الفنادق' : 'Hotels')
+        : (rtl ? 'كل الحجوزات' : 'All bookings');
+  const rows = [
+    [rtl ? 'الخصم' : 'Discount', data.discount],
+    [rtl ? 'ينطبق على' : 'Applies to', `${scope}${data.target ? ` · ${data.target}` : ''}`],
+    [rtl ? 'صالح من' : 'Valid from', data.validFrom ?? (rtl ? 'فوراً' : 'Now')],
+    [rtl ? 'صالح حتى' : 'Valid until', data.validUntil ?? (rtl ? 'بدون تاريخ انتهاء' : 'No expiration date')]
+  ];
+  const details = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:20px 0;border-collapse:collapse;">
+    ${rows.map(([label, value]) => `<tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e8eaf0;color:#69708a;font-size:14px;">${escapeHtml(label)}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #e8eaf0;color:#172044;font-size:14px;font-weight:bold;text-align:${rtl ? 'left' : 'right'};">${escapeHtml(value)}</td>
+    </tr>`).join('')}
+  </table>`;
+  const code = `<p style="margin:20px 0;padding:16px;border:1px dashed #FE9962;border-radius:12px;text-align:center;color:#0F1859;font-size:22px;font-weight:bold;letter-spacing:2px;">${escapeHtml(data.code)}</p>`;
+  const terms = data.terms.trim()
+    ? paragraph(escapeHtml(data.terms))
+    : paragraph(rtl ? 'تُطبق الشروط والأحكام.' : 'Terms and conditions apply.');
+  const button = `<p style="margin:24px 0 0;text-align:center;">
+    <a href="${escapeHtml(link)}" style="display:inline-block;padding:13px 24px;border-radius:999px;background:#FE9962;color:#172044;text-decoration:none;font-weight:bold;">
+      ${rtl ? 'اكتشف رحلتك القادمة' : 'Explore your next trip'}
+    </a>
+  </p>`;
+  return locale === 'ar'
+    ? {
+        subject: 'عرض خاص لك من Torrbi Travel',
+        html: layout(locale, `عرض خاص لك يا ${escapeHtml(data.name)}`, `${paragraph('استخدم هذا الكوبون عند التخطيط لرحلتك القادمة واستمتع بخصم مميز.')}${code}${details}${terms}${button}`)
+      }
+    : {
+        subject: 'A special offer from Torrbi Travel',
+        html: layout(locale, `A special offer for you, ${escapeHtml(data.name)}`, `${paragraph('Use this coupon while planning your next trip and enjoy a special discount.')}${code}${details}${terms}${button}`)
+      };
 }

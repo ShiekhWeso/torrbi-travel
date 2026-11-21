@@ -1,10 +1,11 @@
 import {and, desc, eq, gt, gte, isNull, lte, or} from 'drizzle-orm';
 import {getLocale} from 'next-intl/server';
+import {getTranslations} from 'next-intl/server';
 import {redirect} from 'next/navigation';
 import CopyCouponCode from '@/components/CopyCouponCode';
 import {getCurrentUser} from '@/lib/auth';
 import {db} from '@/lib/db';
-import {coupons} from '@/lib/db/schema';
+import {couponRedemptions, coupons} from '@/lib/db/schema';
 
 const scopeLabels = {
   all: ['All bookings', 'جميع الحجوزات'],
@@ -17,15 +18,21 @@ export default async function CouponsPage() {
   const locale = await getLocale();
   const user = await getCurrentUser();
   if (!user) redirect(`/${locale}/login`);
+  const couponT = await getTranslations({locale, namespace: 'accountCouponUsage'});
   const ar = locale === 'ar';
   const now = new Date();
-  const rows = await db.select().from(coupons).where(and(
-    eq(coupons.active, true),
-    eq(coupons.isPublic, true),
-    or(isNull(coupons.validFrom), lte(coupons.validFrom, now)),
-    or(isNull(coupons.validUntil), gte(coupons.validUntil, now)),
-    or(isNull(coupons.maxUses), gt(coupons.maxUses, coupons.usedCount))
-  )).orderBy(desc(coupons.createdAt));
+  const [rows, redemptions] = await Promise.all([
+    db.select().from(coupons).where(and(
+      eq(coupons.active, true),
+      eq(coupons.isPublic, true),
+      or(isNull(coupons.validFrom), lte(coupons.validFrom, now)),
+      or(isNull(coupons.validUntil), gte(coupons.validUntil, now)),
+      or(isNull(coupons.maxUses), gt(coupons.maxUses, coupons.usedCount))
+    )).orderBy(desc(coupons.createdAt)),
+    db.select({couponId: couponRedemptions.couponId}).from(couponRedemptions)
+      .where(eq(couponRedemptions.userId, user.id))
+  ]);
+  const usedCouponIds = new Set(redemptions.map(({couponId}) => couponId));
   const t = (en: string, arabic: string) => ar ? arabic : en;
 
   return (
@@ -38,6 +45,7 @@ export default async function CouponsPage() {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {rows.map((coupon) => {
+            const alreadyUsed = usedCouponIds.has(coupon.id);
             const title = ar ? coupon.i18n.ar.title : coupon.i18n.en.title;
             const terms = ar ? coupon.i18n.ar.terms : coupon.i18n.en.terms;
             const discount = coupon.discountType === 'percent'
@@ -48,7 +56,12 @@ export default async function CouponsPage() {
               ? coupon.validUntil.toLocaleDateString(ar ? 'ar' : 'en-US', {year: 'numeric', month: 'long', day: 'numeric'})
               : t('No expiry', 'بدون تاريخ انتهاء');
             return (
-              <article key={coupon.id} className="rounded-2xl bg-mist p-5">
+              <article key={coupon.id} className={`rounded-2xl bg-mist p-5 ${alreadyUsed ? 'opacity-60' : ''}`}>
+                {alreadyUsed && (
+                  <span className="mb-3 inline-flex rounded-full bg-brand-warm px-3 py-1 text-xs font-bold text-navy">
+                    {couponT('alreadyUsed')}
+                  </span>
+                )}
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="font-display text-lg font-bold text-navy">{title}</h2>
                   <span className="shrink-0 rounded-full bg-brand-warm px-3 py-1 text-sm font-bold text-navy">{discount}</span>

@@ -218,6 +218,16 @@ export const bookings = pgTable('bookings', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
+export const couponRedemptions = pgTable('coupon_redemptions', {
+  id: serial('id').primaryKey(),
+  couponId: integer('coupon_id').notNull().references(() => coupons.id, {onDelete: 'cascade'}),
+  userId: integer('user_id').notNull().references(() => users.id, {onDelete: 'cascade'}),
+  bookingId: integer('booking_id').references(() => bookings.id, {onDelete: 'set null'}),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => [
+  uniqueIndex('coupon_redemptions_coupon_user_unique').on(table.couponId, table.userId)
+]);
+
 export const activityReviews = pgTable('activity_reviews', {
   id: serial('id').primaryKey(),
   activityId: integer('activity_id').notNull().references(() => activities.id, {onDelete: 'cascade'}),

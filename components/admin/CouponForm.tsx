@@ -68,7 +68,10 @@ export default async function CouponForm({
         <input name="minTotalUsd" type="number" min="0" step="1" defaultValue={coupon?.minTotalUsd ?? ''} className={inp} />
       </Field>
       <Field label={t.maxUses}>
-        <input name="maxUses" type="number" min="1" step="1" defaultValue={coupon?.maxUses ?? ''} className={inp} />
+        <div>
+          <input name="maxUses" type="number" min="1" step="1" defaultValue={coupon?.maxUses ?? ''} className={inp} />
+          <p className="mt-1 text-xs text-navy/60">{t.usedCount}: {coupon?.usedCount ?? 0}</p>
+        </div>
       </Field>
       <Field label={t.validFrom}>
         <input name="validFrom" type="datetime-local" defaultValue={dateTimeValue(coupon?.validFrom)} className={inp} />
