@@ -147,7 +147,7 @@ export default async function ActivityBookPage({
               slug={id}
               date={date}
               adults={adults!}
-              children={children!}
+              childCount={children!}
               infants={infants!}
               carMode={carMode}
               carTier={carTier}

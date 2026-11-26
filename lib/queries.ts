@@ -8,6 +8,7 @@ import {
   destinations,
   activities,
   offers,
+  aboutContent,
   faqs,
   settings,
   contactLinks,
@@ -268,6 +269,12 @@ const readFaqs = unstable_cache(async (locale: string) => {
   }));
 }, ['public-faqs'], {tags: [PUBLIC_CACHE_TAGS.faqs], revalidate: 3600});
 export const getFaqs = cache(readFaqs);
+
+const readAbout = unstable_cache(async (locale: string) => {
+  const [row] = await db.select().from(aboutContent).where(eq(aboutContent.id, 1)).limit(1);
+  return row?.i18n[lang(locale)] ?? null;
+}, ['public-about'], {tags: [PUBLIC_CACHE_TAGS.about], revalidate: 3600});
+export const getAbout = cache(readAbout);
 
 const readContactLinks = unstable_cache(async () =>
   db.select().from(contactLinks)

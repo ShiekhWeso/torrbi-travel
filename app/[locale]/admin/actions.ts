@@ -5,7 +5,7 @@ import {revalidatePath, updateTag} from 'next/cache';
 import bcrypt from 'bcryptjs';
 import {and, desc, eq, inArray, ne, sql} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {admins, destinations, activities, offers, packages, packageDays, faqs, bookings, couponRedemptions, activityReviews, settings, coupons, contactLinks, users, searchRegions, searchDurations, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
+import {admins, destinations, activities, offers, packages, packageDays, faqs, aboutContent, bookings, couponRedemptions, activityReviews, settings, coupons, contactLinks, users, searchRegions, searchDurations, type ContactSection, type ContactType, type CouponScope, type CouponDiscountType} from '@/lib/db/schema';
 import {createSession, destroySession, getSession} from '@/lib/auth';
 import {getLocale} from 'next-intl/server';
 import {headers} from 'next/headers';
@@ -306,6 +306,58 @@ export async function saveFaq(formData: FormData) {
   else await db.insert(faqs).values(data);
   revalidatePublicData(PUBLIC_CACHE_TAGS.faqs);
   await go('/admin/faqs');
+}
+
+export async function saveAbout(formData: FormData) {
+  if (!(await getSession())) await go('/admin/login');
+  const ar = {
+    title: requiredText(str(formData.get('title_ar')), 'Arabic About title', 160),
+    subtitle: requiredText(str(formData.get('subtitle_ar')), 'Arabic About subtitle', 500),
+    storyTitle: requiredText(str(formData.get('storyTitle_ar')), 'Arabic story heading', 160),
+    story: requiredText(str(formData.get('story_ar')), 'Arabic About story', 5000),
+    whatTitle: requiredText(str(formData.get('whatTitle_ar')), 'Arabic offers heading', 160)
+  };
+  const en = {
+    title: boundedText(str(formData.get('title_en')) || ar.title, 'English About title', 160),
+    subtitle: boundedText(str(formData.get('subtitle_en')) || ar.subtitle, 'English About subtitle', 500),
+    storyTitle: boundedText(str(formData.get('storyTitle_en')) || ar.storyTitle, 'English story heading', 160),
+    story: boundedText(str(formData.get('story_en')) || ar.story, 'English About story', 5000),
+    whatTitle: boundedText(str(formData.get('whatTitle_en')) || ar.whatTitle, 'English offers heading', 160)
+  };
+
+  type AboutCardForm = {icon: string; title_en: string; title_ar: string; text_en: string; text_ar: string};
+  let cards: AboutCardForm[];
+  try {
+    const parsed: unknown = JSON.parse(str(formData.get('cards')) || '[]');
+    if (!Array.isArray(parsed) || parsed.some((row) =>
+      typeof row !== 'object' || row === null || Array.isArray(row) ||
+      typeof row.icon !== 'string' || typeof row.title_en !== 'string' ||
+      typeof row.title_ar !== 'string' || typeof row.text_en !== 'string' ||
+      typeof row.text_ar !== 'string'
+    )) throw new Error('Invalid About cards');
+    cards = parsed;
+  } catch (error) {
+    console.error('Failed to parse About cards', error);
+    throw error;
+  }
+  wholeNumber(cards.length, 'About card count', 0, 50);
+  const normalizedCards = cards.map((card, index) => {
+    const icon = requiredText(str(card.icon), `About card ${index + 1} icon`, 60);
+    const titleAr = requiredText(str(card.title_ar), `Arabic About card ${index + 1} title`, 160);
+    const textAr = requiredText(str(card.text_ar), `Arabic About card ${index + 1} text`, 2000);
+    const titleEn = boundedText(str(card.title_en) || titleAr, `English About card ${index + 1} title`, 160);
+    const textEn = boundedText(str(card.text_en) || textAr, `English About card ${index + 1} text`, 2000);
+    return {icon, titleAr, textAr, titleEn, textEn};
+  });
+  const i18n = {
+    ar: {...ar, cards: normalizedCards.map(({icon, titleAr, textAr}) => ({icon, title: titleAr, text: textAr}))},
+    en: {...en, cards: normalizedCards.map(({icon, titleEn, textEn}) => ({icon, title: titleEn, text: textEn}))}
+  };
+
+  await db.insert(aboutContent).values({id: 1, i18n})
+    .onConflictDoUpdate({target: aboutContent.id, set: {i18n}});
+  revalidatePublicData(PUBLIC_CACHE_TAGS.about);
+  await go('/admin/about');
 }
 
 export async function deleteFaq(formData: FormData) {
@@ -840,8 +892,11 @@ export async function saveActivity(formData: FormData) {
   const titleAr = requiredText(f('title_ar'), 'Arabic activity title', 160);
   const city = requiredText(f('city'), 'activity city', 120);
   const slug = validSlug(f('slug'), 'activity slug');
-  const bookingMode = f('bookingMode');
-  if (bookingMode !== 'both' && bookingMode !== 'people' && bookingMode !== 'car') throw new Error('Invalid booking mode');
+  const rawBookingMode = f('bookingMode');
+  const isBookingMode = (value: string): value is 'both' | 'people' | 'car' =>
+    value === 'both' || value === 'people' || value === 'car';
+  if (!isBookingMode(rawBookingMode)) throw new Error('Invalid booking mode');
+  const bookingMode = rawBookingMode;
 
   const data = {
     slug,

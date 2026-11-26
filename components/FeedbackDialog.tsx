@@ -17,17 +17,13 @@ const initialState: FeedbackSubmitState = {};
 export default function FeedbackDialog({open, onClose, pathname, userEmail, triggerRef}: Props) {
   const t = useTranslations('feedback');
   const locale = useLocale();
-  const [pageUrl, setPageUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imagePreview, setImagePreview] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [state, formAction, pending] = useActionState(submitFeedback, initialState);
   const dialogRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setPageUrl(window.location.href);
-  }, [pathname]);
+  const pageUrlRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -115,9 +111,15 @@ export default function FeedbackDialog({open, onClose, pathname, userEmail, trig
                 <span className="material-symbols-outlined" aria-hidden="true">close</span>
               </button>
             </div>
-            <form action={formAction} className="space-y-4">
+            <form
+              action={formAction}
+              onSubmit={() => {
+                if (pageUrlRef.current) pageUrlRef.current.value = window.location.href;
+              }}
+              className="space-y-4"
+            >
               <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
-              <input type="hidden" name="pageUrl" value={pageUrl} />
+              <input ref={pageUrlRef} type="hidden" name="pageUrl" defaultValue={pathname} />
               <input type="hidden" name="imageUrl" value={imageUrl} />
 
               {state.errors?.form && <p className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{state.errors.form}</p>}

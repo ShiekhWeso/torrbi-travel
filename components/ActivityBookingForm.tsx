@@ -9,7 +9,7 @@ type Props = {
   slug: string;
   date: string;
   adults: number;
-  children: number;
+  childCount: number;
   infants: number;
   carMode: boolean;
   carTier: 1 | 2 | 3 | null;
@@ -32,6 +32,8 @@ export default function ActivityBookingForm(props: Props) {
     const key = `activity-booking-notes:${props.slug}`;
     const savedNotes = sessionStorage.getItem(key);
     if (savedNotes != null) {
+      // The note is restored from browser-only storage after hydration.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotes(savedNotes);
       sessionStorage.removeItem(key);
     }
@@ -48,7 +50,7 @@ export default function ActivityBookingForm(props: Props) {
         date: props.date,
         returnDate: null,
         adults: props.adults,
-        children: props.children,
+        children: props.childCount,
         infants: props.infants,
         carMode: props.carMode,
         carTier: props.carTier,
@@ -64,7 +66,7 @@ export default function ActivityBookingForm(props: Props) {
           params.set('tier', String(props.carTier));
         } else {
           params.set('adults', String(props.adults));
-          params.set('children', String(props.children));
+          params.set('children', String(props.childCount));
           params.set('infants', String(props.infants));
         }
         if (props.couponCode) params.set('coupon', props.couponCode);

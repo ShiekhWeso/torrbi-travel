@@ -110,6 +110,20 @@ export const faqs = pgTable('faqs', {
   i18n: jsonb('i18n').$type<Record<Lang, {question: string; answer: string}>>().notNull()
 });
 
+export type AboutLocaleContent = {
+  title: string;
+  subtitle: string;
+  storyTitle: string;
+  story: string;
+  whatTitle: string;
+  cards: {icon: string; title: string; text: string}[];
+};
+
+export const aboutContent = pgTable('about_content', {
+  id: integer('id').primaryKey().default(1),
+  i18n: jsonb('i18n').$type<Record<Lang, AboutLocaleContent>>().notNull()
+});
+
 export const searchRegions = pgTable('search_regions', {
   id: serial('id').primaryKey(),
   slug: text('slug').notNull().unique(),

@@ -6,6 +6,7 @@ export const PUBLIC_CACHE_TAGS = {
   destinations: 'public-destinations',
   activities: 'public-activities',
   offers: 'public-offers',
+  about: 'public-about',
   faqs: 'public-faqs',
   contactLinks: 'public-contact-links'
 } as const;

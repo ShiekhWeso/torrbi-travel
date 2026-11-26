@@ -33,6 +33,7 @@ export default async function PanelLayout({children}: {children: React.ReactNode
     [t.offers, '/admin/offers'],
     [t.coupons, '/admin/coupons'],
     [t.faq, '/admin/faqs'],
+    [t.aboutPage, '/admin/about'],
     [t.contact, '/admin/contact'],
     [t.searchOptions, '/admin/search'],
     ['العملة', '/admin/currency'],
