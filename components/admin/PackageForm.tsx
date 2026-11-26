@@ -1,6 +1,5 @@
 import {savePackage} from '@/app/[locale]/admin/actions';
 import type {destinations as destinationTable, packages, searchRegions} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import FeaturesEditor from '@/components/admin/FeaturesEditor';
 import ItineraryDraftEditor from '@/components/admin/ItineraryDraftEditor';
@@ -12,7 +11,7 @@ type D = Pick<typeof destinationTable.$inferSelect, 'id' | 'slug' | 'i18n'>;
 type R = Pick<typeof searchRegions.$inferSelect, 'slug' | 'i18n'>;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
 
-const SHOW_EN = false; // set to true when English is re-enabled
+const SHOW_EN = false;
 const Field = ({label, children, en = false}: {label: string; children: React.ReactNode; en?: boolean}) => (
   <label className={`block text-sm font-bold text-navy ${en && !SHOW_EN ? 'hidden' : ''}`}>
     {label}
@@ -23,28 +22,36 @@ const Field = ({label, children, en = false}: {label: string; children: React.Re
 const J = (a?: string[]) => (a ?? []).join('\n');
 
 export default async function PackageForm({p, destinations, regions}: {p?: P; destinations: D[]; regions: R[]}) {
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const region = p?.region ?? regions[0]?.slug ?? 'asia';
   const hasRegion = regions.some((item) => item.slug === region);
+  const enFeatures = p?.i18n.en.features ?? [];
+  const arFeatures = p?.i18n.ar.features ?? [];
+  const initialFeatures = Array.from({length: Math.max(enFeatures.length, arFeatures.length)}, (_, i) => ({
+    icon: arFeatures[i]?.icon ?? enFeatures[i]?.icon ?? 'check_circle',
+    title_en: enFeatures[i]?.title ?? '',
+    text_en: enFeatures[i]?.text ?? '',
+    title_ar: arFeatures[i]?.title ?? '',
+    text_ar: arFeatures[i]?.text ?? ''
+  }));
   const area = (name: string, label: string, en?: string[], ar?: string[]) => (
     <>
-      <Field en label={`${label} (EN) - ${t.perLine}`}><textarea name={`${name}_en`} rows={4} defaultValue={J(en)} className={inp} /></Field>
+      <Field en label={`${label} - ${t.perLine}`}><textarea name={`${name}_en`} rows={4} defaultValue={J(en)} className={inp} /></Field>
       <Field label={`${label} - ${t.perLine}`}><textarea name={`${name}_ar`} dir="rtl" rows={4} defaultValue={J(ar)} className={inp} /></Field>
     </>
   );
   return (
     <form action={savePackage} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {p && <input type="hidden" name="id" value={p.id} />}
-      <Field en label={`${t.title} (EN)`}><input name="title_en" defaultValue={p?.i18n.en.title} className={inp} /></Field>
+      <Field en label={t.title}><input name="title_en" defaultValue={p?.i18n.en.title} className={inp} /></Field>
       <Field label={t.title}><input name="title_ar" dir="rtl" defaultValue={p?.i18n.ar.title} required className={inp} /></Field>
-      <Field en label={`${t.intro} (EN)`}><textarea name="intro_en" rows={3} defaultValue={p?.i18n.en.intro} className={inp} /></Field>
+      <Field en label={t.intro}><textarea name="intro_en" rows={3} defaultValue={p?.i18n.en.intro} className={inp} /></Field>
       <Field label={t.intro}><textarea name="intro_ar" dir="rtl" rows={3} defaultValue={p?.i18n.ar.intro} className={inp} /></Field>
       {area('highlights', t.highlights, p?.i18n.en.highlights, p?.i18n.ar.highlights)}
       {area('stay', t.stay, p?.i18n.en.stay, p?.i18n.ar.stay)}
       {area('includes', t.includes, p?.i18n.en.includes, p?.i18n.ar.includes)}
       {area('policies', 'السياسات (العنوان | النص)', p?.i18n.en.policies, p?.i18n.ar.policies)}
-      <FeaturesEditor initial={(p?.i18n.en.features ?? []).map((x, i) => ({icon: x.icon, title_en: x.title, text_en: x.text, title_ar: p?.i18n.ar.features?.[i]?.title ?? '', text_ar: p?.i18n.ar.features?.[i]?.text ?? ''}))} />
+      <FeaturesEditor initial={initialFeatures} />
       {area('excludes', t.excludes, p?.i18n.en.excludes, p?.i18n.ar.excludes)}
       <Field label={t.slug}><input name="slug" defaultValue={p?.slug} required className={inp} /></Field>
       <Field label="الوجهة">
@@ -52,7 +59,7 @@ export default async function PackageForm({p, destinations, regions}: {p?: P; de
           <option value="">{t.none}</option>
           {destinations.map((destination) => (
             <option key={destination.id} value={destination.id}>
-              {destination.i18n[locale === 'ar' ? 'ar' : 'en'].name}
+              {destination.i18n.ar.name}
             </option>
           ))}
         </select>
@@ -62,7 +69,7 @@ export default async function PackageForm({p, destinations, regions}: {p?: P; de
           {!hasRegion && <option value={region}>{region}</option>}
           {regions.map((item) => (
             <option key={item.slug} value={item.slug}>
-              {item.i18n[locale === 'ar' ? 'ar' : 'en'].name}
+              {item.i18n.ar.name}
             </option>
           ))}
         </select>

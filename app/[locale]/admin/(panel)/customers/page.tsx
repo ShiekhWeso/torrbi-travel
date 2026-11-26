@@ -1,5 +1,4 @@
 import {asc, count, desc, eq, isNotNull} from 'drizzle-orm';
-import {getLocale} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
 import {tr} from '@/lib/adminT';
 import {db} from '@/lib/db';
@@ -13,9 +12,7 @@ export default async function CustomersPage({
   const sp = await searchParams;
   const sort = sp.sort === 'oldest' ? 'oldest' : 'newest';
   const nat = sp.nationality?.trim() || '';
-  const locale = await getLocale();
-  const t = tr(locale);
-  const i = locale === 'ar' ? 1 : 0;
+  const t = tr('ar');
 
   const [customers, natRows, [{total}]] = await Promise.all([
     db
@@ -56,14 +53,14 @@ export default async function CustomersPage({
       </p>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="text-sm text-navy/60">{i ? 'الترتيب' : 'Sort'}:</span>
-        <Link href={href('newest', nat)} className={chip(sort === 'newest')}>{i ? 'الأحدث' : 'Newest'}</Link>
-        <Link href={href('oldest', nat)} className={chip(sort === 'oldest')}>{i ? 'الأقدم' : 'Oldest'}</Link>
+        <span className="text-sm text-navy/60">الترتيب:</span>
+        <Link href={href('newest', nat)} className={chip(sort === 'newest')}>الأحدث</Link>
+        <Link href={href('oldest', nat)} className={chip(sort === 'oldest')}>الأقدم</Link>
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <span className="text-sm text-navy/60">{t.nationality}:</span>
-        <Link href={href(sort, '')} className={chip(!nat)}>{i ? 'الكل' : 'All'} ({total})</Link>
+        <Link href={href(sort, '')} className={chip(!nat)}>الكل ({total})</Link>
         {natRows.map((r) => (
           <Link key={r.nationality} href={href(sort, r.nationality!)} className={chip(nat === r.nationality)}>
             {r.nationality} ({r.n})
@@ -92,7 +89,7 @@ export default async function CustomersPage({
                 <td className="px-4 py-3 text-navy/70">{customer.email}</td>
                 <td className="px-4 py-3 text-navy/70">{customer.phone ?? '—'}</td>
                 <td className="px-4 py-3 text-navy/70">{customer.nationality ?? '—'}</td>
-                <td className="px-4 py-3 text-navy/70">{customer.createdAt.toLocaleDateString(locale === 'ar' ? 'ar' : 'en-US')}</td>
+                <td className="px-4 py-3 text-navy/70">{customer.createdAt.toLocaleDateString('ar')}</td>
                 <td className="px-4 py-3 text-navy/70">{customer.bookingsCount}</td>
               </tr>
             ))}

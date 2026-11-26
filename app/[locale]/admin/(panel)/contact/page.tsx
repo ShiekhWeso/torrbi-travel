@@ -1,5 +1,4 @@
 import {Link} from '@/i18n/navigation';
-import {getLocale} from 'next-intl/server';
 import {asc} from 'drizzle-orm';
 import {tr} from '@/lib/adminT';
 import {db} from '@/lib/db';
@@ -8,7 +7,7 @@ import {deleteContactLink, toggleContactLink} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
 export default async function Page() {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   const rows = await db.select().from(contactLinks).orderBy(asc(contactLinks.sort), asc(contactLinks.id));
   const sections = [
     {key: 'social', label: t.social},

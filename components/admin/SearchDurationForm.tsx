@@ -1,26 +1,26 @@
 import {saveSearchDuration} from '@/app/[locale]/admin/actions';
 import type {searchDurations} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 type Duration = typeof searchDurations.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
-const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
-  <label className="block text-sm font-bold text-navy">
+const SHOW_EN = false;
+const Field = ({label, children, en = false}: {label: string; children: React.ReactNode; en?: boolean}) => (
+  <label className={`block text-sm font-bold text-navy ${en && !SHOW_EN ? 'hidden' : ''}`}>
     {label}
     <div className="mt-1 font-normal">{children}</div>
   </label>
 );
 
 export default async function SearchDurationForm({duration}: {duration?: Duration}) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   return (
     <form action={saveSearchDuration} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {duration && <input type="hidden" name="id" value={duration.id} />}
-      <Field label={`${t.durationLabel} (EN)`}>
-        <input name="label_en" defaultValue={duration?.i18n.en.label} required className={inp} />
+      <Field en label={t.durationLabel}>
+        <input name="label_en" defaultValue={duration?.i18n.en.label} className={inp} />
       </Field>
-      <Field label={`${t.durationLabel} (AR)`}>
+      <Field label={t.durationLabel}>
         <input name="label_ar" dir="rtl" defaultValue={duration?.i18n.ar.label} required className={inp} />
       </Field>
       <Field label={t.minDays}>

@@ -1,5 +1,4 @@
 import {Link} from '@/i18n/navigation';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import {asc} from 'drizzle-orm';
 import {db} from '@/lib/db';
@@ -8,7 +7,7 @@ import {deleteActivity} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
 export default async function Page() {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   const rows = await db.select().from(activities).orderBy(asc(activities.sort), asc(activities.id));
   return (
     <div>
@@ -21,7 +20,7 @@ export default async function Page() {
         {rows.map((r) => (
           <div key={r.id} className="flex items-center justify-between gap-4 p-4">
             <div>
-              <div className="font-bold text-navy">{r.i18n.en.title} · {r.i18n.ar.title}</div>
+              <div className="font-bold text-navy">{r.i18n.ar.title}</div>
               <div className="text-xs text-navy/60">{r.slug} {r.published ? '' : t.hidden}</div>
             </div>
             <div className="flex items-center gap-3 text-sm">

@@ -1,26 +1,26 @@
 import {saveSearchRegion} from '@/app/[locale]/admin/actions';
 import type {searchRegions} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 type Region = typeof searchRegions.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
-const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
-  <label className="block text-sm font-bold text-navy">
+const SHOW_EN = false;
+const Field = ({label, children, en = false}: {label: string; children: React.ReactNode; en?: boolean}) => (
+  <label className={`block text-sm font-bold text-navy ${en && !SHOW_EN ? 'hidden' : ''}`}>
     {label}
     <div className="mt-1 font-normal">{children}</div>
   </label>
 );
 
 export default async function SearchRegionForm({region}: {region?: Region}) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   return (
     <form action={saveSearchRegion} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {region && <input type="hidden" name="id" value={region.id} />}
-      <Field label={`${t.regionName} (EN)`}>
-        <input name="name_en" defaultValue={region?.i18n.en.name} required className={inp} />
+      <Field en label={t.regionName}>
+        <input name="name_en" defaultValue={region?.i18n.en.name} className={inp} />
       </Field>
-      <Field label={`${t.regionName} (AR)`}>
+      <Field label={t.regionName}>
         <input name="name_ar" dir="rtl" defaultValue={region?.i18n.ar.name} required className={inp} />
       </Field>
       <Field label={t.slug}>

@@ -1,6 +1,5 @@
 import {notFound} from 'next/navigation';
 import {desc, eq} from 'drizzle-orm';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import {db} from '@/lib/db';
 import {bookings, pageViews, users} from '@/lib/db/schema';
@@ -11,8 +10,7 @@ export default async function CustomerDetails({params}: {params: Promise<{id: st
   const userId = Number(id);
   if (!Number.isInteger(userId) || userId <= 0) notFound();
 
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) notFound();
 
@@ -28,7 +26,7 @@ export default async function CustomerDetails({params}: {params: Promise<{id: st
     usage.discount += booking.discountUsd ?? 0;
     couponUsage.set(booking.couponCode, usage);
   }
-  const dateTime = new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', {
+  const dateTime = new Intl.DateTimeFormat('ar', {
     dateStyle: 'medium',
     timeStyle: 'short'
   });

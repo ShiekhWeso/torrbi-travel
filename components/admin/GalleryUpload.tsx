@@ -42,7 +42,7 @@ export default function GalleryUpload({name, defaultValue, label}: {name: string
                 onClick={() => setImages((current) => current.filter((_, itemIndex) => itemIndex !== index))}
                 className="text-sm font-bold text-red-600 disabled:opacity-50"
               >
-                Remove / حذف
+                حذف
               </button>
             </div>
           ))}
@@ -61,9 +61,9 @@ export default function GalleryUpload({name, defaultValue, label}: {name: string
         }}
       />
       <button type="button" disabled={loading} onClick={() => inputRef.current?.click()} className="rounded-full bg-mist px-4 py-2 text-sm font-bold text-navy disabled:opacity-50">
-        Choose images / اختيار صور
+        اختيار صور
       </button>
-      {loading && <p className="text-sm text-navy/70">Uploading... / جارٍ الرفع...</p>}
+      {loading && <p className="text-sm text-navy/70">جارٍ الرفع...</p>}
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
     </div>
   );

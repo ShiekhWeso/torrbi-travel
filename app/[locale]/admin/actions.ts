@@ -142,7 +142,7 @@ function parsePackageDays(value: unknown) {
       (typeof day.dayNo !== 'string' && typeof day.dayNo !== 'number')) {
       throw new Error('Invalid package itinerary day fields');
     }
-    const titleEn = day.title_en.trim();
+    const titleEn = day.title_en.trim() || day.title_ar.trim();
     const titleAr = day.title_ar.trim();
     const dayNo = Number(day.dayNo);
     if (!Number.isSafeInteger(dayNo) || dayNo < 1 || dayNo > 365 ||
@@ -155,7 +155,7 @@ function parsePackageDays(value: unknown) {
       dayNo,
       stage: day.stage.trim() || null,
       i18n: {
-        en: {title: titleEn, items: lines(day.items_en)},
+        en: {title: titleEn, items: lines(day.items_en).length ? lines(day.items_en) : lines(day.items_ar)},
         ar: {title: titleAr, items: lines(day.items_ar)}
       }
     }];
@@ -183,7 +183,8 @@ export async function saveDestination(formData: FormData) {
     console.error('Failed to parse destination features', error);
     throw error;
   }
-  rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim());
+  rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim())
+    .map((r) => ({...r, title_en: r.title_en.trim() || r.title_ar.trim(), text_en: r.text_en.trim() || r.text_ar.trim()}));
   const slug = validSlug(f('slug'), 'destination slug');
   const image = validImageUrl(f('image'));
   const gallery = imageLines(formData.get('gallery'));
@@ -198,11 +199,11 @@ export async function saveDestination(formData: FormData) {
   if (!Number.isSafeInteger(sort) || sort < 0) throw new Error('Invalid sort order');
   const region = requiredText(f('region') || 'asia', 'destination region', 40);
   if (!/^[a-z0-9-]+$/.test(region)) throw new Error('Invalid destination region');
-  const nameEn = requiredText(f('name_en'), 'English destination name', 160);
+  const nameEn = requiredText(f('name_en') || f('name_ar'), 'English destination name', 160);
   const nameAr = requiredText(f('name_ar'), 'Arabic destination name', 160);
-  const countryEn = boundedText(f('country_en'), 'English country name', 120);
+  const countryEn = boundedText(f('country_en') || f('country_ar'), 'English country name', 120);
   const countryAr = boundedText(f('country_ar'), 'Arabic country name', 120);
-  const aboutEn = boundedText(f('about_en'), 'English destination description', 10000);
+  const aboutEn = boundedText(f('about_en') || f('about_ar'), 'English destination description', 10000);
   const aboutAr = boundedText(f('about_ar'), 'Arabic destination description', 10000);
   if ([f('currency'), f('timezone'), f('temp'), f('language_en'), f('language_ar'), f('visa_en'), f('visa_ar')].some((value) => value.length > 200)) {
     throw new Error('Destination text is too long');
@@ -225,7 +226,7 @@ export async function saveDestination(formData: FormData) {
     published: checked(formData, 'published'),
     sort,
     i18n: {
-      en: {name: nameEn, country: countryEn, about: aboutEn, language: f('language_en'), visa: f('visa_en'), tips: l('tips_en'), features: rows.map((r) => ({icon: r.icon, title: r.title_en.trim(), text: r.text_en.trim()}))},
+      en: {name: nameEn, country: countryEn, about: aboutEn, language: f('language_en') || f('language_ar'), visa: f('visa_en') || f('visa_ar'), tips: l('tips_en').length ? l('tips_en') : l('tips_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_en.trim(), text: r.text_en.trim()}))},
       ar: {name: nameAr, country: countryAr, about: aboutAr, language: f('language_ar'), visa: f('visa_ar'), tips: l('tips_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_ar.trim(), text: r.text_ar.trim()}))}
     }
   };
@@ -255,9 +256,9 @@ export async function saveOffer(formData: FormData) {
   if (until && !validDateOnly(until)) throw new Error('Invalid offer end date');
   const titleEn = requiredText(f('title_en') || f('title_ar'), 'English offer title', 160);
   const titleAr = requiredText(f('title_ar'), 'Arabic offer title', 160);
-  const textEn = boundedText(f('text_en'), 'English offer text', 5000);
+  const textEn = boundedText(f('text_en') || f('text_ar'), 'English offer text', 5000);
   const textAr = boundedText(f('text_ar'), 'Arabic offer text', 5000);
-  const badgeEn = boundedText(f('badge_en'), 'English offer badge', 120);
+  const badgeEn = boundedText(f('badge_en') || f('badge_ar'), 'English offer badge', 120);
   const badgeAr = boundedText(f('badge_ar'), 'Arabic offer badge', 120);
   const data = {
     image,
@@ -289,9 +290,9 @@ export async function saveFaq(formData: FormData) {
   const f = (k: string) => str(formData.get(k));
   if (id !== null && (!Number.isSafeInteger(id) || id < 1)) throw new Error('Invalid FAQ id');
   const sort = wholeNumber(num(formData.get('sort')), 'sort order', 0, 1_000_000, 0)!;
-  const questionEn = requiredText(f('question_en'), 'English FAQ question', 500);
+  const questionEn = requiredText(f('question_en') || f('question_ar'), 'English FAQ question', 500);
   const questionAr = requiredText(f('question_ar'), 'Arabic FAQ question', 500);
-  const answerEn = requiredText(f('answer_en'), 'English FAQ answer', 5000);
+  const answerEn = requiredText(f('answer_en') || f('answer_ar'), 'English FAQ answer', 5000);
   const answerAr = requiredText(f('answer_ar'), 'Arabic FAQ answer', 5000);
   const data = {
     sort,
@@ -338,7 +339,7 @@ export async function saveSearchRegion(formData: FormData) {
   if (rawId !== null && (!Number.isSafeInteger(rawId) || rawId < 1)) throw new Error('Invalid search region id');
   const f = (key: string) => str(formData.get(key));
   const slug = f('slug');
-  const nameEn = f('name_en');
+  const nameEn = f('name_en') || f('name_ar');
   const nameAr = f('name_ar');
   if (slug.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Invalid search region slug');
   if (!nameEn || !nameAr || nameEn.length > 120 || nameAr.length > 120) throw new Error('Invalid search region names');
@@ -373,7 +374,7 @@ export async function saveSearchDuration(formData: FormData) {
   const rawId = num(formData.get('id'));
   if (rawId !== null && (!Number.isSafeInteger(rawId) || rawId < 1)) throw new Error('Invalid search duration id');
   const f = (key: string) => str(formData.get(key));
-  const labelEn = f('label_en');
+  const labelEn = f('label_en') || f('label_ar');
   const labelAr = f('label_ar');
   const minDays = optionalDayBound(formData.get('minDays'), 'minimum days');
   const maxDays = optionalDayBound(formData.get('maxDays'), 'maximum days');
@@ -446,9 +447,9 @@ function couponData(formData: FormData) {
   const activityId = scope === 'activity' ? num(formData.get('activityId')) : null;
   if (packageId !== null && (!Number.isSafeInteger(packageId) || packageId < 1)) throw new Error('Invalid coupon package');
   if (activityId !== null && (!Number.isSafeInteger(activityId) || activityId < 1)) throw new Error('Invalid coupon activity');
-  const titleEn = f('title_en');
+  const titleEn = f('title_en') || f('title_ar');
   const titleAr = f('title_ar');
-  const termsEn = f('terms_en');
+  const termsEn = f('terms_en') || f('terms_ar');
   const termsAr = f('terms_ar');
   if (!titleEn || !titleAr || titleEn.length > 160 || titleAr.length > 160 || termsEn.length > 5000 || termsAr.length > 5000) {
     throw new Error('Invalid coupon text');
@@ -659,8 +660,8 @@ function contactLinkData(formData: FormData) {
     throw new Error('Invalid contact phone number');
   }
   if (!Number.isSafeInteger(sort) || sort < 0) throw new Error('Contact sort order must be a non-negative whole number');
-  const labelEn = str(formData.get('label_en'));
   const labelAr = str(formData.get('label_ar'));
+  const labelEn = str(formData.get('label_en')) || labelAr;
   if (labelEn.length > 120 || labelAr.length > 120) throw new Error('Contact labels are too long');
   return {
     section: section as ContactSection,
@@ -758,7 +759,8 @@ export async function savePackage(formData: FormData) {
     console.error('Failed to parse package features', error);
     throw error;
   }
-  rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim());
+  rows = rows.filter((r) => r.title_en?.trim() || r.title_ar?.trim())
+    .map((r) => ({...r, title_en: r.title_en.trim() || r.title_ar.trim(), text_en: r.text_en.trim() || r.text_ar.trim()}));
   if (rows.some((row) => row.icon.length > 60 || row.title_en.length > 160 || row.title_ar.length > 160 || row.text_en.length > 2000 || row.text_ar.length > 2000)) {
     throw new Error('Package feature text is too long');
   }
@@ -825,6 +827,7 @@ export async function saveActivity(formData: FormData) {
   if (id !== null && (!Number.isSafeInteger(id) || id < 1)) throw new Error('Invalid activity id');
   const f = (k: string) => str(formData.get(k));
   const l = (k: string) => lines(formData.get(k));
+  const le = (k: string) => { const english = l(`${k}_en`); return english.length ? english : l(`${k}_ar`); };
   const priceUsd = wholeNumber(num(formData.get('priceUsd')), 'activity price', 0, 10_000_000);
   const childPriceUsd = wholeNumber(num(formData.get('childPriceUsd')), 'activity child price', 0, 10_000_000);
   const infantPriceUsd = wholeNumber(num(formData.get('infantPriceUsd')), 'activity infant price', 0, 10_000_000);
@@ -853,7 +856,7 @@ export async function saveActivity(formData: FormData) {
     published: checked(formData, 'published'),
     sort,
     i18n: {
-      en: {title: titleEn, description: boundedText(f('description_en'), 'English activity description', 10000), includes: l('includes_en'), highlights: l('highlights_en'), policies: l('policies_en')},
+      en: {title: titleEn, description: boundedText(f('description_en') || f('description_ar'), 'English activity description', 10000), includes: le('includes'), highlights: le('highlights'), policies: le('policies')},
       ar: {title: titleAr, description: boundedText(f('description_ar'), 'Arabic activity description', 10000), includes: l('includes_ar'), highlights: l('highlights_ar'), policies: l('policies_ar')}
     }
   };
@@ -893,7 +896,7 @@ export async function saveDay(formData: FormData) {
     dayNo,
     stage: stage || null,
     i18n: {
-      en: {title: titleEn, items: lines(formData.get('items_en'))},
+      en: {title: titleEn, items: lines(formData.get('items_en')).length ? lines(formData.get('items_en')) : lines(formData.get('items_ar'))},
       ar: {title: titleAr, items: lines(formData.get('items_ar'))}
     }
   };
@@ -987,7 +990,7 @@ export async function saveOfferFromPackage(formData: FormData) {
     validUntil,
     published: checked(formData, 'published'),
     i18n: {
-      en: {title: pkg.i18n.en.title, text: pkg.i18n.en.intro, badge: `-${percent}%`},
+      en: {title: pkg.i18n.en.title || pkg.i18n.ar.title, text: pkg.i18n.en.intro || pkg.i18n.ar.intro, badge: `-${percent}%`},
       ar: {title: pkg.i18n.ar.title, text: pkg.i18n.ar.intro, badge: `-${percent}%`}
     }
   };

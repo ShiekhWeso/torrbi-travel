@@ -1,18 +1,16 @@
 import {desc, eq} from 'drizzle-orm';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import {db} from '@/lib/db';
 import {activities, activityReviews, users} from '@/lib/db/schema';
 import {deleteActivityReview, setActivityReviewHidden} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
-function dateLabel(date: Date, locale: string) {
-  return date.toLocaleDateString(locale === 'ar' ? 'ar' : 'en', {dateStyle: 'medium'});
+function dateLabel(date: Date) {
+  return date.toLocaleDateString('ar', {dateStyle: 'medium'});
 }
 
 export default async function Page() {
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const rows = await db.select({
     review: activityReviews,
     activityI18n: activities.i18n,
@@ -21,7 +19,7 @@ export default async function Page() {
     .innerJoin(activities, eq(activityReviews.activityId, activities.id))
     .innerJoin(users, eq(activityReviews.userId, users.id))
     .orderBy(desc(activityReviews.createdAt));
-  const language = locale === 'ar' ? 'ar' : 'en';
+  const language = 'ar';
 
   return (
     <div>
@@ -47,7 +45,7 @@ export default async function Page() {
                 <td className="px-4 py-3">{customerName}</td>
                 <td className="px-4 py-3 whitespace-nowrap"><span className="text-amber-500">★</span> {review.rating}/5</td>
                 <td className="max-w-md whitespace-pre-wrap px-4 py-3">{review.comment}</td>
-                <td className="whitespace-nowrap px-4 py-3">{dateLabel(review.createdAt, locale)}</td>
+                <td className="whitespace-nowrap px-4 py-3">{dateLabel(review.createdAt)}</td>
                 <td className="px-4 py-3">
                   <form action={setActivityReviewHidden} className="flex items-center gap-3">
                     <span className={review.hidden ? 'text-red-700' : 'text-emerald-700'}>

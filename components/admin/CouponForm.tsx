@@ -1,14 +1,14 @@
 import {createCoupon, updateCoupon} from '@/app/[locale]/admin/actions';
 import type {activities, coupons, packages} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 type C = typeof coupons.$inferSelect;
 type P = Pick<typeof packages.$inferSelect, 'id' | 'i18n'>;
 type A = Pick<typeof activities.$inferSelect, 'id' | 'i18n'>;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
-const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
-  <label className="block text-sm font-bold text-navy">
+const SHOW_EN = false;
+const Field = ({label, children, en = false}: {label: string; children: React.ReactNode; en?: boolean}) => (
+  <label className={`block text-sm font-bold text-navy ${en && !SHOW_EN ? 'hidden' : ''}`}>
     {label}
     <div className="mt-1 font-normal">{children}</div>
   </label>
@@ -29,7 +29,7 @@ export default async function CouponForm({
   pkgs: P[];
   acts: A[];
 }) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   return (
     <form action={coupon ? updateCoupon : createCoupon} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {coupon && <input type="hidden" name="id" value={coupon.id} />}
@@ -46,13 +46,13 @@ export default async function CouponForm({
       <Field label={`${t.target} · ${t.scopePackage}`}>
         <select name="packageId" defaultValue={coupon?.packageId ?? ''} className={inp}>
           <option value="">{t.allPackages}</option>
-          {pkgs.map((p) => <option key={p.id} value={p.id}>{p.i18n.en.title}</option>)}
+          {pkgs.map((p) => <option key={p.id} value={p.id}>{p.i18n.ar.title}</option>)}
         </select>
       </Field>
       <Field label={`${t.target} · ${t.scopeActivity}`}>
         <select name="activityId" defaultValue={coupon?.activityId ?? ''} className={inp}>
           <option value="">{t.allActivities}</option>
-          {acts.map((a) => <option key={a.id} value={a.id}>{a.i18n.en.title}</option>)}
+          {acts.map((a) => <option key={a.id} value={a.id}>{a.i18n.ar.title}</option>)}
         </select>
       </Field>
       <Field label={t.discount}>
@@ -79,16 +79,16 @@ export default async function CouponForm({
       <Field label={t.validUntil}>
         <input name="validUntil" type="datetime-local" defaultValue={dateTimeValue(coupon?.validUntil)} className={inp} />
       </Field>
-      <Field label={`${t.title} (EN)`}>
-        <input name="title_en" defaultValue={coupon?.i18n.en.title} required className={inp} />
+      <Field en label={t.title}>
+        <input name="title_en" defaultValue={coupon?.i18n.en.title} className={inp} />
       </Field>
-      <Field label={`${t.title} (AR)`}>
+      <Field label={t.title}>
         <input name="title_ar" dir="rtl" defaultValue={coupon?.i18n.ar.title} required className={inp} />
       </Field>
-      <Field label={`${t.terms} (EN)`}>
+      <Field en label={t.terms}>
         <textarea name="terms_en" rows={3} defaultValue={coupon?.i18n.en.terms} className={inp} />
       </Field>
-      <Field label={`${t.terms} (AR)`}>
+      <Field label={t.terms}>
         <textarea name="terms_ar" dir="rtl" rows={3} defaultValue={coupon?.i18n.ar.terms} className={inp} />
       </Field>
       <label className="flex items-center gap-2 text-sm font-bold text-navy">

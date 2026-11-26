@@ -1,11 +1,10 @@
 import {db} from '@/lib/db';
 import {activities, packages} from '@/lib/db/schema';
 import CouponForm from '@/components/admin/CouponForm';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 export default async function Page() {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   const [pkgs, acts] = await Promise.all([
     db.select({id: packages.id, i18n: packages.i18n}).from(packages),
     db.select({id: activities.id, i18n: activities.i18n}).from(activities)

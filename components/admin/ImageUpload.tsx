@@ -43,15 +43,15 @@ export default function ImageUpload({name, defaultValue, label}: {name: string; 
       />
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={loading} onClick={() => inputRef.current?.click()} className="rounded-full bg-mist px-4 py-2 text-sm font-bold text-navy disabled:opacity-50">
-          Choose image / اختيار صورة
+          اختيار صورة
         </button>
         {value && (
           <button type="button" disabled={loading} onClick={() => {setValue(''); setError('');}} className="rounded-full border border-navy/20 px-4 py-2 text-sm font-bold text-navy disabled:opacity-50">
-            Remove / حذف
+            حذف
           </button>
         )}
       </div>
-      {loading && <p className="text-sm text-navy/70">Uploading... / جارٍ الرفع...</p>}
+      {loading && <p className="text-sm text-navy/70">جارٍ الرفع...</p>}
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
     </div>
   );

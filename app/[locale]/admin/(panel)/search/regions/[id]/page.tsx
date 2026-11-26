@@ -3,11 +3,10 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
 import {searchRegions} from '@/lib/db/schema';
 import SearchRegionForm from '@/components/admin/SearchRegionForm';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 export default async function Page({params}: {params: Promise<{id: string}>}) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   const {id} = await params;
   const regionId = Number(id);
   if (!Number.isSafeInteger(regionId) || regionId < 1) notFound();

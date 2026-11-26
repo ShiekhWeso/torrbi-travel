@@ -1,4 +1,3 @@
-import {getLocale} from 'next-intl/server';
 import {and, asc, desc, eq, ilike, or, sql} from 'drizzle-orm';
 import {tr} from '@/lib/adminT';
 import {db} from '@/lib/db';
@@ -24,9 +23,8 @@ const first = (value: string | string[] | undefined) => Array.isArray(value) ? v
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
 export default async function Page({searchParams}: {searchParams: Promise<SearchParams>}) {
-  const [locale, search] = await Promise.all([getLocale(), searchParams]);
-  const t = tr(locale);
-  const ar = locale === 'ar';
+  const search = await searchParams;
+  const t = tr('ar');
   const statusParam = first(search.status);
   const kindParam = first(search.kind);
   const sortParam = first(search.sort);
@@ -265,7 +263,7 @@ export default async function Page({searchParams}: {searchParams: Promise<Search
                 </div>
                 <div>
                   <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${s.cls}`}>
-                    <span aria-hidden="true">{s.icon}</span>{s[ar ? 'ar' : 'en']}
+                    <span aria-hidden="true">{s.icon}</span>{s.ar}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 md:justify-end">

@@ -1,17 +1,12 @@
 'use client';
 
 import {useEffect} from 'react';
-import {useLocale} from 'next-intl';
 
 export default function UnsavedChangesGuard() {
-  const ar = useLocale() === 'ar';
-
   useEffect(() => {
     const dirty = new Set<HTMLFormElement>();
     const isDirty = () => [...dirty].some((f) => f.isConnected);
-    const msg = ar
-      ? 'لديك تغييرات غير محفوظة. هل تريد المغادرة بدون حفظ؟'
-      : 'You have unsaved changes. Leave without saving?';
+    const msg = 'لديك تغييرات غير محفوظة. هل تريد المغادرة بدون حفظ؟';
     let guarded = false;
 
     const onInput = (e: Event) => {
@@ -64,7 +59,7 @@ export default function UnsavedChangesGuard() {
       window.removeEventListener('popstate', onPop);
       window.removeEventListener('beforeunload', onBeforeUnload);
     };
-  }, [ar]);
+  }, []);
 
   return null;
 }

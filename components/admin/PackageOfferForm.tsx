@@ -1,6 +1,5 @@
 import {saveOfferFromPackage} from '@/app/[locale]/admin/actions';
 import type {offers, packages} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 type O = typeof offers.$inferSelect;
@@ -15,22 +14,20 @@ const Field = ({label, children}: {label: string; children: React.ReactNode}) =>
 const day = (d?: Date | null) => d?.toISOString().slice(0, 10) ?? '';
 
 export default async function PackageOfferForm({o, pkgs}: {o?: O; pkgs: P[]}) {
-  const locale = await getLocale();
-  const t = tr(locale);
-  const ar = locale === 'ar';
+  const t = tr('ar');
   return (
     <form action={saveOfferFromPackage} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {o && <input type="hidden" name="id" value={o.id} />}
       <Field label={t.linkedPackage}>
         <select name="packageId" required defaultValue={o?.packageId ?? ''} className={inp}>
           <option value="" disabled>—</option>
-          {pkgs.map((p) => <option key={p.id} value={p.id}>{p.i18n[ar ? 'ar' : 'en'].title}</option>)}
+          {pkgs.map((p) => <option key={p.id} value={p.id}>{p.i18n.ar.title}</option>)}
         </select>
       </Field>
-      <Field label={ar ? 'نسبة الخصم %' : 'Discount %'}>
+      <Field label="نسبة الخصم %">
         <input name="discountPercent" type="number" min={1} max={90} required defaultValue={o?.discountPercent ?? ''} className={inp} />
       </Field>
-      <Field label={ar ? 'بداية العرض' : 'Starts'}>
+      <Field label="بداية العرض">
         <input name="validFrom" type="date" defaultValue={day(o?.validFrom)} className={inp} />
       </Field>
       <Field label={t.validUntil}>

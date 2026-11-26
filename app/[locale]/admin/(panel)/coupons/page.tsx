@@ -1,5 +1,4 @@
 import {Link} from '@/i18n/navigation';
-import {getLocale} from 'next-intl/server';
 import {asc} from 'drizzle-orm';
 import {tr} from '@/lib/adminT';
 import {db} from '@/lib/db';
@@ -7,20 +6,19 @@ import {activities, coupons, packages} from '@/lib/db/schema';
 import {deleteCoupon, toggleCoupon} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
-function dateLabel(date: Date | null, locale: string) {
-  return date ? date.toLocaleString(locale === 'ar' ? 'ar' : 'en', {dateStyle: 'medium', timeStyle: 'short'}) : '—';
+function dateLabel(date: Date | null) {
+  return date ? date.toLocaleString('ar', {dateStyle: 'medium', timeStyle: 'short'}) : '—';
 }
 
 export default async function Page() {
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const [rows, pkgs, acts] = await Promise.all([
     db.select().from(coupons).orderBy(asc(coupons.createdAt), asc(coupons.id)),
     db.select({id: packages.id, title: packages.i18n}).from(packages),
     db.select({id: activities.id, title: activities.i18n}).from(activities)
   ]);
-  const packageTitles = new Map(pkgs.map((p) => [p.id, p.title.en.title]));
-  const activityTitles = new Map(acts.map((a) => [a.id, a.title.en.title]));
+  const packageTitles = new Map(pkgs.map((p) => [p.id, p.title.ar.title]));
+  const activityTitles = new Map(acts.map((a) => [a.id, a.title.ar.title]));
   const targetLabel = (coupon: typeof rows[number]) => {
     if (coupon.scope === 'package') {
       return `${t.scopePackage}: ${coupon.packageId ? packageTitles.get(coupon.packageId) ?? t.scopePackage : t.allPackages}`;
@@ -57,7 +55,7 @@ export default async function Page() {
                 <td className="px-4 py-3">{targetLabel(coupon)}</td>
                 <td className="px-4 py-3">{coupon.discountValue}{coupon.discountType === 'percent' ? '%' : ' USD'}</td>
                 <td className="px-4 py-3">{coupon.usedCount} / {coupon.maxUses ?? t.unlimited}</td>
-                <td className="px-4 py-3">{dateLabel(coupon.validFrom, locale)} – {dateLabel(coupon.validUntil, locale)}</td>
+                <td className="px-4 py-3">{dateLabel(coupon.validFrom)} – {dateLabel(coupon.validUntil)}</td>
                 <td className="px-4 py-3">
                   <form action={toggleCoupon}>
                     <input type="hidden" name="id" value={coupon.id} />

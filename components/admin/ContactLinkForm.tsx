@@ -3,23 +3,22 @@
 import {useState} from 'react';
 import {saveContactLink} from '@/app/[locale]/admin/actions';
 import type {contactLinks, ContactSection, ContactType} from '@/lib/db/schema';
-import {useLocale} from 'next-intl';
 import {tr} from '@/lib/adminT';
 
 type ContactLink = typeof contactLinks.$inferSelect;
 const socialTypes: ContactType[] = ['instagram', 'facebook', 'tiktok', 'x', 'snapchat', 'youtube', 'linkedin'];
 const directTypes: ContactType[] = ['whatsapp', 'phone', 'email', 'address', 'hours'];
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
-const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
-  <label className="block text-sm font-bold text-navy">
+const SHOW_EN = false;
+const Field = ({label, children, en = false}: {label: string; children: React.ReactNode; en?: boolean}) => (
+  <label className={`block text-sm font-bold text-navy ${en && !SHOW_EN ? 'hidden' : ''}`}>
     {label}
     <div className="mt-1 font-normal">{children}</div>
   </label>
 );
 
 export default function ContactLinkForm({link}: {link?: ContactLink}) {
-  const locale = useLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const [section, setSection] = useState<ContactSection>(link?.section ?? 'social');
   const types = section === 'social' ? socialTypes : directTypes;
 
@@ -45,10 +44,10 @@ export default function ContactLinkForm({link}: {link?: ContactLink}) {
       <Field label={t.value}>
         <input name="value" defaultValue={link?.value} required className={inp} />
       </Field>
-      <Field label={`${t.label} (EN)`}>
+      <Field en label={t.label}>
         <input name="label_en" defaultValue={link?.i18n?.en?.label} className={inp} />
       </Field>
-      <Field label={`${t.label} (AR)`}>
+      <Field label={t.label}>
         <input name="label_ar" dir="rtl" defaultValue={link?.i18n?.ar?.label} className={inp} />
       </Field>
       <Field label={t.sort}>

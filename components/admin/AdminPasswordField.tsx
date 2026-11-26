@@ -1,11 +1,10 @@
 'use client';
 
 import {useState} from 'react';
-import {useLocale} from 'next-intl';
 import {tr} from '@/lib/adminT';
 
 export default function AdminPasswordField({name, required = true}: {name: string; required?: boolean}) {
-  const t = tr(useLocale());
+  const t = tr('ar');
   const [value, setValue] = useState('');
   const [generated, setGenerated] = useState(false);
   const [copied, setCopied] = useState(false);

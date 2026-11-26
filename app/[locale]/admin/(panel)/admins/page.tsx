@@ -11,7 +11,7 @@ export default async function AdminsPage() {
   const [locale, session] = await Promise.all([getLocale(), getSession()]);
   if (!session) redirect(`/${locale}/admin/login`);
   if (!isOwner(session)) redirect(`/${locale}/admin`);
-  const t = tr(locale);
+  const t = tr('ar');
   const rows = await db.select({
     id: admins.id,
     email: admins.email,
@@ -38,7 +38,7 @@ export default async function AdminsPage() {
                   </span>
                   <span className="text-navy/60">
                     {t.lastLogin}: {admin.lastLoginAt
-                      ? new Intl.DateTimeFormat(locale, {dateStyle: 'medium', timeStyle: 'short'}).format(admin.lastLoginAt)
+                      ? new Intl.DateTimeFormat('ar', {dateStyle: 'medium', timeStyle: 'short'}).format(admin.lastLoginAt)
                       : t.never}
                   </span>
                   <span className="text-navy/60">

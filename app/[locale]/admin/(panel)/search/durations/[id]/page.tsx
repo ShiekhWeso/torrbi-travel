@@ -3,11 +3,10 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/lib/db';
 import {searchDurations} from '@/lib/db/schema';
 import SearchDurationForm from '@/components/admin/SearchDurationForm';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 export default async function Page({params}: {params: Promise<{id: string}>}) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   const {id} = await params;
   const durationId = Number(id);
   if (!Number.isSafeInteger(durationId) || durationId < 1) notFound();

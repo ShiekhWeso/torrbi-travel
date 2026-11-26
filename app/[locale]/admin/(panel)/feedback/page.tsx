@@ -14,7 +14,7 @@ const first = (value: string | string[] | undefined) => Array.isArray(value) ? v
 
 export default async function FeedbackPage({searchParams}: {searchParams: Promise<SearchParams>}) {
   const [locale, search] = await Promise.all([getLocale(), searchParams]);
-  const t = tr(locale);
+  const t = tr('ar');
   const statusParam = first(search.status);
   const status: StatusFilter = statuses.includes(statusParam as StatusFilter) ? statusParam as StatusFilter : 'new';
   const requestedPage = first(search.page) ?? '';
@@ -86,7 +86,7 @@ export default async function FeedbackPage({searchParams}: {searchParams: Promis
 
       <div className="space-y-3">
         {rows.length === 0 && (
-          <p className="rounded-2xl bg-snow p-6 text-navy/60">{t.feedbackAll === 'All' ? 'No feedback in this list.' : 'لا توجد ملاحظات في هذه القائمة.'}</p>
+          <p className="rounded-2xl bg-snow p-6 text-navy/60">لا توجد ملاحظات في هذه القائمة.</p>
         )}
         {rows.map(({item, senderName, senderEmail}) => {
           const sender = senderName || senderEmail || item.email || t.feedbackGuest;
@@ -98,7 +98,7 @@ export default async function FeedbackPage({searchParams}: {searchParams: Promis
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${typeClass(item.type)}`}>{typeLabel(item.type)}</span>
-                    <span className="text-xs text-navy/50">{item.createdAt.toLocaleString(locale === 'ar' ? 'ar' : 'en')}</span>
+                    <span className="text-xs text-navy/50">{item.createdAt.toLocaleString('ar')}</span>
                   </div>
                   <p className="break-words font-bold text-navy">{item.title}</p>
                   <p className="mt-1 truncate text-sm text-navy/60">{t.feedbackSender}: {sender}</p>

@@ -4,11 +4,10 @@ import {db} from '@/lib/db';
 import {packages, packageDays, destinations, searchRegions} from '@/lib/db/schema';
 import PackageForm from '@/components/admin/PackageForm';
 import DayForm from '@/components/admin/DayForm';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 export default async function Page({params}: {params: Promise<{id: string}>}) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   const {id} = await params;
   const pid = Number(id);
   const [p] = await db.select().from(packages).where(eq(packages.id, pid)).limit(1);

@@ -9,7 +9,7 @@ import {logout} from '../actions';
 export default async function AdminAccountPage({searchParams}: {searchParams: Promise<{changed?: string}>}) {
   const [locale, session, params] = await Promise.all([getLocale(), getSession(), searchParams]);
   if (!session) redirect(`/${locale}/admin/login`);
-  const t = tr(locale);
+  const t = tr('ar');
   return (
     <main className="min-h-screen bg-mist px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-6">

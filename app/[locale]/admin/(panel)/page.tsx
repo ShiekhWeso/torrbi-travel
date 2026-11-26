@@ -2,13 +2,11 @@ import {and, count, desc, eq, gte, lt, sql} from 'drizzle-orm';
 import {Link} from '@/i18n/navigation';
 import {db} from '@/lib/db';
 import {bookings, packages, destinations, offers, pageViews, users} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import {bookingRef} from '@/lib/bookingRef';
 
 export default async function Dashboard() {
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const tomorrow = new Date(today.getTime() + 86400000);
@@ -138,7 +136,7 @@ export default async function Dashboard() {
               <div key={page.path} className="flex items-center justify-between gap-4 p-4">
                 <span className="break-all text-navy">{page.path}</span>
                 <span className="shrink-0 text-sm font-bold text-navy/70">
-                  {page.visits} {page.visits === 1 ? (locale === 'ar' ? 'زيارة واحدة' : 'visit') : (locale === 'ar' ? 'زيارات' : 'visits')}
+                  {page.visits} {page.visits === 1 ? 'زيارة واحدة' : 'زيارات'}
                 </span>
               </div>
             ))}

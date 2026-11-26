@@ -1,7 +1,6 @@
 'use client';
 
 import {useRef, useState} from 'react';
-import {useLocale} from 'next-intl';
 import {tr} from '@/lib/adminT';
 
 type DraftDay = {
@@ -15,10 +14,10 @@ type DraftDay = {
 };
 
 const inp = 'w-full rounded-lg border border-navy/20 bg-mist px-3 py-2 text-sm text-navy';
+const SHOW_EN = false;
 
 export default function ItineraryDraftEditor() {
-  const locale = useLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const nextKey = useRef(0);
   const [days, setDays] = useState<DraftDay[]>([]);
   const serializedDays = JSON.stringify(days.map(({key: _key, ...day}) => day));
@@ -76,33 +75,34 @@ export default function ItineraryDraftEditor() {
               />
             </label>
             <label className="block text-sm font-bold text-navy">
-              {t.title} (EN)
+              {t.title}
               <input
                 value={day.title_en}
                 onChange={(event) => updateDay(day.key, {title_en: event.target.value})}
-                className={`${inp} mt-1`}
+                className={`${inp} mt-1 ${SHOW_EN ? '' : 'hidden'}`}
               />
             </label>
             <label className="block text-sm font-bold text-navy">
-              {t.title} (AR)
+              {t.title}
               <input
                 dir="rtl"
+                required
                 value={day.title_ar}
                 onChange={(event) => updateDay(day.key, {title_ar: event.target.value})}
                 className={`${inp} mt-1`}
               />
             </label>
             <label className="block text-sm font-bold text-navy">
-              {t.items} (EN) - {t.perLine}
+              {t.items} - {t.perLine}
               <textarea
                 rows={3}
                 value={day.items_en}
                 onChange={(event) => updateDay(day.key, {items_en: event.target.value})}
-                className={`${inp} mt-1`}
+                className={`${inp} mt-1 ${SHOW_EN ? '' : 'hidden'}`}
               />
             </label>
             <label className="block text-sm font-bold text-navy">
-              {t.items} (AR) - {t.perLine}
+              {t.items} - {t.perLine}
               <textarea
                 dir="rtl"
                 rows={3}

@@ -1,12 +1,11 @@
 'use client';
 
 import {useActionState} from 'react';
-import {useLocale} from 'next-intl';
 import {tr} from '@/lib/adminT';
 import {changeOwnAdminPassword, signOutAdminOnAllDevices} from '@/app/[locale]/admin/account-actions';
 
 export default function AdminAccountForm({mustChangePassword}: {mustChangePassword: boolean}) {
-  const t = tr(useLocale());
+  const t = tr('ar');
   const [error, action, pending] = useActionState(changeOwnAdminPassword, null);
   const input = 'mt-1 w-full rounded-xl border border-navy/15 bg-white px-3 py-2 font-normal';
 

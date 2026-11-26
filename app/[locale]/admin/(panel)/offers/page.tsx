@@ -1,5 +1,4 @@
 import {Link} from '@/i18n/navigation';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import {asc} from 'drizzle-orm';
 import {db} from '@/lib/db';
@@ -8,8 +7,7 @@ import {deleteOffer} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
 export default async function Page() {
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const rows = await db.select().from(offers).orderBy(asc(offers.sort), asc(offers.id));
   return (
     <div>
@@ -17,7 +15,7 @@ export default async function Page() {
         <h1 className="font-display text-3xl text-navy">{t.offers}</h1>
         <div className="flex gap-2">
           <Link href="/admin/offers/new-package" className="rounded-full bg-brand-warm px-5 py-2 text-sm font-bold text-navy">
-            {locale === 'ar' ? '+ عرض من باقة' : '+ Offer from package'}
+            + عرض من باقة
           </Link>
           <Link href="/admin/offers/new" className="rounded-full bg-navy px-5 py-2 text-sm font-bold text-snow">{t.add}</Link>
         </div>
@@ -27,7 +25,7 @@ export default async function Page() {
         {rows.map((r) => (
           <div key={r.id} className="flex items-center justify-between gap-4 p-4">
             <div>
-              <div className="font-bold text-navy">{r.i18n.en.title} · {r.i18n.ar.title}</div>
+              <div className="font-bold text-navy">{r.i18n.ar.title}</div>
               <div className="text-xs text-navy/60">{r.published ? '' : t.hidden}</div>
             </div>
             <div className="flex items-center gap-3 text-sm">

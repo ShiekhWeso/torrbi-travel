@@ -4,14 +4,12 @@ import {db} from '@/lib/db';
 import {activities, bookings, couponRedemptions, coupons, packages, users} from '@/lib/db/schema';
 import CouponForm from '@/components/admin/CouponForm';
 import CouponEmailSender from '@/components/admin/CouponEmailSender';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 import {bookingRef} from '@/lib/bookingRef';
 import {Link} from '@/i18n/navigation';
 
 export default async function Page({params}: {params: Promise<{id: string}>}) {
-  const locale = await getLocale();
-  const t = tr(locale);
+  const t = tr('ar');
   const {id} = await params;
   const couponId = Number(id);
   if (!Number.isInteger(couponId) || couponId < 1) notFound();
@@ -40,7 +38,7 @@ export default async function Page({params}: {params: Promise<{id: string}>}) {
       <h1 className="mb-6 font-display text-3xl text-navy">{t.editCoupon}</h1>
       <CouponForm coupon={coupon} pkgs={pkgs} acts={acts} />
       <section className="mt-8 rounded-2xl bg-snow p-6">
-        <h2 className="mb-4 font-display text-2xl text-navy">{t.sendCouponByEmail} / إرسال الكوبون بالبريد</h2>
+        <h2 className="mb-4 font-display text-2xl text-navy">{t.sendCouponByEmail}</h2>
         <CouponEmailSender couponId={coupon.id} customers={customers} usedUserIds={usedUserIds} />
       </section>
       <section className="mt-8">
@@ -73,7 +71,7 @@ export default async function Page({params}: {params: Promise<{id: string}>}) {
                       {booking.status === 'pending' ? t.pending : booking.status === 'confirmed' ? t.confirmed : booking.status === 'cancelled' ? t.cancelled : booking.status}
                     </td>
                     <td className="px-4 py-3 text-navy/70">{booking.discountUsd == null ? '—' : `-$${booking.discountUsd} USD`}</td>
-                    <td className="px-4 py-3 text-navy/70">{booking.createdAt.toLocaleDateString(locale === 'ar' ? 'ar' : 'en-US')}</td>
+                    <td className="px-4 py-3 text-navy/70">{booking.createdAt.toLocaleDateString('ar')}</td>
                   </tr>
                 ))}
               </tbody>

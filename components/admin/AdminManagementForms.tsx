@@ -1,7 +1,6 @@
 'use client';
 
 import {useActionState} from 'react';
-import {useLocale} from 'next-intl';
 import {tr} from '@/lib/adminT';
 import AdminPasswordField from '@/components/admin/AdminPasswordField';
 import ConfirmButton from '@/components/admin/ConfirmButton';
@@ -14,7 +13,7 @@ import {
 } from '@/app/[locale]/admin/(panel)/admins/actions';
 
 export function AddAdminForm() {
-  const t = tr(useLocale());
+  const t = tr('ar');
   const [error, action, pending] = useActionState(createAdmin, null);
   return (
     <form action={action} className="space-y-4 rounded-2xl bg-snow p-5 shadow-sm">
@@ -39,7 +38,7 @@ export function AddAdminForm() {
 }
 
 export function AdminRowActions({id, role, isSelf}: {id: number; role: 'owner' | 'staff'; isSelf: boolean}) {
-  const t = tr(useLocale());
+  const t = tr('ar');
   const [error, resetAction, pending] = useActionState(resetAdminPassword, null);
   return (
     <div className="mt-4 space-y-3 border-t border-navy/10 pt-4">

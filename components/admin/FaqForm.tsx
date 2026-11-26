@@ -1,32 +1,32 @@
 import {saveFaq} from '@/app/[locale]/admin/actions';
 import type {faqs} from '@/lib/db/schema';
-import {getLocale} from 'next-intl/server';
 import {tr} from '@/lib/adminT';
 
 type F = typeof faqs.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
-const Field = ({label, children}: {label: string; children: React.ReactNode}) => (
-  <label className="block text-sm font-bold text-navy">
+const SHOW_EN = false;
+const Field = ({label, children, en = false}: {label: string; children: React.ReactNode; en?: boolean}) => (
+  <label className={`block text-sm font-bold text-navy ${en && !SHOW_EN ? 'hidden' : ''}`}>
     {label}
     <div className="mt-1 font-normal">{children}</div>
   </label>
 );
 
 export default async function FaqForm({faq}: {faq?: F}) {
-  const t = tr(await getLocale());
+  const t = tr('ar');
   return (
     <form action={saveFaq} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {faq && <input type="hidden" name="id" value={faq.id} />}
-      <Field label={`${t.question} (EN)`}>
-        <input name="question_en" defaultValue={faq?.i18n.en.question} required className={inp} />
+      <Field en label={t.question}>
+        <input name="question_en" defaultValue={faq?.i18n.en.question} className={inp} />
       </Field>
-      <Field label={`${t.question} (AR)`}>
+      <Field label={t.question}>
         <input name="question_ar" dir="rtl" defaultValue={faq?.i18n.ar.question} required className={inp} />
       </Field>
-      <Field label={`${t.answer} (EN)`}>
-        <textarea name="answer_en" rows={4} defaultValue={faq?.i18n.en.answer} required className={inp} />
+      <Field en label={t.answer}>
+        <textarea name="answer_en" rows={4} defaultValue={faq?.i18n.en.answer} className={inp} />
       </Field>
-      <Field label={`${t.answer} (AR)`}>
+      <Field label={t.answer}>
         <textarea name="answer_ar" dir="rtl" rows={4} defaultValue={faq?.i18n.ar.answer} required className={inp} />
       </Field>
       <Field label={t.sort}>

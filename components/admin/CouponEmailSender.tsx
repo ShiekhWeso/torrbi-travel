@@ -21,8 +21,7 @@ export default function CouponEmailSender({
   usedUserIds: number[];
 }) {
   const locale = useLocale();
-  const t = tr(locale);
-  const ar = locale === 'ar';
+  const t = tr('ar');
   const [mode, setMode] = useState<'all' | 'selected'>('all');
   const [query, setQuery] = useState('');
   const [nationality, setNationality] = useState('');
@@ -44,9 +43,7 @@ export default function CouponEmailSender({
     ? customers.filter(({id}) => !used.has(id)).length
     : selectedCount);
   const selectedOutsideShown = [...selectedIds].filter((id) => !shown.some(({id: shownId}) => shownId === id));
-  const messageCount = (count: number) => ar
-    ? `هل تريد إرسال هذا الكوبون إلى ${count} عميل؟`
-    : `Send this coupon to ${count} customer${count === 1 ? '' : 's'}?`;
+  const messageCount = (count: number) => `هل تريد إرسال هذا الكوبون إلى ${count} عميل؟`;
   const toggleShown = (checked: boolean) => {
     setSelectedIds((previous) => {
       const next = new Set(previous);
@@ -90,7 +87,7 @@ export default function CouponEmailSender({
               onChange={(event) => setNationality(event.target.value)}
               className="w-full rounded-lg border border-navy/20 bg-white px-3 py-2 text-sm text-navy"
             >
-              <option value="">{t.nationality}: {ar ? 'الكل' : 'All'}</option>
+              <option value="">{t.nationality}: الكل</option>
               {nationalities.map((value) => <option key={value} value={value}>{value}</option>)}
             </select>
           </div>
@@ -135,7 +132,7 @@ export default function CouponEmailSender({
         </div>
       )}
 
-      <p className="text-sm text-navy/70">{t.emailsWillBeSent}: <b className="text-navy">{emailCount}</b> {ar ? '(الحد الأقصى 100)' : '(maximum 100)'}</p>
+      <p className="text-sm text-navy/70">{t.emailsWillBeSent}: <b className="text-navy">{emailCount}</b> (الحد الأقصى 100)</p>
       <ConfirmButton
         className="rounded-full bg-navy px-6 py-2 font-bold text-white disabled:opacity-60"
         disabled={pending || emailCount === 0}

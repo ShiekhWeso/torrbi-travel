@@ -12,6 +12,7 @@ const ICONS = [
 export type FeatureRow = {icon: string; title_en: string; text_en: string; title_ar: string; text_ar: string};
 
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
+const SHOW_EN = false;
 
 export default function FeaturesEditor({initial}: {initial: FeatureRow[]}) {
   const [rows, setRows] = useState<FeatureRow[]>(initial);
@@ -21,7 +22,7 @@ export default function FeaturesEditor({initial}: {initial: FeatureRow[]}) {
 
   return (
     <div className="space-y-3 md:col-span-2">
-      <p className="text-sm font-bold text-navy">Key info (icon + title + text) / المعلومات الأساسية</p>
+      <p className="text-sm font-bold text-navy">المعلومات الأساسية</p>
       <input type="hidden" name="features" value={JSON.stringify(rows)} />
       {rows.map((r, i) => (
         <div key={i} className="rounded-xl border border-navy/10 p-3">
@@ -30,17 +31,17 @@ export default function FeaturesEditor({initial}: {initial: FeatureRow[]}) {
               type="button"
               onClick={() => setOpen(open === i ? null : i)}
               className="flex h-12 w-12 items-center justify-center rounded-xl bg-mist"
-              title="Choose icon"
+              title="اختر أيقونة"
             >
               <span className="material-symbols-outlined text-sky">{r.icon}</span>
             </button>
             <div className="space-y-2">
-              <input className={inp} placeholder="Title (EN)" value={r.title_en} onChange={(e) => set(i, {title_en: e.target.value})} />
-              <input className={inp} placeholder="Text (EN)" value={r.text_en} onChange={(e) => set(i, {text_en: e.target.value})} />
+              <input className={`${inp} ${SHOW_EN ? '' : 'hidden'}`} placeholder="العنوان" value={r.title_en} onChange={(e) => set(i, {title_en: e.target.value})} />
+              <input className={`${inp} ${SHOW_EN ? '' : 'hidden'}`} placeholder="النص" value={r.text_en} onChange={(e) => set(i, {text_en: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <input className={inp} dir="rtl" placeholder="العنوان (AR)" value={r.title_ar} onChange={(e) => set(i, {title_ar: e.target.value})} />
-              <input className={inp} dir="rtl" placeholder="النص (AR)" value={r.text_ar} onChange={(e) => set(i, {text_ar: e.target.value})} />
+              <input className={inp} dir="rtl" placeholder="العنوان" value={r.title_ar} onChange={(e) => set(i, {title_ar: e.target.value})} />
+              <input className={inp} dir="rtl" placeholder="النص" value={r.text_ar} onChange={(e) => set(i, {text_ar: e.target.value})} />
             </div>
           </div>
           {open === i && (
@@ -63,7 +64,7 @@ export default function FeaturesEditor({initial}: {initial: FeatureRow[]}) {
             onClick={() => setRows(rows.filter((_, j) => j !== i))}
             className="mt-2 text-sm font-bold text-red-600"
           >
-            Remove / حذف
+            حذف
           </button>
         </div>
       ))}
@@ -72,7 +73,7 @@ export default function FeaturesEditor({initial}: {initial: FeatureRow[]}) {
         onClick={() => setRows([...rows, {icon: 'check_circle', title_en: '', text_en: '', title_ar: '', text_ar: ''}])}
         className="rounded-full bg-mist px-5 py-2 text-sm font-bold text-navy hover:bg-sky-light/40"
       >
-        + Add item / إضافة
+        + إضافة
       </button>
     </div>
   );

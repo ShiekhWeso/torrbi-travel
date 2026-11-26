@@ -1,7 +1,5 @@
 'use client';
 
-import {useLocale} from 'next-intl';
-
 export default function ConfirmButton({
   className,
   children,
@@ -15,10 +13,7 @@ export default function ConfirmButton({
   type?: 'button' | 'submit';
   disabled?: boolean;
 }) {
-  const ar = useLocale() === 'ar';
-  const text = message
-    ? ar ? message.ar : message.en
-    : ar ? 'هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to delete this? This cannot be undone.';
+  const text = message?.ar ?? 'هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.';
   return (
     <button
       type={type}
