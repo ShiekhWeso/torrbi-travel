@@ -206,8 +206,8 @@ export default function Hero({
             ))}
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-3 border-t border-navy/10 pt-4 sm:grid-cols-3">
-            {([['v1', 'lock'], ['v2', 'confirmation_number'], ['v3', 'translate']] as const).map(([k, icon]) => (
+          <div className="mt-5 grid grid-cols-1 gap-3 border-t border-navy/10 pt-4 sm:grid-cols-2">
+            {([['v1', 'lock'], ['v2', 'confirmation_number'] /* , ['v3', 'translate'] */] as const).map(([k, icon]) => (
               <div key={k} className="flex items-center gap-2 text-xs font-bold text-navy/70">
                 <span className="material-symbols-outlined text-[20px] text-sky">{icon}</span>
                 {v(`${k}.title`)}

@@ -253,7 +253,7 @@ export async function saveOffer(formData: FormData) {
   const sort = wholeNumber(num(formData.get('sort')), 'sort order', 0, 1_000_000, 0)!;
   if (packageId !== null && (!Number.isSafeInteger(packageId) || packageId < 1)) throw new Error('Invalid offer package');
   if (until && !validDateOnly(until)) throw new Error('Invalid offer end date');
-  const titleEn = requiredText(f('title_en'), 'English offer title', 160);
+  const titleEn = requiredText(f('title_en') || f('title_ar'), 'English offer title', 160);
   const titleAr = requiredText(f('title_ar'), 'Arabic offer title', 160);
   const textEn = boundedText(f('text_en'), 'English offer text', 5000);
   const textAr = boundedText(f('text_ar'), 'Arabic offer text', 5000);
@@ -742,6 +742,7 @@ export async function savePackage(formData: FormData) {
   }
   const f = (k: string) => str(formData.get(k));
   const l = (k: string) => lines(formData.get(k));
+  const le = (k: string) => { const v = l(`${k}_en`); return v.length ? v : l(`${k}_ar`); };
   type FRow = {icon: string; title_en: string; text_en: string; title_ar: string; text_ar: string};
   let rows: FRow[] = [];
   try {
@@ -772,7 +773,7 @@ export async function savePackage(formData: FormData) {
   const cover = validImageUrl(f('cover'));
   const gallery = imageLines(formData.get('gallery'));
   const sort = wholeNumber(num(formData.get('sort')), 'sort order', 0, 1_000_000, 0)!;
-  const titleEn = requiredText(f('title_en'), 'English package title', 160);
+  const titleEn = requiredText(f('title_en') || f('title_ar'), 'English package title', 160);
   const titleAr = requiredText(f('title_ar'), 'Arabic package title', 160);
   let newDays: ReturnType<typeof parsePackageDays> = [];
   if (id === null) {
@@ -800,7 +801,7 @@ export async function savePackage(formData: FormData) {
     published: checked(formData, 'published'),
     sort,
     i18n: {
-      en: {title: titleEn, intro: boundedText(f('intro_en'), 'English package introduction', 5000), stay: l('stay_en'), includes: l('includes_en'), excludes: l('excludes_en'), highlights: l('highlights_en'), policies: l('policies_en'), features: rows.map((r) => ({icon: r.icon, title: r.title_en.trim(), text: r.text_en.trim()}))},
+      en: {title: titleEn, intro: boundedText((f('intro_en') || f('intro_ar')), 'English package introduction', 5000), stay: le('stay'), includes: le('includes'), excludes: le('excludes'), highlights: le('highlights'), policies: le('policies'), features: rows.map((r) => ({icon: r.icon, title: r.title_en.trim(), text: r.text_en.trim()}))},
       ar: {title: titleAr, intro: boundedText(f('intro_ar'), 'Arabic package introduction', 5000), stay: l('stay_ar'), includes: l('includes_ar'), excludes: l('excludes_ar'), highlights: l('highlights_ar'), policies: l('policies_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_ar.trim(), text: r.text_ar.trim()}))}
     }
   };
@@ -832,7 +833,7 @@ export async function saveActivity(formData: FormData) {
   const carPrice3Usd = wholeNumber(num(formData.get('carPrice3Usd')), 'car price', 0, 10_000_000);
   const durationHours = wholeNumber(num(formData.get('durationHours')), 'activity duration', 1, 1000);
   const sort = wholeNumber(num(formData.get('sort')), 'sort order', 0, 1_000_000, 0)!;
-  const titleEn = requiredText(f('title_en'), 'English activity title', 160);
+  const titleEn = requiredText(f('title_en') || f('title_ar'), 'English activity title', 160);
   const titleAr = requiredText(f('title_ar'), 'Arabic activity title', 160);
   const city = requiredText(f('city'), 'activity city', 120);
   const slug = validSlug(f('slug'), 'activity slug');
@@ -883,7 +884,7 @@ export async function saveDay(formData: FormData) {
   const packageId = validId(formData.get('packageId'), 'package');
   const f = (k: string) => str(formData.get(k));
   const dayNo = wholeNumber(num(formData.get('dayNo')), 'day number', 1, 365, 1)!;
-  const titleEn = requiredText(f('title_en'), 'English day title', 160);
+  const titleEn = requiredText(f('title_en') || f('title_ar'), 'English day title', 160);
   const titleAr = requiredText(f('title_ar'), 'Arabic day title', 160);
   const stage = f('stage');
   if (stage.length > 120) throw new Error('Invalid day stage');

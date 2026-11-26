@@ -15,6 +15,8 @@ const items = [
   {id: 'contact', key: 'contact'}
 ] as const;
 
+const SHOW_LANG_SWITCH = false; // set to true when English is re-enabled
+
 function LocaleSwitchLink({
   pathname,
   locale,
@@ -135,7 +137,9 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               </div>
             )}
           </div>
-          <Suspense fallback={null}>
+
+          {SHOW_LANG_SWITCH && (
+            <Suspense fallback={null}>
             <LocaleSwitchLink
               pathname={pathname}
               locale={other}
@@ -146,6 +150,7 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               <span>{ar ? 'EN' : 'عربي'}</span>
             </LocaleSwitchLink>
           </Suspense>
+          )}
 
           {!hideAuth && user && (
             <Link
@@ -217,16 +222,19 @@ export default function Header({hideAuth = false}: {hideAuth?: boolean}) {
               </Link>
             </>
           )}
-          <Suspense fallback={null}>
+          {SHOW_LANG_SWITCH && (
+            <Suspense fallback={null}>
             <LocaleSwitchLink
               pathname={pathname}
               locale={other}
-              onClick={() => setOpen(false)}
-              className="py-3 text-sm font-bold text-sky"
+              ariaLabel={h('switchLang')}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-mist text-navy text-sm font-bold hover:bg-sky-light/40 transition-colors"
             >
-              {ar ? 'English' : 'العربية'}
+              <span className="material-symbols-outlined text-[18px] text-sky">language</span>
+              <span>{ar ? 'EN' : 'عربي'}</span>
             </LocaleSwitchLink>
           </Suspense>
+          )}
         </nav>
       )}
     </header>

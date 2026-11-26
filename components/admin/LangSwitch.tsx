@@ -6,6 +6,10 @@ export default function LangSwitch() {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
+
+  const SHOW_LANG_SWITCH = false; // set to true when English is re-enabled
+  if (!SHOW_LANG_SWITCH) return null;
+
   return (
     <button
       type="button"
