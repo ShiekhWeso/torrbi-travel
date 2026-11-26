@@ -9,7 +9,6 @@ import About from '@/components/About';
 import Contact from '@/components/Contact';
 import PlanWithUs from '@/components/PlanWithUs';
 import Footer from '@/components/Footer';
-import WhatsAppFloat from '@/components/WhatsAppFloat';
 import {getDestinations, getFaqs, getSearchDurations} from '@/lib/queries';
 import Offers from '@/components/Offers';
 
@@ -81,7 +80,6 @@ export default async function HomePage({params}: {params: Promise<{locale: strin
         <Contact />
       </main>
       <Footer />
-      <WhatsAppFloat />
     </>
   );
 }

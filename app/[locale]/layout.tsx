@@ -8,6 +8,7 @@ import {getRates} from '@/lib/queries';
 import CurrencyProvider from '@/components/CurrencyProvider';
 import Tracker from '@/components/Tracker';
 import FeedbackFloat from '@/components/FeedbackFloat';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
 import {getCurrentUser} from '@/lib/auth';
 import '../globals.css';
 
@@ -56,6 +57,7 @@ export default async function LocaleLayout({
             <Tracker />
             {children}
             <FeedbackFloat userEmail={currentUser?.email} />
+            <WhatsAppFloat userName={currentUser?.name ?? undefined} />
           </CurrencyProvider>
         </NextIntlClientProvider>
       </body>

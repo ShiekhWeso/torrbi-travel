@@ -3,6 +3,7 @@
 import {useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useSearchParams} from 'next/navigation';
+import {useRouter} from '@/i18n/navigation';
 import {waLink} from '@/lib/whatsapp';
 import {useCurrency} from '@/components/CurrencyProvider';
 import {saveBookingFromBox, validateCoupon} from '@/lib/booking-actions';
@@ -28,6 +29,7 @@ export default function BookingBox({id, slug, title, days, adult, child, infant,
   const t = useTranslations('packageDetail');
   const p = useTranslations('packages');
   const sp = useSearchParams();
+  const router = useRouter();
   const {cur, money} = useCurrency();
   const ar = useLocale() === 'ar';
   const L = (en: string, a: string) => (ar ? a : en);
@@ -90,7 +92,8 @@ export default function BookingBox({id, slug, title, days, adult, child, infant,
     }
   };
 
-  const send = () => {
+    const send = () => {
+    if (!user) return router.push('/login');
     if (!date) return setErr(L('Choose a travel date', 'اختر تاريخ السفر'));
     setErr('');
     if (user) {
@@ -114,24 +117,23 @@ export default function BookingBox({id, slug, title, days, adult, child, infant,
       });
     }
     const langName = lang === 'ar' ? L('Arabic', 'العربية') : L('English', 'الإنجليزية');
+
+    const fullName = `${firstName} ${lastName}`.trim();
+    const pax = [
+      `${adults} بالغ`,
+      children > 0 ? `${children} طفل` : '',
+      infants > 0 ? `${infants} رضيع` : ''
+    ].filter(Boolean).join(' / ');
     const text = ar
-      ? [
-          'مرحباً TORRBI TRAVEL، أرغب في التحقق من تفاصيل الباقة التالية:',
-          `الباقة: ${title}`,
-          `تاريخ السفر: ${date}`,
-          `تاريخ العودة: ${ret}`,
-          `البالغين: ${adults}`,
-          `الأطفال (2-11): ${children}`,
-          `الرضع (أقل من سنتين): ${infants}`,
-          `اللغة: ${langName}`,
-          `الإجمالي التقريبي: ${total}${cur !== 'USD' ? ` (≈ ${usdTotal} USD)` : ''}`,
-          `الاسم الأول: ${firstName}`,
-          `اسم العائلة: ${lastName}`,
-          `الهاتف: ${phone}`,
-          `الجنسية: ${nationality}`,
-          currentCoupon ? `كوبون: ${currentCoupon.code} (-$${currentCoupon.discountUsd})` : '',
-          notes.trim() ? `ملاحظات: ${notes.trim()}` : ''
-        ]
+        ? [
+          'مرحباً TORRBI TRAVEL ',
+          'أرغب في التحقق من تفاصيل الباقة التالية:',
+          '',
+          `*الباقة:* ${title}`,
+          `*الاسم:* ${fullName}`,
+          `*المسافرون:* ${pax}`,
+          `*تاريخ السفر:* \u2066${date}\u2069`
+        ].map((l) => '\u200F' + l)
       : [
           'Hello TORRBI TRAVEL, I would like to check the details of this package:',
           `Package: ${title}`,

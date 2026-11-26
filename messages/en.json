@@ -18,6 +18,7 @@
     "switchLang": "Switch language"
   },
   "wa": {
+    "name": "Name: {name}",
     "book": "Hello TORRBI TRAVEL, I would like to book a trip to: {name}",
     "plan": "Hello TORRBI TRAVEL, I would like help planning a trip.",
     "flight": "Hello TORRBI TRAVEL, I would like to book a flight. From: {from}. To: {to}. Date: {date}. {pax}."

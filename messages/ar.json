@@ -18,6 +18,7 @@
     "switchLang": "تغيير اللغة"
   },
   "wa": {
+    "name": "Name: {name}",
     "book": "مرحباً TORRBI TRAVEL، أرغب في حجز رحلة إلى: {name}",
     "plan": "مرحباً TORRBI TRAVEL، أحتاج مساعدة في تخطيط رحلتي.",
     "flight": "مرحباً TORRBI TRAVEL، أرغب في حجز تذكرة طيران. من: {from}. إلى: {to}. التاريخ: {date}. {pax}."
