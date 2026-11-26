@@ -43,6 +43,22 @@ export default async function ActivityForm({a}: {a?: A}) {
       <Field label={t.carPrice1}><input name="carPrice1Usd" type="number" defaultValue={a?.carPrice1Usd ?? ''} className={inp} /></Field>
       <Field label={t.carPrice2}><input name="carPrice2Usd" type="number" defaultValue={a?.carPrice2Usd ?? ''} className={inp} /></Field>
       <Field label={t.carPrice3}><input name="carPrice3Usd" type="number" defaultValue={a?.carPrice3Usd ?? ''} className={inp} /></Field>
+      
+      <div className="md:col-span-2">
+        <p className="text-sm font-bold text-navy">نوع الحجز</p>
+        <div className="mt-2 flex flex-wrap gap-6 text-sm font-bold text-navy">
+          <label className="flex items-center gap-2">
+            <input type="radio" name="bookingMode" value="both" defaultChecked={(a?.bookingMode ?? 'both') === 'both'} /> أشخاص وسيارة
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="bookingMode" value="people" defaultChecked={a?.bookingMode === 'people'} /> أشخاص فقط
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="bookingMode" value="car" defaultChecked={a?.bookingMode === 'car'} /> سيارة فقط
+          </label>
+        </div>
+      </div>
+      
       <Field label={t.duration}><input name="durationHours" type="number" defaultValue={a?.durationHours ?? ''} className={inp} /></Field>
       <Field label={t.sort}><input name="sort" type="number" defaultValue={a?.sort ?? 0} className={inp} /></Field>
       <label className="flex items-center gap-2 text-sm font-bold text-navy">

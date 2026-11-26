@@ -840,6 +840,9 @@ export async function saveActivity(formData: FormData) {
   const titleAr = requiredText(f('title_ar'), 'Arabic activity title', 160);
   const city = requiredText(f('city'), 'activity city', 120);
   const slug = validSlug(f('slug'), 'activity slug');
+  const bookingMode = f('bookingMode');
+  if (bookingMode !== 'both' && bookingMode !== 'people' && bookingMode !== 'car') throw new Error('Invalid booking mode');
+
   const data = {
     slug,
     city,
@@ -851,6 +854,7 @@ export async function saveActivity(formData: FormData) {
     carPrice1Usd,
     carPrice2Usd,
     carPrice3Usd,
+    bookingMode,
     durationHours,
     featured: checked(formData, 'featured'),
     published: checked(formData, 'published'),

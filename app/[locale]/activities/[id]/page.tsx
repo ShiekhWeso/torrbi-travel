@@ -106,7 +106,7 @@ export default async function ActivityPage({params}: {params: Promise<{locale: s
               </section>
             </div>
             <Suspense fallback={null}>
-              <ActivityBookingBox id={activity.databaseId} slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} carPrice1={activity.carPrice1} carPrice2={activity.carPrice2} carPrice3={activity.carPrice3} policies={activity.policies} user={user} />
+              <ActivityBookingBox id={activity.databaseId} slug={activity.id} adult={activity.price} child={activity.childPrice} infant={activity.infantPrice} carPrice1={activity.carPrice1} carPrice2={activity.carPrice2} carPrice3={activity.carPrice3} bookingMode={activity.bookingMode} policies={activity.policies} user={user} />
             </Suspense>
           </div>
           <section className="mt-10 rounded-3xl bg-mist p-6 lg:p-8" aria-labelledby="activity-reviews-title">

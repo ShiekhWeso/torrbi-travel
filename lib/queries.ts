@@ -198,6 +198,7 @@ function activityView(row: ActivityRow, locale: Lang) {
     carPrice1: row.carPrice1Usd,
     carPrice2: row.carPrice2Usd,
     carPrice3: row.carPrice3Usd,
+    bookingMode: row.bookingMode,
     durationHours: row.durationHours,
     featured: row.featured,
     ...row.i18n[locale]

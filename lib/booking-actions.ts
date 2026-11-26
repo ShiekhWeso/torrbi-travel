@@ -179,7 +179,9 @@ export async function saveBookingFromBox(input: BookingBoxInput) {
     infantPrice = pkg.infantPriceUsd;
   } else {
     const [activity] = await db.select().from(activities).where(eq(activities.slug, slug)).limit(1);
-    if (!activity) throw new Error(`Activity not found: ${slug}`);
+    if ((input.carMode && activity.bookingMode === 'people') || (!input.carMode && activity.bookingMode === 'car')) {
+      throw new Error('Booking type is not available for this activity');
+    }
     title = activity.i18n[lang].title;
     activityId = activity.id;
     couponTargetId = activity.id;

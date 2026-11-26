@@ -76,6 +76,7 @@ export const activities = pgTable('activities', {
   carPrice1Usd: integer('car_price_1_usd'),
   carPrice2Usd: integer('car_price_2_usd'),
   carPrice3Usd: integer('car_price_3_usd'),
+  bookingMode: text('booking_mode').$type<'both' | 'people' | 'car'>().notNull().default('both'),
   durationHours: integer('duration_hours'),
   featured: boolean('featured').notNull().default(false),
   published: boolean('published').notNull().default(true),
