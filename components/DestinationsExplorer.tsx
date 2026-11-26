@@ -17,8 +17,7 @@ export default function DestinationsExplorer({
   regions: RegionOption[];
 }) {
   const f = useTranslations('packagesPage');
-  const d = useTranslations('destinations');
-  const locale = useLocale();
+  const locale = useLocale(); 
   const [q, setQ] = useState('');
   const [region, setRegion] = useState('all');
 
@@ -91,12 +90,6 @@ export default function DestinationsExplorer({
                     <span className="material-symbols-outlined text-[20px] leading-none">arrow_forward</span>
                   </span>
                 </div>
-              </Link>
-              <Link
-                href={`/${locale}/packages?destination=${encodeURIComponent(x.id)}`}
-                className="inline-flex w-full items-center justify-center rounded-full border-2 border-navy px-4 py-2.5 text-sm font-bold text-navy transition-colors hover:bg-navy hover:text-snow"
-              >
-                {d('browsePackages')}
               </Link>
             </div>
           ))}

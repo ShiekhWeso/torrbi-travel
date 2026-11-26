@@ -4,7 +4,7 @@ import {notFound} from 'next/navigation';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import {getDestinations, getDestination, getPackage} from '@/lib/queries';
+import {getDestinations, getDestination} from '@/lib/queries';
 import {waLink} from '@/lib/whatsapp';
 
 export async function generateStaticParams() {
@@ -15,9 +15,8 @@ export async function generateStaticParams() {
 export default async function DestinationPage({params}: {params: Promise<{locale: string; id: string}>}) {
   const {locale, id} = await params;
   setRequestLocale(locale);
-  const [dest, matchingPackage, t, dd, w] = await Promise.all([
+  const [dest, t, dd, w] = await Promise.all([
     getDestination(locale, id),
-    getPackage(locale, id),
     getTranslations('destinations'),
     getTranslations('destinationDetail'),
     getTranslations('wa')
@@ -27,7 +26,6 @@ export default async function DestinationPage({params}: {params: Promise<{locale
 
   const name = dest.name;
   const country = dest.country;
-  const hasPackage = matchingPackage !== null;
   const month = (m: number) =>
     new Intl.DateTimeFormat(locale, {month: 'long'}).format(new Date(2026, m - 1, 1));
 
@@ -153,14 +151,6 @@ export default async function DestinationPage({params}: {params: Promise<{locale
               >
                 {dd('browsePackages')}
               </Link>
-              {hasPackage && (
-                <Link
-                  href={`/${locale}/packages/${id}`}
-                  className="mt-3 flex w-full items-center justify-center rounded-full border-2 border-snow/40 py-3 font-bold transition-colors hover:bg-snow hover:text-navy"
-                >
-                  {dd('viewPackage', {name})}
-                </Link>
-              )}
             </aside>
           </div>
         </div>
