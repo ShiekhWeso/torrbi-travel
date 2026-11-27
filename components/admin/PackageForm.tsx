@@ -51,7 +51,10 @@ export default async function PackageForm({p, destinations}: {p?: P; destination
       {area('policies', 'السياسات (العنوان | النص)', p?.i18n.en.policies, p?.i18n.ar.policies)}
       <FeaturesEditor initial={initialFeatures} />
       {area('excludes', t.excludes, p?.i18n.en.excludes, p?.i18n.ar.excludes)}
-      <Field label={t.slug}><input name="slug" defaultValue={p?.slug} required className={inp} /></Field>
+      <Field label={t.slug}>
+        <input name="slug" dir="ltr" maxLength={120} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="bali-tour" title="حروف إنجليزية صغيرة وأرقام وشرطات فقط، بدون مسافات أو عربي. مثال: bali-tour" defaultValue={p?.slug} required className={inp} />
+        <p className="mt-1 text-xs text-navy/50">رابط الصفحة: حروف إنجليزية صغيرة وأرقام وشرطات فقط (مثال: bali-tour)</p>
+      </Field>
       
       <Field label="الوجهة">
         <select name="destinationId" required defaultValue={p?.destinationId?.toString() ?? ''} className={inp}>

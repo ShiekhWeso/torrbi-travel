@@ -68,7 +68,7 @@ export const activities = pgTable('activities', {
   id: serial('id').primaryKey(),
   slug: text('slug').notNull().unique(),
   city: text('city').notNull(),
-  image: text('image'),
+  destinationId: integer('destination_id').references(() => destinations.id, {onDelete: 'set null'}),  image: text('image'),
   gallery: jsonb('gallery').$type<string[]>().notNull().default([]),
   priceUsd: integer('price_usd'),
   childPriceUsd: integer('child_price_usd'),

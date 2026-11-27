@@ -242,7 +242,7 @@ export async function saveDestination(formData: FormData) {
     await db.update(destinations).set(data).where(eq(destinations.id, id));
     await db.update(packages).set({region}).where(eq(packages.destinationId, id));
   } else await db.insert(destinations).values(data);  
-  revalidatePublicData(PUBLIC_CACHE_TAGS.destinations, PUBLIC_CACHE_TAGS.packages);
+  revalidatePublicData(PUBLIC_CACHE_TAGS.destinations, PUBLIC_CACHE_TAGS.packages, PUBLIC_CACHE_TAGS.activities);
   await go('/admin/destinations');
 }
 
@@ -908,7 +908,12 @@ export async function saveActivity(formData: FormData) {
   const sort = wholeNumber(num(formData.get('sort')), 'sort order', 0, 1_000_000, 0)!;
   const titleEn = requiredText(f('title_en') || f('title_ar'), 'English activity title', 160);
   const titleAr = requiredText(f('title_ar'), 'Arabic activity title', 160);
-  const city = requiredText(f('city'), 'activity city', 120);
+  
+  const destinationId = validId(formData.get('destinationId'), 'activity destination');
+  const [destination] = await db.select({i18n: destinations.i18n}).from(destinations).where(eq(destinations.id, destinationId)).limit(1);
+  if (!destination) throw new Error('Invalid activity destination');
+  const city = destination.i18n.ar.name;
+
   const slug = validSlug(f('slug'), 'activity slug');
   const rawBookingMode = f('bookingMode');
   const isBookingMode = (value: string): value is 'both' | 'people' | 'car' =>
@@ -919,6 +924,7 @@ export async function saveActivity(formData: FormData) {
   const data = {
     slug,
     city,
+    destinationId,
     image: validImageUrl(f('image')),
     gallery: imageLines(formData.get('gallery')),
     priceUsd,

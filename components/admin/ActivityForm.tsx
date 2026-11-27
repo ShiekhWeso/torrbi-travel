@@ -3,6 +3,9 @@ import type {activities} from '@/lib/db/schema';
 import {tr} from '@/lib/adminT';
 import ImageUpload from '@/components/admin/ImageUpload';
 import GalleryUpload from '@/components/admin/GalleryUpload';
+import {asc} from 'drizzle-orm';
+import {db} from '@/lib/db';
+import {destinations} from '@/lib/db/schema';
 
 type A = typeof activities.$inferSelect;
 const inp = 'w-full rounded-lg border border-navy/20 bg-snow px-3 py-2 text-sm text-navy';
@@ -17,6 +20,7 @@ const J = (a?: string[]) => (a ?? []).join('\n');
 
 export default async function ActivityForm({a}: {a?: A}) {
   const t = tr('ar');
+    const destinationRows = await db.select({id: destinations.id, i18n: destinations.i18n}).from(destinations).orderBy(asc(destinations.sort), asc(destinations.id));
   const area = (name: string, label: string, en?: string[], ar?: string[]) => (
     <>
       <Field en label={`${label} - ${t.perLine}`}><textarea name={`${name}_en`} rows={4} defaultValue={J(en)} className={inp} /></Field>
@@ -33,8 +37,20 @@ export default async function ActivityForm({a}: {a?: A}) {
       {area('highlights', t.highlights, a?.i18n.en.highlights, a?.i18n.ar.highlights)}
       {area('includes', t.includes, a?.i18n.en.includes, a?.i18n.ar.includes)}
       {area('policies', 'السياسات (العنوان | النص)', a?.i18n.en.policies, a?.i18n.ar.policies)}
-      <Field label={t.slug}><input name="slug" defaultValue={a?.slug} required className={inp} /></Field>
-      <Field label={t.city}><input name="city" defaultValue={a?.city} required className={inp} /></Field>
+      <Field label={t.slug}>
+        <input name="slug" dir="ltr" maxLength={120} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="bali-tour" title="حروف إنجليزية صغيرة وأرقام وشرطات فقط، بدون مسافات أو عربي. مثال: bali-tour" defaultValue={a?.slug} required className={inp} />
+        <p className="mt-1 text-xs text-navy/50">رابط الصفحة: حروف إنجليزية صغيرة وأرقام وشرطات فقط (مثال: bali-tour)</p>
+      </Field>
+
+      <Field label="الوجهة">
+        <select name="destinationId" required defaultValue={a?.destinationId?.toString() ?? ''} className={inp}>
+          <option value="">اختر الوجهة</option>
+          {destinationRows.map((d) => (
+            <option key={d.id} value={d.id}>{d.i18n.ar.name}</option>
+          ))}
+        </select>
+      </Field>
+
       <ImageUpload name="image" defaultValue={a?.image ?? ''} label={t.image} />
       <GalleryUpload name="gallery" defaultValue={(a?.gallery ?? []).join('\n')} label={t.gallery} />
       <Field label="سعر البالغ (بالدولار)"><input name="priceUsd" type="number" defaultValue={a?.priceUsd ?? ''} className={inp} /></Field>

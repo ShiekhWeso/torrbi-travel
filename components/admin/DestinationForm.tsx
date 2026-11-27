@@ -43,7 +43,10 @@ export default async function DestinationForm({d}: {d?: D}) {
   return (
     <form action={saveDestination} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {d && <input type="hidden" name="id" value={d.id} />}
-      <Field label={t.slug}><input name="slug" defaultValue={d?.slug} required className={inp} /></Field>
+      <Field label={t.slug}>
+        <input name="slug" dir="ltr" maxLength={120} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="bali-tour" title="حروف إنجليزية صغيرة وأرقام وشرطات فقط، بدون مسافات أو عربي. مثال: bali-tour" defaultValue={d?.slug} required className={inp} />
+        <p className="mt-1 text-xs text-navy/50">رابط الصفحة: حروف إنجليزية صغيرة وأرقام وشرطات فقط (مثال: bali-tour)</p>
+      </Field>
 
       <Field label={t.region}>
         <select name="region" required defaultValue={d?.region ?? ''} className={inp}>

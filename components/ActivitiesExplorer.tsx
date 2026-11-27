@@ -60,7 +60,7 @@ export default function ActivitiesExplorer({items}: {items: ActivityCard[]}) {
 
         {cities.length > 1 && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('City', 'المدينة')}</span>
+            <span className="me-2 text-xs font-bold uppercase tracking-wider text-navy/50">{t('Destination', 'الوجهة')}</span>
             <button onClick={() => setCity('all')} className={chip(city === 'all')}>{t('All', 'الكل')}</button>
             {cities.map((c) => (
               <button key={c} onClick={() => setCity(c)} className={chip(city === c)}>{c}</button>

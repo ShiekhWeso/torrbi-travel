@@ -186,11 +186,12 @@ export const getDestination = cache(readDestination);
 
 type ActivityRow = typeof activities.$inferSelect;
 
-function activityView(row: ActivityRow, locale: Lang) {
+function activityView(row: ActivityRow, locale: Lang, destination: DestinationRow | null = null) {
   return {
     id: row.slug,
     databaseId: row.id,
-    city: row.city,
+    city: destination?.i18n[locale].name ?? row.city,
+    destinationSlug: destination?.slug ?? null,
     image: row.image ?? '',
     gallery: row.gallery,
     price: row.priceUsd,
@@ -207,19 +208,21 @@ function activityView(row: ActivityRow, locale: Lang) {
 }
 
 const readActivities = unstable_cache(async (locale: string) => {
-  const rows = await db.select().from(activities)
+  const rows = await db.select({activity: activities, destination: destinations}).from(activities)
+    .leftJoin(destinations, eq(activities.destinationId, destinations.id))
     .where(eq(activities.published, true))
     .orderBy(asc(activities.sort), asc(activities.id));
-  return rows.map((row) => activityView(row, lang(locale)));
+  return rows.map(({activity, destination}) => activityView(activity, lang(locale), destination));
 }, ['public-activities'], {tags: [PUBLIC_CACHE_TAGS.activities], revalidate: 3600});
 export const getActivities = cache(readActivities);
 export type Activity = Awaited<ReturnType<typeof getActivities>>[number];
 
 const readActivity = unstable_cache(async (locale: string, slug: string): Promise<Activity | null> => {
-  const [row] = await db.select().from(activities)
+  const [row] = await db.select({activity: activities, destination: destinations}).from(activities)
+    .leftJoin(destinations, eq(activities.destinationId, destinations.id))
     .where(and(eq(activities.published, true), eq(activities.slug, slug)))
     .limit(1);
-  return row ? activityView(row, lang(locale)) : null;
+  return row ? activityView(row.activity, lang(locale), row.destination) : null;
 }, ['public-activity'], {tags: [PUBLIC_CACHE_TAGS.activities], revalidate: 3600});
 export const getActivity = cache(readActivity);
 
