@@ -1,4 +1,8 @@
 import {saveDestination} from '@/app/[locale]/admin/actions';
+import {asc} from 'drizzle-orm';
+import {db} from '@/lib/db';
+import {searchRegions} from '@/lib/db/schema';
+import {getCountries, findCountryByName} from '@/lib/countries';
 import type {destinations} from '@/lib/db/schema';
 import {tr} from '@/lib/adminT';
 import FeaturesEditor from '@/components/admin/FeaturesEditor';
@@ -18,6 +22,9 @@ const J = (a?: string[]) => (a ?? []).join('\n');
 
 export default async function DestinationForm({d}: {d?: D}) {
   const t = tr('ar');
+  const regionRows = await db.select().from(searchRegions).orderBy(asc(searchRegions.sort), asc(searchRegions.id));
+  const countries = getCountries();
+  const currentCountry = findCountryByName(d?.i18n.ar.country) ?? findCountryByName(d?.i18n.en.country);
   const enFeatures = d?.i18n.en.features ?? [];
   const arFeatures = d?.i18n.ar.features ?? [];
   const initialFeatures = Array.from({length: Math.max(enFeatures.length, arFeatures.length)}, (_, i) => ({
@@ -37,11 +44,28 @@ export default async function DestinationForm({d}: {d?: D}) {
     <form action={saveDestination} className="grid gap-4 rounded-2xl bg-snow p-6 md:grid-cols-2">
       {d && <input type="hidden" name="id" value={d.id} />}
       <Field label={t.slug}><input name="slug" defaultValue={d?.slug} required className={inp} /></Field>
-      <Field label={t.region}><input name="region" defaultValue={d?.region ?? 'asia'} className={inp} /></Field>
+
+      <Field label={t.region}>
+        <select name="region" required defaultValue={d?.region ?? ''} className={inp}>
+          <option value="">اختر المنطقة</option>
+          {regionRows.map((r) => (
+            <option key={r.slug} value={r.slug}>{r.i18n.ar.name}{r.published ? '' : ' (مخفية)'}</option>
+          ))}
+        </select>
+      </Field>
+
       <Field en label={t.name}><input name="name_en" defaultValue={d?.i18n.en.name} className={inp} /></Field>
       <Field label={t.name}><input name="name_ar" dir="rtl" defaultValue={d?.i18n.ar.name} required className={inp} /></Field>
-      <Field en label={t.country}><input name="country_en" defaultValue={d?.i18n.en.country} className={inp} /></Field>
-      <Field label={t.country}><input name="country_ar" dir="rtl" defaultValue={d?.i18n.ar.country} className={inp} /></Field>
+ 
+      <Field label={t.country}>
+        <select name="country" required defaultValue={currentCountry?.code ?? ''} className={inp}>
+          <option value="">اختر الدولة</option>
+          {countries.map((c) => (
+            <option key={c.code} value={c.code}>{c.ar}</option>
+          ))}
+        </select>
+      </Field>
+
       <Field en label={t.about}><textarea name="about_en" rows={4} defaultValue={d?.i18n.en.about} className={inp} /></Field>
       <Field label={t.about}><textarea name="about_ar" dir="rtl" rows={4} defaultValue={d?.i18n.ar.about} className={inp} /></Field>
       <FeaturesEditor initial={initialFeatures} />

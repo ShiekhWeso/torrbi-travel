@@ -1,5 +1,6 @@
 'use server';
 
+import {findCountryByCode} from '@/lib/countries';
 import {redirect} from 'next/navigation';
 import {revalidatePath, updateTag} from 'next/cache';
 import bcrypt from 'bcryptjs';
@@ -197,12 +198,19 @@ export async function saveDestination(formData: FormData) {
   if (flightHours !== null && (!Number.isInteger(flightHours) || flightHours < 0 || flightHours > 100)) throw new Error('Invalid flight duration');
   if ([bestFrom, bestTo].some((month) => month !== null && (!Number.isInteger(month) || month < 1 || month > 12))) throw new Error('Invalid best travel month');
   if (!Number.isSafeInteger(sort) || sort < 0) throw new Error('Invalid sort order');
-  const region = requiredText(f('region') || 'asia', 'destination region', 40);
-  if (!/^[a-z0-9-]+$/.test(region)) throw new Error('Invalid destination region');
+
+  const region = f('region');
+  const [regionRow] = await db.select({id: searchRegions.id}).from(searchRegions).where(eq(searchRegions.slug, region)).limit(1);
+  if (!regionRow) throw new Error('Invalid destination region');
+  const country = findCountryByCode(f('country'));
+  if (!country) throw new Error('Invalid destination country');
+
   const nameEn = requiredText(f('name_en') || f('name_ar'), 'English destination name', 160);
   const nameAr = requiredText(f('name_ar'), 'Arabic destination name', 160);
-  const countryEn = boundedText(f('country_en') || f('country_ar'), 'English country name', 120);
-  const countryAr = boundedText(f('country_ar'), 'Arabic country name', 120);
+  
+  const countryEn = country.en;
+  const countryAr = country.ar;
+
   const aboutEn = boundedText(f('about_en') || f('about_ar'), 'English destination description', 10000);
   const aboutAr = boundedText(f('about_ar'), 'Arabic destination description', 10000);
   if ([f('currency'), f('timezone'), f('temp'), f('language_en'), f('language_ar'), f('visa_en'), f('visa_ar')].some((value) => value.length > 200)) {
