@@ -390,7 +390,7 @@ export async function saveSearchRegion(formData: FormData) {
   const rawId = num(formData.get('id'));
   if (rawId !== null && (!Number.isSafeInteger(rawId) || rawId < 1)) throw new Error('Invalid search region id');
   const f = (key: string) => str(formData.get(key));
-  const slug = f('slug');
+  const slug = f('slug') || `region-${crypto.randomUUID().slice(0, 8)}`;
   const nameEn = f('name_en') || f('name_ar');
   const nameAr = f('name_ar');
   if (slug.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Invalid search region slug');
@@ -415,6 +415,10 @@ export async function saveSearchRegion(formData: FormData) {
 export async function deleteSearchRegion(formData: FormData) {
   if (!(await getSession())) await go('/admin/login');
   const id = validId(formData.get('id'), 'search region');
+  const [region] = await db.select({slug: searchRegions.slug}).from(searchRegions).where(eq(searchRegions.id, id)).limit(1);
+  if (!region) throw new Error('Search region not found');
+  const [usedBy] = await db.select({id: destinations.id}).from(destinations).where(eq(destinations.region, region.slug)).limit(1);
+  if (usedBy) throw new Error('Region is used by destinations');
   const deleted = await db.delete(searchRegions).where(eq(searchRegions.id, id)).returning({id: searchRegions.id});
   if (deleted.length === 0) throw new Error('Search region not found');
   revalidatePublicData(PUBLIC_CACHE_TAGS.searchRegions);

@@ -23,9 +23,7 @@ export default async function SearchRegionForm({region}: {region?: Region}) {
       <Field label={t.regionName}>
         <input name="name_ar" dir="rtl" defaultValue={region?.i18n.ar.name} required className={inp} />
       </Field>
-      <Field label={t.slug}>
-        <input name="slug" defaultValue={region?.slug} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" className={inp} />
-      </Field>
+        {region && <input type="hidden" name="slug" value={region.slug} />}
       <Field label={t.sort}>
         <input name="sort" type="number" min="0" defaultValue={region?.sort ?? 0} required className={inp} />
       </Field>

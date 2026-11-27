@@ -1,17 +1,19 @@
 import {Link} from '@/i18n/navigation';
 import {asc} from 'drizzle-orm';
 import {db} from '@/lib/db';
-import {searchDurations, searchRegions} from '@/lib/db/schema';
+import {destinations, searchDurations, searchRegions} from '@/lib/db/schema';
 import {tr} from '@/lib/adminT';
 import {deleteSearchDuration, deleteSearchRegion} from '../../actions';
 import ConfirmButton from '@/components/admin/ConfirmButton';
 
 export default async function Page() {
   const t = tr('ar');
-  const [regions, durations] = await Promise.all([
+    const [regions, durations, destinationRows] = await Promise.all([
     db.select().from(searchRegions).orderBy(asc(searchRegions.sort), asc(searchRegions.id)),
-    db.select().from(searchDurations).orderBy(asc(searchDurations.sort), asc(searchDurations.id))
+    db.select().from(searchDurations).orderBy(asc(searchDurations.sort), asc(searchDurations.id)),
+    db.select({region: destinations.region}).from(destinations)
   ]);
+  const usedRegions = new Set(destinationRows.map((row) => row.region));
   return (
     <div className="space-y-10">
       <h1 className="font-display text-3xl text-navy">{t.searchOptions}</h1>
@@ -31,10 +33,14 @@ export default async function Page() {
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Link href={`/admin/search/regions/${region.id}`} className="font-bold text-navy underline">{t.edit}</Link>
-                <form action={deleteSearchRegion}>
-                  <input type="hidden" name="id" value={region.id} />
-                  <ConfirmButton className="font-bold text-red-600">{t.delete}</ConfirmButton>
-                </form>
+                {usedRegions.has(region.slug) ? (
+                  <span className="text-xs text-navy/50">مستخدمة في وجهات</span>
+                ) : (
+                  <form action={deleteSearchRegion}>
+                    <input type="hidden" name="id" value={region.id} />
+                    <ConfirmButton className="font-bold text-red-600">{t.delete}</ConfirmButton>
+                  </form>
+                )}
               </div>
             </div>
           ))}

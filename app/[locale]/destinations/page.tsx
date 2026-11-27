@@ -23,11 +23,10 @@ export default async function AllDestinationsPage({params}: {params: Promise<{lo
     name,
     country
   }));
-  const regionNames = new Map(searchRegions.map(({slug, name}) => [slug, name]));
-  const regions = [...new Set(destinationCards.map(({region}) => region))].map((slug) => ({
-    slug,
-    name: regionNames.get(slug) ?? `${slug.charAt(0).toUpperCase()}${slug.slice(1)}`
-  }));
+  const usedRegions = new Set(destinationCards.map(({region}) => region));
+  const regions = searchRegions
+    .filter(({slug}) => usedRegions.has(slug))
+    .map(({slug, name}) => ({slug, name}));
 
   return (
     <>
