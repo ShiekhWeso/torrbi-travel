@@ -21,10 +21,8 @@ const Field = ({label, children, en = false}: {label: string; children: React.Re
 
 const J = (a?: string[]) => (a ?? []).join('\n');
 
-export default async function PackageForm({p, destinations, regions}: {p?: P; destinations: D[]; regions: R[]}) {
+export default async function PackageForm({p, destinations}: {p?: P; destinations: D[]; regions?: R[]}) {
   const t = tr('ar');
-  const region = p?.region ?? regions[0]?.slug ?? 'asia';
-  const hasRegion = regions.some((item) => item.slug === region);
   const enFeatures = p?.i18n.en.features ?? [];
   const arFeatures = p?.i18n.ar.features ?? [];
   const initialFeatures = Array.from({length: Math.max(enFeatures.length, arFeatures.length)}, (_, i) => ({
@@ -54,9 +52,10 @@ export default async function PackageForm({p, destinations, regions}: {p?: P; de
       <FeaturesEditor initial={initialFeatures} />
       {area('excludes', t.excludes, p?.i18n.en.excludes, p?.i18n.ar.excludes)}
       <Field label={t.slug}><input name="slug" defaultValue={p?.slug} required className={inp} /></Field>
+      
       <Field label="الوجهة">
-        <select name="destinationId" defaultValue={p?.destinationId?.toString() ?? ''} className={inp}>
-          <option value="">{t.none}</option>
+        <select name="destinationId" required defaultValue={p?.destinationId?.toString() ?? ''} className={inp}>
+          <option value="">اختر الوجهة</option>
           {destinations.map((destination) => (
             <option key={destination.id} value={destination.id}>
               {destination.i18n.ar.name}
@@ -64,16 +63,7 @@ export default async function PackageForm({p, destinations, regions}: {p?: P; de
           ))}
         </select>
       </Field>
-      <Field label={t.region}>
-        <select name="region" defaultValue={region} className={inp}>
-          {!hasRegion && <option value={region}>{region}</option>}
-          {regions.map((item) => (
-            <option key={item.slug} value={item.slug}>
-              {item.i18n.ar.name}
-            </option>
-          ))}
-        </select>
-      </Field>
+
       <Field label={t.days}><input name="packageDaysCount" type="number" defaultValue={p?.days ?? ''} required className={inp} /></Field>
       <Field label={t.nights}><input name="nights" type="number" defaultValue={p?.nights ?? ''} required className={inp} /></Field>
       <Field label="سعر البالغ (بالدولار)"><input name="priceUsd" type="number" defaultValue={p?.priceUsd ?? ''} className={inp} /></Field>

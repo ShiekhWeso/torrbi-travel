@@ -238,8 +238,10 @@ export async function saveDestination(formData: FormData) {
       ar: {name: nameAr, country: countryAr, about: aboutAr, language: f('language_ar'), visa: f('visa_ar'), tips: l('tips_ar'), features: rows.map((r) => ({icon: r.icon, title: r.title_ar.trim(), text: r.text_ar.trim()}))}
     }
   };
-  if (id) await db.update(destinations).set(data).where(eq(destinations.id, id));
-  else await db.insert(destinations).values(data);
+  if (id) {
+    await db.update(destinations).set(data).where(eq(destinations.id, id));
+    await db.update(packages).set({region}).where(eq(packages.destinationId, id));
+  } else await db.insert(destinations).values(data);  
   revalidatePublicData(PUBLIC_CACHE_TAGS.destinations, PUBLIC_CACHE_TAGS.packages);
   await go('/admin/destinations');
 }
@@ -829,8 +831,12 @@ export async function savePackage(formData: FormData) {
     throw new Error('Package feature text is too long');
   }
   const slug = validSlug(f('slug'), 'package slug');
-  const region = requiredText(f('region') || 'asia', 'package region', 40);
-  if (!/^[a-z0-9-]+$/.test(region)) throw new Error('Invalid package region');
+  
+  if (destinationId === null) throw new Error('Package destination is required');
+  const [destinationRow] = await db.select({region: destinations.region}).from(destinations).where(eq(destinations.id, destinationId)).limit(1);
+  if (!destinationRow) throw new Error('Invalid package destination');
+  const region = destinationRow.region;
+
   const days = wholeNumber(num(formData.get('packageDaysCount')), 'package duration', 1, 365, 1)!;
   const nights = wholeNumber(num(formData.get('nights')), 'package nights', 0, 365, 0)!;
   const priceUsd = wholeNumber(num(formData.get('priceUsd')), 'package price', 0, 10_000_000);
